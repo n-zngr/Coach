@@ -1,11 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Documents() {
     const [files, setFiles] = useState<any[]>([]);
     const [semesters, setSemesters] = useState<any[]>([]);
     const [newSemester, setNewSemester] = useState<string>("");
+    const router = useRouter();
+
+    const verifyLogin = async () => {
+        const res = await fetch("/api/auth/verify", {
+            headers: {
+                "user-id": localStorage.getItem("userId") || "",
+            },
+        });
+
+        if (!res.ok) {
+            // Redirect to login if user is not logged in
+            router.push("/login");
+        }
+    };
 
     // Fetch files
     const fetchFiles = async () => {
@@ -47,6 +62,7 @@ export default function Documents() {
     };
 
     useEffect(() => {
+        verifyLogin();
         fetchFiles();
         fetchSemesters();
     }, []);
@@ -76,11 +92,15 @@ export default function Documents() {
             <div className="mt-8">
                 <h2 className="text-lg font-semibold">Semesters</h2>
                 <ul className="mt-4">
-                    {semesters.map((semester) => (
-                        <li key={semester._id} className="mb-2">
-                            {semester.name}
-                        </li>
-                    ))}
+                    {Array.isArray(semesters) && semesters.length > 0 ? (
+                        semesters.map((semester) => (
+                            <li key={semester._id} className="mb-2">
+                                {semester.name}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="text-gray-500">No semesters available</li>
+                    )}
                 </ul>
                 <div className="mt-4">
                     <input

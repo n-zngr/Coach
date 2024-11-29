@@ -55,7 +55,7 @@ export default function Documents() {
 
     return (
         <div className="p-4">
-            <h1 className="text-xl font-bold">Documents</h1>
+            <h1 className="text-xl font-bold">Semesters</h1>
             <div className="mt-4">
                 <input
                     type="file"

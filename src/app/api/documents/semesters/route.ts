@@ -57,7 +57,7 @@ export async function POST(request: Request) {
         }
 
         const updatedSemesters = user.semesters ? [...user.semesters] : [];
-        updatedSemesters.push({ _id: new ObjectId(), name });
+        updatedSemesters.push({ name });
 
         await collection.updateOne(
             { _id: new ObjectId(userId) },

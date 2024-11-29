@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 export default function Documents() {
     const [files, setFiles] = useState<any[]>([]);
     const [semesters, setSemesters] = useState<any[]>([]);
+    const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
+    const [subjects, setSubjects] = useState<any[]>([]);
     const [newSemester, setNewSemester] = useState<string>("");
     const router = useRouter();
 
@@ -17,7 +19,6 @@ export default function Documents() {
         });
 
         if (!res.ok) {
-            // Redirect to login if user is not logged in
             router.push("/login");
         }
     };
@@ -40,9 +41,21 @@ export default function Documents() {
         setSemesters(data);
     };
 
-    // Add a new semester
+    // Fetch subjects for a semester
+    const fetchSubjects = async (semesterName: string) => {
+        const res = await fetch(`/api/documents/semesters/${semesterName}`);
+        const data = await res.json();
+        setSubjects(data.subjects || []);
+    };
+
+    // Handle semester selection
+    const handleSemesterSelect = (semesterName: string) => {
+        setSelectedSemester(semesterName);
+        fetchSubjects(semesterName);
+    };
+
     const addSemester = async () => {
-        if (!newSemester.trim()) return;
+        if (!newSemester.trim()) return; // Ensure the semester name is not empty
 
         const res = await fetch("/api/documents/semesters", {
             method: "POST",
@@ -54,8 +67,8 @@ export default function Documents() {
         });
 
         if (res.ok) {
-            setNewSemester("");
-            fetchSemesters();
+            setNewSemester(""); // Clear the input field after adding
+            fetchSemesters(); // Refresh the list of semesters
         } else {
             alert("Failed to add semester");
         }
@@ -78,9 +91,7 @@ export default function Documents() {
                     {files.map((file) => (
                         <li key={file._id} className="flex justify-between items-center mb-2">
                             <span>{file.filename}</span>
-                            <button
-                                className="bg-green-500 text-white px-4 py-2 rounded"
-                            >
+                            <button className="bg-green-500 text-white px-4 py-2 rounded">
                                 Download
                             </button>
                         </li>
@@ -94,7 +105,11 @@ export default function Documents() {
                 <ul className="mt-4">
                     {Array.isArray(semesters) && semesters.length > 0 ? (
                         semesters.map((semester) => (
-                            <li key={semester._id} className="mb-2">
+                            <li
+                                key={semester.name}
+                                className="mb-2 cursor-pointer"
+                                onClick={() => handleSemesterSelect(semester.name)}
+                            >
                                 {semester.name}
                             </li>
                         ))
@@ -102,6 +117,8 @@ export default function Documents() {
                         <li className="text-gray-500">No semesters available</li>
                     )}
                 </ul>
+
+                {/* Add New Semester Section */}
                 <div className="mt-4">
                     <input
                         type="text"
@@ -111,13 +128,31 @@ export default function Documents() {
                         className="border p-2 rounded mr-2"
                     />
                     <button
-                        onClick={addSemester}
+                        onClick={addSemester} // The function is now defined
                         className="bg-blue-500 text-white px-4 py-2 rounded"
                     >
                         Add Semester
                     </button>
                 </div>
             </div>
+
+            {/* Subjects Section */}
+            {selectedSemester && (
+                <div className="mt-8">
+                    <h2 className="text-lg font-semibold">Subjects for {selectedSemester}</h2>
+                    <ul className="mt-4">
+                        {subjects.length > 0 ? (
+                            subjects.map((subject) => (
+                                <li key={subject} className="mb-2">
+                                    {subject}
+                                </li>
+                            ))
+                        ) : (
+                            <li className="text-gray-500">No subjects available</li>
+                        )}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { MongoClient, Db, Collection } from "mongodb";
-import bcrypt from "bcrypt"
+import { hashPassword } from "@/app/utils/passwordHash";
 
 // MongoDB configuration
 const MONGODB_URI = process.env.MONGODB_URI as string; // Ensure this is defined in your .env file
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     // Insert the new user into the database
     const result = await collection.insertOne({

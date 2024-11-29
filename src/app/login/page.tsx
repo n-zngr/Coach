@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function LoginPage() {
+    const router = useRouter();
     const [formData, setFormData] = useState({ email: "", password: "" });
 
     // Handle input changes
@@ -32,6 +34,7 @@ function LoginPage() {
             if (data.userId) {
                 localStorage.setItem("userId", data.userId);
                 alert("Login successful!");
+                router.push('/documents');
             } else {
                 throw new Error("Login successful, but userId is missing.");
             }

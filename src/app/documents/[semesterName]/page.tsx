@@ -1,99 +1,70 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
-export default function Semester({ params }: { params: { semesterName: string } }) {
-    const [file, setFile] = useState<File | null>(null);
-    const [files, setFiles] = useState<any[]>([]);
+export default function SemesterPage() {
+    const [subjects, setSubjects] = useState<string[]>([]);
+    const [semesterName, setSemesterName] = useState<string>("");
+    const router = useRouter();
+    const params = useParams();
+    const semesterNameParam = params.semesterName;
 
-    // Fetch files from the database
-    const fetchFiles = async () => {
-        const res = await fetch("/api/documents/files");
-        const data = await res.json();
-        setFiles(data); // Assume API returns all files, including metadata like semester
-    };
+    // Fetch semester details
+    const fetchSemesterData = async () => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+            alert("Please log in to access this page.");
+            router.push("/login");
+            return;
+        }
 
-    // Handle file upload
-    const handleUpload = async () => {
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-
-        reader.onload = async () => {
-            const base64Content = reader.result?.toString().split(",")[1];
-            const res = await fetch("/api/documents/upload", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    fileName: file.name,
-                    fileContent: base64Content,
-                }),
+        try {
+            // Make sure to use the correct parameter for the API request
+            const response = await fetch(`/api/documents/semesters/${semesterNameParam}`, {
+                headers: { "user-id": userId },
             });
-            if (res.ok) {
-                alert("File uploaded successfully");
-                fetchFiles(); // Refresh the files list
-            } else {
-                alert("Failed to upload file");
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch semester data.");
             }
-        };
+
+            const data = await response.json();
+            setSemesterName(data.name);
+            setSubjects(data.subjects || []);
+        } catch (error) {
+            console.error("Error fetching semester data:", error);
+            alert("Could not load semester data.");
+        }
     };
 
-    // Handle file download
-    const handleDownload = async (id: string, name: string) => {
-        const res = await fetch(`/api/documents/download/${id}`);
-        const blob = await res.blob();
-
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(blob);
-        link.download = name;
-        link.click();
-    };
-
-    // Fetch files when the component mounts
     useEffect(() => {
-        fetchFiles();
-    }, []);
+        if (semesterNameParam) {
+            fetchSemesterData();
+        }
+    }, [semesterNameParam]);  // Ensure that this dependency listens to changes in semesterNameParam
+
+    if (!semesterName) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="p-4">
-            {/* Display the current semester */}
-            <h1 className="text-xl font-bold">Semester: {params.semesterName}</h1>
-            <div className="mt-4">
-                <input
-                    type="file"
-                    onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                    className="block mb-2"
-                />
-                <button
-                    onClick={handleUpload}
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                >
-                    Upload File
-                </button>
-            </div>
+            <h1 className="text-xl font-bold">{semesterName}</h1>
+
             <div className="mt-8">
-                <h2 className="text-lg font-semibold">All Files</h2>
+                <h2 className="text-lg font-semibold">Subjects</h2>
                 <ul className="mt-4">
-                    {files.map((file) => (
-                        <li key={file._id} className="flex justify-between items-center mb-2">
-                            {/* Display the file's name and its associated semester */}
-                            <span>
-                                {file.filename}{" "}
-                                <span className="text-gray-500 text-sm">
-                                    (Semester: {file.semester || "Unknown"})
-                                </span>
-                            </span>
-                            <button
-                                onClick={() => handleDownload(file._id, file.filename)}
-                                className="bg-green-500 text-white px-4 py-2 rounded"
-                            >
-                                Download
-                            </button>
-                        </li>
-                    ))}
+                    {subjects.length > 0 ? (
+                        subjects.map((subject, index) => (
+                            <li key={index} className="mb-2">
+                                {subject}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="text-gray-500">No subjects available</li>
+                    )}
                 </ul>
             </div>
         </div>

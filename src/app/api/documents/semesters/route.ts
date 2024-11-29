@@ -1,44 +1,67 @@
 import { NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
-const uri = process.env.MONGODB_URI as string;
-const client = new MongoClient(uri);
+const MONGODB_URI = process.env.MONGODB_URI as string;
+const DATABASE_NAME = "users";
+const COLLECTION_NAME = "users";
 
-export async function POST(req: Request) {
-    const userId = req.headers.get("user-id"); // Extract user ID from headers
-    const { name } = await req.json();
+let client: MongoClient | null = null;
 
-    if (!userId || !name) {
-        return NextResponse.json({ error: "Missing userId or semester name" }, { status: 400 });
+async function connectToDatabase() {
+    if (!client) {
+        client = new MongoClient(MONGODB_URI);
+        await client.connect();
     }
-
-    await client.connect();
-    const db = client.db("documents");
-    const usersCollection = db.collection("users");
-
-    await usersCollection.updateOne(
-        { _id: userId },
-        { $push: { semesters: { _id: new ObjectId(), name, subjects: [] } } },
-        { upsert: true }
-    );
-
-    return NextResponse.json({ message: "Semester created" });
+    return client.db(DATABASE_NAME).collection(COLLECTION_NAME);
 }
 
-export async function GET(req: Request) {
-    const userId = req.headers.get("user-id");
-
+export async function GET(request: Request) {
+    const userId = request.headers.get("user-id");
     if (!userId) {
-        return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+        return NextResponse.json({ message: "User ID is required" }, { status: 400 });
     }
 
-    await client.connect();
-    const db = client.db("documents");
-    const user = await db.collection("users").findOne({ _id: userId });
+    try {
+        const collection = await connectToDatabase();
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
 
-    if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
+        if (!user) {
+            return NextResponse.json({ message: "User not found" }, { status: 404 });
+        }
+
+        return NextResponse.json(user.semesters || []);
+    } catch (error) {
+        console.error("Error fetching semesters:", error);
+        return NextResponse.json({ message: "Internal Server Error", error }, { status: 500 });
+    }
+}
+
+export async function POST(request: Request) {
+    const userId = request.headers.get("user-id");
+    const { name } = await request.json();
+
+    if (!userId || !name) {
+        return NextResponse.json(
+            { message: "User ID and semester name are required" },
+            { status: 400 }
+        );
     }
 
-    return NextResponse.json(user.semesters || []);
+    try {
+        const collection = await connectToDatabase();
+
+        const result = await collection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $push: { semesters: { _id: new ObjectId(), name } } }
+        );
+
+        if (result.matchedCount === 0) {
+            return NextResponse.json({ message: "User not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "Semester added successfully" });
+    } catch (error) {
+        console.error("Error adding semester:", error);
+        return NextResponse.json({ message: "Internal Server Error", error }, { status: 500 });
+    }
 }

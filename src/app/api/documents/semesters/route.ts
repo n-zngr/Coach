@@ -50,14 +50,19 @@ export async function POST(request: Request) {
     try {
         const collection = await connectToDatabase();
 
-        const result = await collection.updateOne(
-            { _id: new ObjectId(userId) },
-            { $push: { semesters: { _id: new ObjectId(), name } } }
-        );
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
 
-        if (result.matchedCount === 0) {
+        if (!user) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
+
+        const updatedSemesters = user.semesters ? [...user.semesters] : [];
+        updatedSemesters.push({ _id: new ObjectId(), name });
+
+        await collection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { semesters: updatedSemesters } }
+        );
 
         return NextResponse.json({ message: "Semester added successfully" });
     } catch (error) {

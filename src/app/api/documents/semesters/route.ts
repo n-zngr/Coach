@@ -1,72 +1,75 @@
-import { NextResponse } from "next/server";
-import { MongoClient, ObjectId } from "mongodb";
+import { NextResponse } from 'next/server';
+import { MongoClient, ObjectId } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-const DATABASE_NAME = "users";
-const COLLECTION_NAME = "users";
+const MONGODB_URI = process.env.MONGODB_URI!;
+const DATABASE_NAME = 'users';
+const COLLECTION_NAME = 'users';
 
-let client: MongoClient | null = null;
+export async function GET(req: Request) {
+    const userId = req.headers.get('user-id');
 
-async function connectToDatabase() {
-    if (!client) {
-        client = new MongoClient(MONGODB_URI);
-        await client.connect();
-    }
-    return client.db(DATABASE_NAME).collection(COLLECTION_NAME);
-}
-
-export async function GET(request: Request) {
-    const userId = request.headers.get("user-id");
     if (!userId) {
-        return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+        return NextResponse.json({ message: "UserId is required" }, { status: 400 });
     }
 
     try {
-        const collection = await connectToDatabase();
-        const user = await collection.findOne({ _id: new ObjectId(userId) });
+        const client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        const db = client.db(DATABASE_NAME);
+        const usersCollection = db.collection(COLLECTION_NAME);
+
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+
+        client.close();
 
         if (!user) {
-            return NextResponse.json({ message: "User not found" }, { status: 404 });
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        return NextResponse.json(user.semesters || []);
+        // Ensure semesters is an array
+        const semesters = user.semesters || [];
+        return NextResponse.json(semesters);
     } catch (error) {
-        console.error("Error fetching semesters:", error);
-        return NextResponse.json({ message: "Internal Server Error", error }, { status: 500 });
+        console.error("Error in GET /documents:", error);
+        return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 }
 
-export async function POST(request: Request) {
-    const userId = request.headers.get("user-id");
-    const { name } = await request.json();
+export async function POST(req: Request) {
+    const userId = req.headers.get('user-id');
+    const { name } = await req.json();
 
     if (!userId || !name) {
-        return NextResponse.json(
-            { message: "User ID and semester name are required" },
-            { status: 400 }
-        );
+        return NextResponse.json({ error: "UserId and semester name are required" }, { status: 400 });
     }
 
     try {
-        const collection = await connectToDatabase();
+        const client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        const db = client.db(DATABASE_NAME);
+        const usersCollection = db.collection(COLLECTION_NAME);
 
-        const user = await collection.findOne({ _id: new ObjectId(userId) });
+        // Create the new semester object
+        const newSemester = {
+            id: new ObjectId().toString(),
+            name,
+            subjects: [],
+        };
 
-        if (!user) {
-            return NextResponse.json({ message: "User not found" }, { status: 404 });
-        }
-
-        const updatedSemesters = user.semesters ? [...user.semesters] : [];
-        updatedSemesters.push({ name });
-
-        await collection.updateOne(
+        const updateResult = await usersCollection.updateOne(
             { _id: new ObjectId(userId) },
-            { $set: { semesters: updatedSemesters } }
+            { $addToSet: { semesters: newSemester } }
         );
 
-        return NextResponse.json({ message: "Semester added successfully" });
+        client.close();
+
+        if (updateResult.modifiedCount === 0) {
+            return NextResponse.json({ error: "Failed to add semester" }, { status: 400 });
+        }
+
+        return NextResponse.json(newSemester, { status: 201 });
     } catch (error) {
-        console.error("Error adding semester:", error);
-        return NextResponse.json({ message: "Internal Server Error", error }, { status: 500 });
+        console.error("Error in POST /documents:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

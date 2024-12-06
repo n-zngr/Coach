@@ -1,30 +1,54 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const Documents = () => {
     const [semesters, setSemesters] = useState<{ id: string; name: string; subjects: string[] }[]>([]);
-    const [name, setName] = useState("");
+    const [name, setName] = useState('');
     const [userId, setUserId] = useState<string | null>(null);
+    const router = useRouter();
 
-    useEffect(() => {
-        const storedUserId = localStorage.getItem("userId");
-        if (storedUserId) {
-            setUserId(storedUserId);
-            fetchSemesters(storedUserId);
+    const verifyLogin = async () => {
+        const userIdFromStorage = localStorage.getItem('userId');
+
+        if (!userIdFromStorage) {
+            router.push('/login');
+            return false;
         }
-    }, []);
 
-    const fetchSemesters = async (userId: string) => {
+        setUserId(userIdFromStorage);
+
+        try {
+            const response = await fetch('api/auth/verify', {
+                headers: { 'user-id': userIdFromStorage }
+            });
+
+            if (!response.ok) {
+                router.push('/login');
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error verifying login: ', error);
+            router.push('/login');
+            return false;
+        }
+    };
+
+    const fetchSemesters = async () => {
+        if (!userId) return;
+
         try {
             const response = await fetch("/api/documents/semesters", {
                 method: "GET",
                 headers: { "user-id": userId },
             });
+
             if (response.ok) {
                 const data = await response.json();
 
-                // Ensure the data is an array
                 if (Array.isArray(data)) {
                     setSemesters(data);
                 } else {
@@ -40,6 +64,7 @@ const Documents = () => {
             setSemesters([]);
         }
     };
+
 
     const handleSubmit = async () => {
         if (!name || !userId) return;
@@ -57,7 +82,7 @@ const Documents = () => {
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
-                setName(""); // Clear the input field
+                setName("");
             } else {
                 console.error("Failed to add semester");
             }
@@ -65,6 +90,18 @@ const Documents = () => {
             console.error("Error adding semester:", error);
         }
     };
+
+
+    useEffect(() => {
+        const initializePage = async () => {
+            const loggedIn = await verifyLogin();
+            if (loggedIn) {
+                fetchSemesters();
+            }
+        }
+
+        initializePage();
+    }, [userId]);
 
     return (
         <div className="container mx-auto p-4">

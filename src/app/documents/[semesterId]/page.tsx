@@ -1,29 +1,53 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 const SemesterPage = () => {
     const [subjects, setSubjects] = useState<{ id: string; name: string; topics: string[] }[]>([]);
     const [name, setName] = useState("");
     const [userId, setUserId] = useState<string | null>(null);
-    const params = useParams(); // Using `useParams` hook
-    const semesterId = params.semesterId as string; // Dynamically extract `semesterId`
+    const params = useParams();
+    const router = useRouter();
+    const semesterId = params.semesterId as string;
 
-    useEffect(() => {
-        const storedUserId = localStorage.getItem("userId");
-        if (storedUserId && semesterId) {
-            setUserId(storedUserId);
-            fetchSubjects(storedUserId, semesterId);
+    const verifyLogin = async () => {
+        const userIdFromStorage = localStorage.getItem('userId');
+
+        if (!userIdFromStorage) {
+            router.push('/login');
+            return false;
         }
-    }, [semesterId]);
 
-    const fetchSubjects = async (userId: string, semesterId: string) => {
+        setUserId(userIdFromStorage);
+
+        try {
+            const response = await fetch('/api/auth/verify', {
+                headers: { 'user-id': userIdFromStorage }
+            });
+
+            if (!response.ok) {
+                router.push('/login');
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error verifying login: ', error);
+            router.push('/login');
+            return false;
+        }
+    }
+
+    const fetchSubjects = async (semesterId: string) => {
+        if (!userId) return;
+
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
                 method: "GET",
                 headers: { "user-id": userId },
             });
+
             if (response.ok) {
                 const data = await response.json();
                 setSubjects(data);
@@ -34,6 +58,7 @@ const SemesterPage = () => {
             console.error("Error fetching subjects:", error);
         }
     };
+
 
     const handleSubmit = async () => {
         if (!name || !userId || !semesterId) return;
@@ -59,6 +84,20 @@ const SemesterPage = () => {
             console.error("Error adding subject:", error);
         }
     };
+
+
+    useEffect(() => {
+        const initializePage = async () => {
+            const loggedIn = await verifyLogin();
+            if (loggedIn && semesterId) {
+                fetchSubjects(semesterId);
+            }
+        }
+
+        initializePage();
+    }, [userId, semesterId]);
+
+    
 
     return (
         <div className="container mx-auto p-4">

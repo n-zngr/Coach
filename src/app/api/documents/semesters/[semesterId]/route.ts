@@ -7,7 +7,7 @@ const COLLECTION_NAME = "users";
 
 export async function GET(req: Request, { params }: { params: { semesterId: string } }) {
     const userId = req.headers.get("user-id");
-    const { semesterId } = await params; // Await `params` to access `semesterId`
+    const { semesterId } = await params;
 
     if (!userId || !semesterId) {
         return NextResponse.json({ error: "UserId and SemesterId are required" }, { status: 400 });
@@ -42,7 +42,7 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
 
 export async function POST(req: Request, { params }: { params: { semesterId: string } }) {
     const userId = req.headers.get("user-id");
-    const { semesterId } = await params; // Await `params` to access `semesterId`
+    const { semesterId } = await params;
     const { name } = await req.json();
 
     if (!userId || !semesterId || !name) {

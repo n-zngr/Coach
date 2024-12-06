@@ -38,93 +38,92 @@ function SignupPage() {
     setError(null); // Reset error
   
     try {
-      setIsSubmitting(true);
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ fullname, email, password, confirmPassword }),
-      });
+        setIsSubmitting(true);
+        const response = await fetch("/api/signup", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ fullname, email, password, confirmPassword }),
+        });
   
-      const data = await response.json();
+        const data = await response.json();
   
-      if (response.ok) {
-        // Redirect user to a success page or login
-        alert("User registered successfully!");
-        router.push("/login"); // Or another page after successful signup
-      } else {
-        setError(data.message || "Failed to register user.");
-      }
+        if (response.ok) {
+            alert("User registered successfully!");
+            router.push("/login");
+        } else {
+            setError(data.message || "Failed to register user.");
+        }
     } catch (error) {
-      setError("An unexpected error occurred.");
+        setError("An unexpected error occurred.");
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
-  };  
+};  
 
-  return (
-    <div className="signup-form">
-      <h2>Create Account</h2>
-      <form onSubmit={handleSubmit}>
+    return (
+        <div className="signup-form">
+            <h2>Create Account</h2>
+                <form onSubmit={handleSubmit}>
+                    <div>
+                        <label htmlFor="fullname">Full Name</label>
+                        <input
+                            type="text"
+                            id="fullname"
+                            name="fullname"
+                            value={formData.fullname}
+                            onChange={handleInputChange}
+                            className="text-black"
+                            required
+                        />
+                </div>
+
         <div>
-          <label htmlFor="fullname">Full Name</label>
-          <input
-            type="text"
-            id="fullname"
-            name="fullname"
-            value={formData.fullname}
-            onChange={handleInputChange}
-            className="text-black"
-            required
-          />
+            <label htmlFor="email">E-Mail</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="text-black"
+                required
+            />
         </div>
 
         <div>
-          <label htmlFor="email">E-Mail</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className="text-black"
-            required
-          />
+            <label htmlFor="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="text-black"
+                required
+            />
         </div>
 
         <div>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            className="text-black"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="confirmPassword">Confirm Password</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleInputChange}
-            className="text-black"
-            required
-          />
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className="text-black"
+                required
+            />
         </div>
 
         {error && <p className="error">{error}</p>}
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Signing Up..." : "Sign Up"}
-        </button>
-      </form>
+            <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Signing Up..." : "Sign Up"}
+            </button>
+        </form>
     </div>
   );
 };

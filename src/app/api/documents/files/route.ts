@@ -1,29 +1,28 @@
 import { NextResponse } from "next/server";
-import { MongoClient, GridFSBucket } from "mongodb";
+import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI as string;
 
-export async function GET() {
+export async function GET(req: Request) {
     const client = new MongoClient(uri);
 
     try {
-        await client.connect();
-        const db = client.db("documents");
-        const bucket = new GridFSBucket(db);
+        const url = new URL(req.url);
+        const topicId = url.searchParams.get('topicId');
 
-        const fileList: any[] = [];
-        const cursor = bucket.find();
-
-        for await (const file of cursor) {
-            fileList.push(file);
+        if (!topicId) {
+            return NextResponse.json({ message: 'TopicId is required '}, { status: 400 });
         }
 
-        return NextResponse.json(fileList);
+        await client.connect();
+        const db = client.db("documents");
+        const filesCollection = db.collection('fs.files');
+
+        const files = await filesCollection.find({ "metadata.topicId": topicId }).toArray();
+
+        return NextResponse.json(files, { status: 200 });
     } catch (error) {
-        return NextResponse.json(
-            { message: "Failed to retrieve files", error },
-            { status: 500 }
-        );
+        return NextResponse.json({ message: "Failed to fetch files", error }, { status: 500 });
     } finally {
         await client.close();
     }

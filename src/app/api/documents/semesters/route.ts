@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     const userId = req.headers.get('user-id');
 
     if (!userId) {
-        return NextResponse.json({ message: "UserId is required" }, { status: 400 });
+        return NextResponse.json({ error: "UserId is required" }, { status: 400 });
     }
 
     try {

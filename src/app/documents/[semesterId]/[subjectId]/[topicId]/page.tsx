@@ -1,22 +1,54 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 const TopicPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
-    const params = useParams();
-    const semesterId = params.semesterId;
-    const subjectId = params.subjectId;
-    const topicId = params.topicId;
     const [userId, setUserId] = useState<string | null>(null);
+    const params = useParams();
+    const router = useRouter();
+    const semesterId = params.semesterId as string;
+    const subjectId = params.subjectId as string;
+    const topicId = params.topicId as string;
+
+    const verifyLogin = async () => {
+        const userIdFromStorage = localStorage.getItem("userId");
+
+        if (!userIdFromStorage) {
+            router.push("/login");
+            return false;
+        }
+
+        setUserId(userIdFromStorage);
+
+        try {
+            const response = await fetch("/api/auth/verify", {
+                headers: {
+                    "user-id": userIdFromStorage,
+                },
+            });
+
+            if (!response.ok) {
+                router.push("/login");
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error verifying login:", error);
+            router.push("/login");
+            return false;
+        }
+    };
 
     useEffect(() => {
-        const storedUserId = localStorage.getItem("userId");
-        if (storedUserId) {
-            setUserId(storedUserId);
-        }
+        const initializePage = async () => {
+            await verifyLogin();
+        };
+
+        initializePage();
     }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,10 +84,12 @@ const TopicPage = () => {
                     body: JSON.stringify({
                         fileName: file.name,
                         fileContent: base64Content,
-                        userId,
-                        semesterId,
-                        subjectId,
-                        topicId,
+                        metadata: {
+                            userId,
+                            semesterId,
+                            subjectId,
+                            topicId,
+                        },
                     }),
                 });
 

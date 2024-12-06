@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -31,12 +32,13 @@ function LoginPage() {
       alert(error instanceof Error ? error.message : "Unknown error");
     }
   };
-
+  const router = useRouter()
   return (
     <form onSubmit={handleSubmit}>
       <input type="text" name="email" placeholder="E-Mail" onChange={handleChange} className="text-black" required />
       <input type="password" name="password" placeholder="Password" onChange={handleChange} className="text-black" required />
       <button type="submit" onClick={handleSubmit}>Login</button>
+      <button type="button" onClick={() => router.push("/email_pwreset")}>Forgot Password?</button>
     </form>
   );
 }

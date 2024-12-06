@@ -125,6 +125,7 @@ function SignupPage() {
           {isSubmitting ? "Signing Up..." : "Sign Up"}
         </button>
       </form>
+      <button type="button" onClick={() => router.push("/login")}>Back to Login</button>
     </div>
   );
 };

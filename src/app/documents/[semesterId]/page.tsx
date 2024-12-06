@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import FileDisplay from "@/app/components/DisplayFiles";
+
 const SemesterPage = () => {
     const [subjects, setSubjects] = useState<{ id: string; name: string; topics: string[] }[]>([]);
     const [name, setName] = useState("");
@@ -125,6 +127,8 @@ const SemesterPage = () => {
                     </li>
                 ))}
             </ul>
+            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+            <FileDisplay semesterId={params.semesterId as string} />
         </div>
     );
 };

@@ -2,90 +2,100 @@
 
 import { useState, useEffect } from "react";
 
-export default function Documents() {
-    const [file, setFile] = useState<File | null>(null);
-    const [files, setFiles] = useState<any[]>([]);
+const Documents = () => {
+    const [semesters, setSemesters] = useState<{ id: string; name: string; subjects: string[] }[]>([]);
+    const [name, setName] = useState("");
+    const [userId, setUserId] = useState<string | null>(null);
 
-    const fetchFiles = async () => {
-        const res = await fetch("/api/documents/files");
-        const data = await res.json();
-        setFiles(data);
+    useEffect(() => {
+        const storedUserId = localStorage.getItem("userId");
+        if (storedUserId) {
+            setUserId(storedUserId);
+            fetchSemesters(storedUserId);
+        }
+    }, []);
+
+    const fetchSemesters = async (userId: string) => {
+        try {
+            const response = await fetch("/api/documents/semesters", {
+                method: "GET",
+                headers: { "user-id": userId },
+            });
+            if (response.ok) {
+                const data = await response.json();
+
+                // Ensure the data is an array
+                if (Array.isArray(data)) {
+                    setSemesters(data);
+                } else {
+                    console.error("Invalid data format for semesters:", data);
+                    setSemesters([]);
+                }
+            } else {
+                console.error("Failed to fetch semesters");
+                setSemesters([]);
+            }
+        } catch (error) {
+            console.error("Error fetching semesters:", error);
+            setSemesters([]);
+        }
     };
 
-    const handleUpload = async () => {
-        if (!file) return;
+    const handleSubmit = async () => {
+        if (!name || !userId) return;
 
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-
-        reader.onload = async () => {
-            const base64Content = reader.result?.toString().split(",")[1];
-            const res = await fetch("/api/documents/upload", {
+        try {
+            const response = await fetch("/api/documents/semesters", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "user-id": userId,
                 },
-                body: JSON.stringify({
-                    fileName: file.name,
-                    fileContent: base64Content,
-                }),
+                body: JSON.stringify({ name }),
             });
-            if (res.ok) {
-                alert("File uploaded successfully");
-                fetchFiles();
+
+            if (response.ok) {
+                const newSemester = await response.json();
+                setSemesters((prev) => [...prev, newSemester]);
+                setName(""); // Clear the input field
             } else {
-                alert("Failed to upload file");
+                console.error("Failed to add semester");
             }
-        };
+        } catch (error) {
+            console.error("Error adding semester:", error);
+        }
     };
-
-    const handleDownload = async (id: string, name: string) => {
-        const res = await fetch(`/api/documents/download/${id}`);
-        const blob = await res.blob();
-
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(blob);
-        link.download = name;
-        link.click();
-    };
-
-    useEffect(() => {
-        fetchFiles();
-    }, []);
 
     return (
-        <div className="p-4">
-            <h1 className="text-xl font-bold">Documents</h1>
-            <div className="mt-4">
+        <div className="container mx-auto p-4">
+            <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
+            <div className="mb-4">
                 <input
-                    type="file"
-                    onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                    className="block mb-2"
+                    type="text"
+                    className="border rounded p-2 w-full"
+                    placeholder="Semester Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                 />
                 <button
-                    onClick={handleUpload}
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                    className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                    onClick={handleSubmit}
                 >
-                    Upload File
+                    Add Semester
                 </button>
             </div>
-            <div className="mt-8">
-                <h2 className="text-lg font-semibold">Files</h2>
-                <ul className="mt-4">
-                    {files.map((file) => (
-                        <li key={file._id} className="flex justify-between items-center mb-2">
-                            <span>{file.filename}</span>
-                            <button
-                                onClick={() => handleDownload(file._id, file.filename)}
-                                className="bg-green-500 text-white px-4 py-2 rounded"
-                            >
-                                Download
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            <h2 className="text-xl font-semibold mb-2">Semesters</h2>
+            <ul className="list-disc pl-5">
+                {semesters.map((semester) => (
+                    <li key={semester.id} className="mb-1">
+                        <a href={`/documents/${semester.id}`} className="text-blue-500 underline">
+                            {semester.name}
+                        </a>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
-}
+};
 
+export default Documents;

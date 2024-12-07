@@ -1,23 +1,58 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
 import FileDisplay from '@/app/components/DisplayFiles';
+import { parseParameter } from "next/dist/shared/lib/router/utils/route-regex";
 
 const Documents = () => {
     const [semesters, setSemesters] = useState<{ id: string; name: string; subjects: string[] }[]>([]);
     const [name, setName] = useState('');
     const [userId, setUserId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    const verifyLogin = async () => {
-        const userIdFromStorage = localStorage.getItem('userId');
+    useEffect(() => {
+        const checkUserAuthentication = async () => {
+            try {
+                const storedUserId = localStorage.getItem('userId');
 
-        if (!userIdFromStorage) {
-            router.push('/login');
-            return false;
+                if (!storedUserId) {
+                    router.push('/login');
+                    return;
+                }
+
+                setUserId(storedUserId);
+
+                const authResponse = await fetch('/api/auth/verify', {
+                    method: 'GET',
+                    headers: { 'user-id': storedUserId }
+                });
+
+                if (authResponse.status === 401) {
+                    router.push('/login');
+                    return;
+                }
+
+                const authData = await authResponse.json();
+                if (!authData.isLoggedIn) {
+                    router.push('/login');
+                    return;
+                }
+
+                await fetchSemesters(storedUserId);
+            } catch (error) {
+                console.error('Error during authentication check: ', error);
+                router.push('/login');
+            } finally {
+                setIsLoading(false);
+            }
         }
+
+        checkUserAuthentication();
+    }, []);
+
 
         setUserId(userIdFromStorage);
 
@@ -93,17 +128,14 @@ const Documents = () => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="container mx-auto p-4">
+                <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+            </div>
+        );
+    }
 
-    useEffect(() => {
-        const initializePage = async () => {
-            const loggedIn = await verifyLogin();
-            if (loggedIn) {
-                fetchSemesters();
-            }
-        }
-
-        initializePage();
-    }, [userId]);
 
     return (
         <div className="container mx-auto p-4">
@@ -136,6 +168,7 @@ const Documents = () => {
 
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <FileDisplay />
+
         </div>
     );
 };

@@ -9,7 +9,6 @@ export async function POST(req: Request) {
 
     try {
         const { fileName, fileContent, metadata } = await req.json();
-
         if (!fileName || !fileContent || !metadata) {
             return NextResponse.json(
                 { message: "Missing required data for file upload" },

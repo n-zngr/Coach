@@ -9,40 +9,52 @@ const SemesterPage = () => {
     const [subjects, setSubjects] = useState<{ id: string; name: string; topics: string[] }[]>([]);
     const [name, setName] = useState("");
     const [userId, setUserId] = useState<string | null>(null);
-    const params = useParams();
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    const params = useParams();
     const semesterId = params.semesterId as string;
 
-    const verifyLogin = async () => {
-        const userIdFromStorage = localStorage.getItem('userId');
+    useEffect(() => {
+        const checkUserAuthentication = async () => {
+            try {
+                const storedUserId = localStorage.getItem('userId');
 
-        if (!userIdFromStorage) {
-            router.push('/login');
-            return false;
-        }
+                if (!storedUserId) {
+                    router.push('/login');
+                    return;
+                }
 
-        setUserId(userIdFromStorage);
+                setUserId(storedUserId);
 
-        try {
-            const response = await fetch('/api/auth/verify', {
-                headers: { 'user-id': userIdFromStorage }
-            });
+                const authResponse = await fetch('/api/auth/verify', {
+                    method: 'GET',
+                    headers: { 'user-id': storedUserId }
+                });
 
-            if (!response.ok) {
+                if (authResponse.status === 401) {
+                    router.push('/login');
+                    return;
+                }
+
+                const authData = await authResponse.json();
+                if (!authData.isLoggedIn) {
+                    router.push('/login');
+                    return;
+                }
+
+                if (semesterId) {
+                    await fetchSubjects(storedUserId, semesterId);
+                }
+            } catch (error) {
+                console.error('Error during authentication check: ', error);
                 router.push('/login');
-                return false;
+            } finally {
+                setIsLoading(false);
             }
-
-            return true;
-        } catch (error) {
-            console.error('Error verifying login: ', error);
-            router.push('/login');
-            return false;
         }
-    }
 
-    const fetchSubjects = async (semesterId: string) => {
-        if (!userId) return;
+        checkUserAuthentication();
+    }, [semesterId]);
 
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
@@ -50,14 +62,26 @@ const SemesterPage = () => {
                 headers: { "user-id": userId },
             });
 
+            if (response.status === 404) {
+                router.push('/404');
+            }
+
             if (response.ok) {
                 const data = await response.json();
-                setSubjects(data);
+                
+                if (Array.isArray(data)) {
+                    setSubjects(data);
+                } else {
+                    console.error('Invalid data format for subjects: ', data);
+                    setSubjects([]);
+                }
             } else {
                 console.error("Failed to fetch subjects");
+                setSubjects([]);
             }
         } catch (error) {
             console.error("Error fetching subjects:", error);
+            setSubjects([]);
         }
     };
 
@@ -87,19 +111,14 @@ const SemesterPage = () => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="container mx-auto p-4">
+                <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+            </div>
+        );
+    }
 
-    useEffect(() => {
-        const initializePage = async () => {
-            const loggedIn = await verifyLogin();
-            if (loggedIn && semesterId) {
-                fetchSubjects(semesterId);
-            }
-        }
-
-        initializePage();
-    }, [userId, semesterId]);
-
-    
 
     return (
         <div className="container mx-auto p-4">
@@ -123,12 +142,15 @@ const SemesterPage = () => {
             <ul className="list-disc pl-5">
                 {subjects.map((subject) => (
                     <li key={subject.id} className="mb-1">
-                        {subject.name}
+                        <a href={`/documents/${semesterId}/${subject.id}`} className='text-blue-500 underline'>
+                            {subject.name}
+                        </a>
                     </li>
                 ))}
             </ul>
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <FileDisplay semesterId={params.semesterId as string} />
+
         </div>
     );
 };

@@ -3,53 +3,67 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import FileDisplay from "@/app/components/DisplayFiles";
+
 const TopicPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
-    const params = useParams();
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    const params = useParams();
     const semesterId = params.semesterId as string;
     const subjectId = params.subjectId as string;
     const topicId = params.topicId as string;
 
-    const verifyLogin = async () => {
-        const userIdFromStorage = localStorage.getItem("userId");
-
-        if (!userIdFromStorage) {
-            router.push("/login");
-            return false;
-        }
-
-        setUserId(userIdFromStorage);
-
-        try {
-            const response = await fetch("/api/auth/verify", {
-                headers: {
-                    "user-id": userIdFromStorage,
-                },
-            });
-
-            if (!response.ok) {
-                router.push("/login");
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            console.error("Error verifying login:", error);
-            router.push("/login");
-            return false;
-        }
-    };
-
     useEffect(() => {
-        const initializePage = async () => {
-            await verifyLogin();
+        const checkTopicExistence = async () => {
+            try {
+                const storedUserId = localStorage.getItem('userId');
+
+                if (!storedUserId) {
+                    router.push('/login');
+                    return;
+                }
+
+                setUserId(storedUserId);
+
+                const authResponse = await fetch('/api/auth/verify', {
+                    method: 'GET',
+                    headers: { 'user-id': storedUserId }
+                });
+
+                if (authResponse.status === 401) {
+                    router.push('/login');
+                    return;
+                }
+
+                const authData = await authResponse.json();
+                if (!authData.isLoggedIn) {
+                    router.push('/login');
+                    return;
+                }
+
+                const topicResponse = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}/${topicId}`, {
+                    method: 'GET',
+                    headers: { 'user-id': storedUserId }
+                });
+
+                if (topicResponse.status === 404) {
+                    router.push('/404');
+                    return;
+                }
+
+            } catch (error) {
+                console.error('Error during authentication or topic check: ', error);
+                router.push('/login');
+            } finally {
+                setIsLoading(false);
+            }
         };
 
-        initializePage();
-    }, []);
+        checkTopicExistence();
+    }, [semesterId, subjectId, topicId]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -108,6 +122,14 @@ const TopicPage = () => {
         reader.readAsDataURL(file);
     };
 
+    if (isLoading) {
+        return (
+            <div className="container mx-auto p-4">
+                <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Manage Topic</h1>
@@ -127,6 +149,8 @@ const TopicPage = () => {
                     {uploading ? "Uploading..." : "Upload File"}
                 </button>
             </div>
+            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+            <FileDisplay topicId={params.topicId as string}/>
         </div>
     );
 };

@@ -56,6 +56,7 @@ const SemesterPage = () => {
         checkUserAuthentication();
     }, [semesterId]);
 
+    const fetchSubjects = async (userId: string, semesterId: string) => {
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
                 method: "GET",
@@ -84,7 +85,6 @@ const SemesterPage = () => {
             setSubjects([]);
         }
     };
-
 
     const handleSubmit = async () => {
         if (!name || !userId || !semesterId) return;

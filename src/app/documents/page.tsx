@@ -8,7 +8,7 @@ import { parseParameter } from "next/dist/shared/lib/router/utils/route-regex";
 
 const Documents = () => {
     const [semesters, setSemesters] = useState<{ id: string; name: string; subjects: string[] }[]>([]);
-    const [name, setName] = useState("");
+    const [name, setName] = useState('');
     const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
@@ -53,7 +53,30 @@ const Documents = () => {
         checkUserAuthentication();
     }, []);
 
-    const fetchSemesters = async (userId: string) => {
+
+        setUserId(userIdFromStorage);
+
+        try {
+            const response = await fetch('api/auth/verify', {
+                headers: { 'user-id': userIdFromStorage }
+            });
+
+            if (!response.ok) {
+                router.push('/login');
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error verifying login: ', error);
+            router.push('/login');
+            return false;
+        }
+    };
+
+    const fetchSemesters = async () => {
+        if (!userId) return;
+
         try {
             const response = await fetch("/api/documents/semesters", {
                 method: "GET",
@@ -62,6 +85,7 @@ const Documents = () => {
 
             if (response.ok) {
                 const data = await response.json();
+
                 if (Array.isArray(data)) {
                     setSemesters(data);
                 } else {
@@ -77,6 +101,7 @@ const Documents = () => {
             setSemesters([]);
         }
     };
+
 
     const handleSubmit = async () => {
         if (!name || !userId) return;
@@ -111,6 +136,7 @@ const Documents = () => {
         );
     }
 
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
@@ -139,8 +165,10 @@ const Documents = () => {
                     </li>
                 ))}
             </ul>
+
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <FileDisplay/>
+            <FileDisplay />
+
         </div>
     );
 };

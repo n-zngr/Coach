@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+
 import FileDisplay from "@/app/components/DisplayFiles";
 
 const SemesterPage = () => {
@@ -55,7 +56,6 @@ const SemesterPage = () => {
         checkUserAuthentication();
     }, [semesterId]);
 
-    const fetchSubjects = async (userId: string, semesterId: string) => {
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
                 method: "GET",
@@ -84,6 +84,7 @@ const SemesterPage = () => {
             setSubjects([]);
         }
     };
+
 
     const handleSubmit = async () => {
         if (!name || !userId || !semesterId) return;
@@ -118,6 +119,7 @@ const SemesterPage = () => {
         );
     }
 
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Manage Subjects</h1>
@@ -147,7 +149,8 @@ const SemesterPage = () => {
                 ))}
             </ul>
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <FileDisplay semesterId={params.semesterId as string}/>
+            <FileDisplay semesterId={params.semesterId as string} />
+
         </div>
     );
 };

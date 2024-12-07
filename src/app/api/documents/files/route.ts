@@ -2,22 +2,21 @@ import { NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 
 const MONGODB_URI = process.env.MONGODB_URI! as string;
-const DATABASE_NAME = 'documents';
-const COLLECTION_NAME = 'fs.files';
 
 export async function GET(req: Request) {
     const client = new MongoClient(MONGODB_URI);
 
     try {
         const url = new URL(req.url);
+      
         const userId = url.searchParams.get('userId');
         const semesterId = url.searchParams.get('semesterId');
         const subjectId = url.searchParams.get('subjectId');
         const topicId = url.searchParams.get('topicId');
 
         await client.connect();
-        const db = client.db(DATABASE_NAME);
-        const filesCollection = db.collection(COLLECTION_NAME);
+        const db = client.db('documents');
+        const filesCollection = db.collection('fs.files');
 
         const query: any = {};
         if (userId) query['metadata.userId'] = userId;

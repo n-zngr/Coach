@@ -1,5 +1,7 @@
 "use client";
+
 import { useState, useEffect } from "react";
+
 interface File {
     _id: string;
     filename: string;
@@ -12,14 +14,17 @@ interface File {
         topicId: string;
     };
 }
+
 interface FileDisplayProps {
     semesterId?: string;
     subjectId?: string;
     topicId?: string;
 }
+
 const FileDisplay: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicId }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         const fetchFiles = async () => {
             try {
@@ -28,11 +33,13 @@ const FileDisplay: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicI
                     console.error("User ID is not available in localStorage.");
                     return;
                 }
+
                 const params = new URLSearchParams();
                 params.append("userId", userId);
                 if (semesterId) params.append("semesterId", semesterId);
                 if (subjectId) params.append("subjectId", subjectId);
                 if (topicId) params.append("topicId", topicId);
+
                 const response = await fetch(`/api/documents/files?${params.toString()}`);
                 if (response.ok) {
                     const data = await response.json();
@@ -46,14 +53,18 @@ const FileDisplay: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicI
                 setLoading(false);
             }
         };
+
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
+
     if (loading) {
         return <p>Loading files...</p>;
     }
+
     if (files.length === 0) {
         return <p>No files found for the selected filters.</p>;
     }
+
     return (
         <div>
             <h2 className="text-xl font-semibold mb-4">Files</h2>
@@ -75,4 +86,5 @@ const FileDisplay: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicI
         </div>
     );
 };
+
 export default FileDisplay;

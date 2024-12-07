@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import FileDisplay from "@/app/components/DisplayFiles";
+
 const TopicPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -147,6 +149,8 @@ const TopicPage = () => {
                     {uploading ? "Uploading..." : "Upload File"}
                 </button>
             </div>
+            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+            <FileDisplay topicId={params.topicId as string}/>
         </div>
     );
 };

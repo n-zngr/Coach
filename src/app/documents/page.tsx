@@ -52,31 +52,8 @@ const Documents = () => {
 
         checkUserAuthentication();
     }, []);
-
-
-        setUserId(userIdFromStorage);
-
-        try {
-            const response = await fetch('api/auth/verify', {
-                headers: { 'user-id': userIdFromStorage }
-            });
-
-            if (!response.ok) {
-                router.push('/login');
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Error verifying login: ', error);
-            router.push('/login');
-            return false;
-        }
-    };
-
-    const fetchSemesters = async () => {
-        if (!userId) return;
-
+    
+    const fetchSemesters = async (userId: string) => {
         try {
             const response = await fetch("/api/documents/semesters", {
                 method: "GET",
@@ -101,7 +78,6 @@ const Documents = () => {
             setSemesters([]);
         }
     };
-
 
     const handleSubmit = async () => {
         if (!name || !userId) return;

@@ -8,7 +8,13 @@ export async function POST(req: Request) {
     const client = new MongoClient(uri);
 
     try {
-        const { fileName, fileContent } = await req.json();
+        const { fileName, fileContent, metadata } = await req.json();
+        if (!fileName || !fileContent || !metadata) {
+            return NextResponse.json(
+                { message: "Missing required data for file upload" },
+                { status: 400 }
+            );
+        }
 
         const fileBuffer = Buffer.from(fileContent, "base64");
         const fileStream = Readable.from(fileBuffer);
@@ -17,7 +23,15 @@ export async function POST(req: Request) {
         const db = client.db("documents");
         const bucket = new GridFSBucket(db);
 
-        const uploadStream = bucket.openUploadStream(fileName);
+        const uploadStream = bucket.openUploadStream(fileName, {
+            metadata: {
+                userId: metadata.userId,
+                semesterId: metadata.semesterId,
+                subjectId: metadata.subjectId,
+                topicId: metadata.topicId,
+            },
+        });
+
         fileStream.pipe(uploadStream);
 
         await new Promise((resolve, reject) => {
@@ -27,6 +41,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ message: "File uploaded successfully" });
     } catch (error) {
+        console.error("Error during file upload:", error);
         return NextResponse.json(
             { message: "Failed to upload file", error },
             { status: 500 }

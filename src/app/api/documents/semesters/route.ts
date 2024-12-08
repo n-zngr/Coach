@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     const userId = req.headers.get('user-id');
 
     if (!userId) {
-        return NextResponse.json({ message: "UserId is required" }, { status: 400 });
+        return NextResponse.json({ error: "UserId is required" }, { status: 400 });
     }
 
     try {
@@ -26,7 +26,6 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Ensure semesters is an array
         const semesters = user.semesters || [];
         return NextResponse.json(semesters);
     } catch (error) {
@@ -49,7 +48,6 @@ export async function POST(req: Request) {
         const db = client.db(DATABASE_NAME);
         const usersCollection = db.collection(COLLECTION_NAME);
 
-        // Create the new semester object
         const newSemester = {
             id: new ObjectId().toString(),
             name,

@@ -1,30 +1,68 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
+
+import FileDisplay from '@/app/components/DisplayFiles';
+import { parseParameter } from "next/dist/shared/lib/router/utils/route-regex";
 
 const Documents = () => {
     const [semesters, setSemesters] = useState<{ id: string; name: string; subjects: string[] }[]>([]);
-    const [name, setName] = useState("");
+    const [name, setName] = useState('');
     const [userId, setUserId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
-        const storedUserId = localStorage.getItem("userId");
-        if (storedUserId) {
-            setUserId(storedUserId);
-            fetchSemesters(storedUserId);
-        }
-    }, []);
+        const checkUserAuthentication = async () => {
+            try {
+                const storedUserId = localStorage.getItem('userId');
 
+                if (!storedUserId) {
+                    router.push('/login');
+                    return;
+                }
+
+                setUserId(storedUserId);
+
+                const authResponse = await fetch('/api/auth/verify', {
+                    method: 'GET',
+                    headers: { 'user-id': storedUserId }
+                });
+
+                if (authResponse.status === 401) {
+                    router.push('/login');
+                    return;
+                }
+
+                const authData = await authResponse.json();
+                if (!authData.isLoggedIn) {
+                    router.push('/login');
+                    return;
+                }
+
+                await fetchSemesters(storedUserId);
+            } catch (error) {
+                console.error('Error during authentication check: ', error);
+                router.push('/login');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        checkUserAuthentication();
+    }, []);
+    
     const fetchSemesters = async (userId: string) => {
         try {
             const response = await fetch("/api/documents/semesters", {
                 method: "GET",
                 headers: { "user-id": userId },
             });
+
             if (response.ok) {
                 const data = await response.json();
 
-                // Ensure the data is an array
                 if (Array.isArray(data)) {
                     setSemesters(data);
                 } else {
@@ -57,7 +95,7 @@ const Documents = () => {
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
-                setName(""); // Clear the input field
+                setName("");
             } else {
                 console.error("Failed to add semester");
             }
@@ -65,6 +103,15 @@ const Documents = () => {
             console.error("Error adding semester:", error);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="container mx-auto p-4">
+                <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+            </div>
+        );
+    }
+
 
     return (
         <div className="container mx-auto p-4">
@@ -94,6 +141,10 @@ const Documents = () => {
                     </li>
                 ))}
             </ul>
+
+            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+            <FileDisplay />
+
         </div>
     );
 };

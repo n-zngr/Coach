@@ -5,10 +5,27 @@ import { useRouter } from 'next/navigation';
 
 import FileDisplay from '@/app/components/DisplayFiles';
 import ShowRecent from '@/app/components/DisplayRecent'
-import { parseParameter } from "next/dist/shared/lib/router/utils/route-regex";
+import UploadFileComponent from "@/app/components/UploadFile";
+
+type Topic = {
+    id: string;
+    name: string;
+};
+
+type Subject = {
+    id: string;
+    name: string;
+    topics: Topic[];
+};
+
+type Semester = {
+    id: string;
+    name: string;
+    subjects: Subject[];
+};
 
 const Documents = () => {
-    const [semesters, setSemesters] = useState<{ id: string; name: string; subjects: string[] }[]>([]);
+    const [semesters, setSemesters] = useState<Semester[]>([]);
     const [name, setName] = useState('');
     const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -65,17 +82,29 @@ const Documents = () => {
                 const data = await response.json();
 
                 if (Array.isArray(data)) {
-                    setSemesters(data);
+                    const formattedData: Semester[] = data.map((semester: any) => ({
+                        id: semester.id,
+                        name: semester.name,
+                        subjects: semester.subjects.map((subject: any) => ({
+                            id: subject.id,
+                            name: subject.name,
+                            topics: subject.topics.map((topic: any) => ({
+                                id: topic.id,
+                                name: topic.name
+                            }))
+                        }))
+                    }));
+                    setSemesters(formattedData);
                 } else {
-                    console.error("Invalid data format for semesters:", data);
+                    console.error('Invalid data format for semesters:', data);
                     setSemesters([]);
                 }
             } else {
-                console.error("Failed to fetch semesters");
+                console.error('Failed to fetch semesters');
                 setSemesters([]);
             }
         } catch (error) {
-            console.error("Error fetching semesters:", error);
+            console.error('Error fetching semesters:', error);
             setSemesters([]);
         }
     };
@@ -113,7 +142,6 @@ const Documents = () => {
         );
     }
 
-
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
@@ -147,6 +175,7 @@ const Documents = () => {
             <FileDisplay />
             <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
             <ShowRecent />
+            <UploadFileComponent semesters={semesters} userId={userId!} />
 
         </div>
     );

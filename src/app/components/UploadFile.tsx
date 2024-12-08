@@ -85,7 +85,7 @@ const UploadFileComponent = ({ semesters, userId }: UploadFileComponentProps) =>
                     setUploadMessage(result.message || 'Failed to upload file.');
                 }
 
-                setFile(null); // Reset file
+                setFile(null);
             };
 
             reader.readAsDataURL(file);

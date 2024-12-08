@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
 import FileDisplay from '@/app/components/DisplayFiles';
+import ShowRecent from '@/app/components/DisplayRecent'
 import UploadFileComponent from "@/app/components/UploadFile";
 
 type Topic = {
@@ -172,7 +173,10 @@ const Documents = () => {
 
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <FileDisplay />
+            <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
+            <ShowRecent />
             <UploadFileComponent semesters={semesters} userId={userId!} />
+
         </div>
     );
 };

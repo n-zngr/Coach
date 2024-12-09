@@ -175,7 +175,7 @@ const Documents = () => {
             <FileDisplay />
             <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
             <ShowRecent />
-            <UploadFileComponent semesters={semesters} userId={userId!} />
+            <UploadFileComponent userId={userId!} />
 
         </div>
     );

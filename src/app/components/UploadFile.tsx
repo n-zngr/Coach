@@ -1,43 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+type Topic = {
+    id: string;
+    name: string;
+};
+
+type Subject = {
+    id: string;
+    name: string;
+    topics: Topic[];
+};
 
 type Semester = {
     id: string;
     name: string;
-    subjects: {
-        id: string;
-        name: string;
-        topics: {
-            id: string;
-            name: string;
-        }[];
-    }[];
+    subjects: Subject[];
 };
 
 type UploadFileComponentProps = {
-    semesters: Semester[];
     userId: string;
+    semesterId?: string;
+    subjectId?: string;
+    topicId?: string;
 };
 
-const UploadFileComponent = ({ semesters, userId }: UploadFileComponentProps) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [selectedPath, setSelectedPath] = useState<string>('');
-    const [selectedSemesterId, setSelectedSemesterId] = useState<string>('');
-    const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
-    const [selectedTopicId, setSelectedTopicId] = useState<string>('');
+const UploadFileComponent = ({ userId, semesterId, subjectId, topicId }: UploadFileComponentProps) => {
+    const [semesters, setSemesters] = useState<Semester[]>([]);
+    const [selectedSemester, setSelectedSemester] = useState<Semester | null>(null);
+    const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+    const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadMessage, setUploadMessage] = useState<string>('');
 
-    const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+    useEffect(() => {
+        fetchData();
+    }, [userId, semesterId, subjectId, topicId]);
 
-    const handleTopicSelect = (semesterId: string, subjectId: string, topicId: string, path: string) => {
-        setSelectedSemesterId(semesterId);
-        setSelectedSubjectId(subjectId);
-        setSelectedTopicId(topicId);
-        setSelectedPath(path);
-        setIsDropdownOpen(false);
+    const fetchData = async () => {
+        if (!userId) return;
+
+        try {
+            if (!semesterId) {
+                const response = await fetch("/api/documents/semesters", {
+                    headers: { "user-id": userId },
+                });
+                const data = await response.json();
+                setSemesters(data);
+            } else if (!subjectId) {
+                const response = await fetch(`/api/documents/semesters/${semesterId}`, {
+                    headers: { "user-id": userId },
+                });
+                const data = await response.json();
+                setSelectedSemester(data);
+            } else if (!topicId) {
+                const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
+                    headers: { "user-id": userId },
+                });
+                const data = await response.json();
+                setSelectedSubject(data);
+            } else {
+                const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}/${topicId}`, {
+                    headers: { "user-id": userId },
+                });
+                const data = await response.json();
+                setSelectedTopic(data);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
     };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,8 +80,8 @@ const UploadFileComponent = ({ semesters, userId }: UploadFileComponentProps) =>
     };
 
     const handleFileUpload = async () => {
-        if (!file || !selectedSemesterId || !selectedSubjectId || !selectedTopicId) {
-            setUploadMessage('Please select a semester, subject, topic, and file before uploading.');
+        if (!file || !userId || !semesterId || !subjectId || !topicId) {
+            setUploadMessage('Please select all required fields and a file before uploading.');
             return;
         }
 
@@ -60,9 +93,9 @@ const UploadFileComponent = ({ semesters, userId }: UploadFileComponentProps) =>
                 const fileContent = reader.result?.toString().split(',')[1];
                 const metadata = {
                     userId,
-                    semesterId: selectedSemesterId,
-                    subjectId: selectedSubjectId,
-                    topicId: selectedTopicId,
+                    semesterId,
+                    subjectId,
+                    topicId,
                 };
 
                 const response = await fetch("/api/documents/upload", {
@@ -97,77 +130,65 @@ const UploadFileComponent = ({ semesters, userId }: UploadFileComponentProps) =>
         }
     };
 
+    const renderSelectionDropdowns = () => {
+        if (!semesterId) {
+            return (
+                <select onChange={(e) => setSelectedSemester(semesters.find(s => s.id === e.target.value) || null)}>
+                    <option value="">Select Semester</option>
+                    {semesters.map(semester => (
+                        <option key={semester.id} value={semester.id}>{semester.name}</option>
+                    ))}
+                </select>
+            );
+        }
+
+        if (!subjectId && selectedSemester) {
+            return (
+                <select onChange={(e) => setSelectedSubject(selectedSemester.subjects.find(s => s.id === e.target.value) || null)}>
+                    <option value="">Select Subject</option>
+                    {selectedSemester.subjects.map(subject => (
+                        <option key={subject.id} value={subject.id}>{subject.name}</option>
+                    ))}
+                </select>
+            );
+        }
+
+        if (!topicId && selectedSubject) {
+            return (
+                <select onChange={(e) => setSelectedTopic(selectedSubject.topics.find(t => t.id === e.target.value) || null)}>
+                    <option value="">Select Topic</option>
+                    {selectedSubject.topics.map(topic => (
+                        <option key={topic.id} value={topic.id}>{topic.name}</option>
+                    ))}
+                </select>
+            );
+        }
+
+        return null;
+    };
+
     return (
         <div className="relative">
+            <h2 className="text-xl font-semibold mb-4">Upload File</h2>
+            
+            {renderSelectionDropdowns()}
+
+            <input 
+                type="file" 
+                onChange={handleFileChange} 
+                className="w-full p-2 border rounded mb-4 mt-4"
+            />
+            
             <button 
-                onClick={toggleDropdown} 
-                className="bg-blue-500 text-white px-4 py-2 rounded shadow-md hover:bg-blue-600"
+                onClick={handleFileUpload}
+                disabled={isUploading || !file || !semesterId || !subjectId || !topicId}
+                className={`w-full bg-green-500 text-white p-2 rounded ${isUploading || !file || !semesterId || !subjectId || !topicId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-600'}`}
             >
-                Upload File
+                {isUploading ? 'Uploading...' : 'Submit File'}
             </button>
 
-            {selectedPath && (
-                <div className="mt-2 text-gray-700">
-                    <strong>Selected Path:</strong> {selectedPath}
-                </div>
-            )}
-
-            {isDropdownOpen && (
-                <div className="absolute top-full mt-2 w-64 bg-white border border-gray-300 rounded shadow-lg p-4 max-h-96 overflow-auto">
-                    <h3 className="font-semibold mb-2">Select Semester, Subject & Topic</h3>
-                    <ul className="space-y-2">
-                        {semesters.map((semester) => (
-                            <li key={semester.id}>
-                                <div className="font-bold text-gray-900">{semester.name}</div>
-                                <ul className="pl-4">
-                                    {semester.subjects.map((subject) => (
-                                        <li key={subject.id}>
-                                            <div className="text-gray-800 font-semibold">{subject.name}</div>
-                                            <ul className="pl-4">
-                                                {subject.topics.map((topic) => (
-                                                    <li key={topic.id}>
-                                                        <button 
-                                                            className="text-blue-500 underline text-sm"
-                                                            onClick={() => handleTopicSelect(
-                                                                semester.id, 
-                                                                subject.id, 
-                                                                topic.id, 
-                                                                `${semester.name} > ${subject.name} > ${topic.name}`
-                                                            )}
-                                                        >
-                                                            {topic.name}
-                                                        </button>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-
-            {selectedPath && (
-                <div className="mt-4">
-                    <input 
-                        type="file" 
-                        onChange={handleFileChange} 
-                        className="w-full p-2 border rounded mb-4"
-                    />
-                    <button 
-                        onClick={handleFileUpload}
-                        disabled={isUploading}
-                        className={`w-full bg-green-500 text-white p-2 rounded ${isUploading ? 'opacity-50' : 'hover:bg-green-600'}`}
-                    >
-                        {isUploading ? 'Uploading...' : 'Submit File'}
-                    </button>
-
-                    {uploadMessage && (
-                        <p className="mt-4 text-center text-gray-700">{uploadMessage}</p>
-                    )}
-                </div>
+            {uploadMessage && (
+                <p className="mt-4 text-center text-gray-700">{uploadMessage}</p>
             )}
         </div>
     );

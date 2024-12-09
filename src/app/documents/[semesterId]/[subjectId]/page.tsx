@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import FileDisplay from "@/app/components/DisplayFiles";
+import UploadFileComponent from "@/app/components/UploadFile";
 
 const SubjectPage = () => {
     const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
@@ -145,6 +146,7 @@ const SubjectPage = () => {
             </ul>
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <FileDisplay subjectId={params.subjectId as string}/>
+            <UploadFileComponent userId={userId!} semesterId={semesterId} subjectId={subjectId} />
         </div>
     );
 };

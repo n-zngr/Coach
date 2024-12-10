@@ -21,26 +21,23 @@ interface FileDisplayProps {
     topicId?: string;
 }
 
-const FileDisplay: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicId }) => {
+const DisplayFiles: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicId }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchFiles = async () => {
             try {
-                const userId = localStorage.getItem("userId");
-                if (!userId) {
-                    console.error("User ID is not available in localStorage.");
-                    return;
-                }
-
                 const params = new URLSearchParams();
-                params.append("userId", userId);
                 if (semesterId) params.append("semesterId", semesterId);
                 if (subjectId) params.append("subjectId", subjectId);
                 if (topicId) params.append("topicId", topicId);
 
-                const response = await fetch(`/api/documents/files?${params.toString()}`);
+                const response = await fetch(`/api/documents/files?${params.toString()}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
                 if (response.ok) {
                     const data = await response.json();
                     setFiles(data);
@@ -87,4 +84,4 @@ const FileDisplay: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicI
     );
 };
 
-export default FileDisplay;
+export default DisplayFiles;

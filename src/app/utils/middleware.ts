@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
+import { MongoClient, ObjectId } from 'mongodb';
+
+const uri = process.env.MONGODB_URI as string;
+const dbName = 'users';
+const collectionName = 'users';
+
+let client: MongoClient | null = null;
+
+async function connectToDatabase() {
+    if (!client) {
+        client = new MongoClient(uri);
+        await client.connect();
+    }
+    return client.db(dbName).collection(collectionName);
+}
 
 export async function middleware(req: NextRequest) {
-    
     const userId = req.cookies.get('userId')?.value;
 
     if (!userId) {
@@ -10,18 +24,10 @@ export async function middleware(req: NextRequest) {
     }
 
     try {
-        const response = await fetch(`${req.nextUrl.origin}/api/auth/verify`, {
-            method: 'GET',
-            headers: { 'user-id': userId }
-        });
+        const collection = await connectToDatabase();
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
 
-        if (!response.ok) {
-            return NextResponse.redirect(new URL('/login', req.url));
-        }
-
-        const data = await response.json();
-
-        if (!data.isLoggedIn) {
+        if (!user) {
             return NextResponse.redirect(new URL('/login', req.url));
         }
 
@@ -33,5 +39,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    mather: '/documents/:path*'
+    matcher: ['/documents/:path*', '/api/:path*']
 }

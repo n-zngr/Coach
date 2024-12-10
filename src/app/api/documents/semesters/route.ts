@@ -6,13 +6,14 @@ const DATABASE_NAME = 'users';
 const COLLECTION_NAME = 'users';
 
 export async function GET(req: Request) {
-    const userId = req.headers.get('user-id');
-
-    if (!userId) {
-        return NextResponse.json({ error: "UserId is required" }, { status: 400 });
-    }
-
     try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+    
+        if (!userId) {
+            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+        }
+
         const client = new MongoClient(MONGODB_URI);
         await client.connect();
         const db = client.db(DATABASE_NAME);
@@ -29,20 +30,22 @@ export async function GET(req: Request) {
         const semesters = user.semesters || [];
         return NextResponse.json(semesters);
     } catch (error) {
-        console.error("Error in GET /documents:", error);
+        console.error("Error in GET /documents/semesters:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 }
 
 export async function POST(req: Request) {
-    const userId = req.headers.get('user-id');
-    const { name } = await req.json();
-
-    if (!userId || !name) {
-        return NextResponse.json({ error: "UserId and semester name are required" }, { status: 400 });
-    }
-
     try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+        
+        const { name } = await req.json();
+
+        if (!userId || !name) {
+            return NextResponse.json({ error: "UserId and semester name are required" }, { status: 400 });
+        }
+
         const client = new MongoClient(MONGODB_URI);
         await client.connect();
         const db = client.db(DATABASE_NAME);
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json(newSemester, { status: 201 });
     } catch (error) {
-        console.error("Error in POST /documents:", error);
+        console.error("Error in POST /documents/semesters:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

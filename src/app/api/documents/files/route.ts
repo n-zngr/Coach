@@ -7,9 +7,14 @@ export async function GET(req: Request) {
     const client = new MongoClient(MONGODB_URI);
 
     try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+
+        if (!userId) {
+            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+        }
+
         const url = new URL(req.url);
-      
-        const userId = url.searchParams.get('userId');
         const semesterId = url.searchParams.get('semesterId');
         const subjectId = url.searchParams.get('subjectId');
         const topicId = url.searchParams.get('topicId');
@@ -18,8 +23,7 @@ export async function GET(req: Request) {
         const db = client.db('documents');
         const filesCollection = db.collection('fs.files');
 
-        const query: any = {};
-        if (userId) query['metadata.userId'] = userId;
+        const query: any = { 'metadata.userId': userId };
         if (semesterId) query['metadata.semesterId'] = semesterId;
         if (subjectId) query['metadata.subjectId'] = subjectId;
         if (topicId) query['metadata.topicId'] = topicId;

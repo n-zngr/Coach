@@ -33,20 +33,24 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
-        // Compare the provided password with the hashed password
         const isMatch = verifyPassword(password, user.hashedPassword);
 
         if (!isMatch) {
             return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
         }
 
-        return NextResponse.json({message: "Login successful!", userId: user._id.toString() });
+        const response = NextResponse.json({ message: 'Login successful' });
+
+        response.cookies.set('userId', user._id.toString(), {
+            httpOnly: true,
+            path: '/',
+            maxAge: 10
+        });
+
+        return response;
     } catch (error) {
-    
         const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-
         console.error("Error during login:", error);
-
         return NextResponse.json({ message: "Failed to login", error: errorMessage }, { status: 500 });
     }
 }

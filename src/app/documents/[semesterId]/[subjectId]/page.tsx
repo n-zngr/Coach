@@ -4,102 +4,75 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import FileDisplay from "@/app/components/DisplayFiles";
-import UploadFileComponent from "@/app/components/UploadFile";
+
+type Topic = {
+    id: string;
+    name: string;
+};
+
+type Subject = {
+    id: string;
+    name: string;
+    topics: Topic[];
+};
 
 const SubjectPage = () => {
     const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
     const [name, setName] = useState("");
-    const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
     const params = useParams();
-    const semesterId = params.semesterId as string;
-    const subjectId = params.subjectId as string;
+    const semesterId = params?.semesterId as string;
+    const subjectId = params?.subjectId as string;
 
     useEffect(() => {
-        const checkUserAuthentication = async () => {
-            try {
-                const storedUserId = localStorage.getItem("userId");
-
-                if (!storedUserId) {
-                    router.push("/login");
-                    return;
-                }
-
-                setUserId(storedUserId);
-
-                const authResponse = await fetch("/api/auth/verify", {
-                    method: "GET",
-                    headers: { "user-id": storedUserId },
-                });
-
-                if (authResponse.status === 401) {
-                    router.push("/login");
-                    return;
-                }
-
-                const authData = await authResponse.json();
-                if (!authData.isLoggedIn) {
-                    router.push("/login");
-                    return;
-                }
-
-                if (semesterId && subjectId) {
-                    await fetchTopics(storedUserId, semesterId, subjectId);
-                }
-            } catch (error) {
-                console.error("Error during authentication check: ", error);
-                router.push("/login");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkUserAuthentication();
+        if (semesterId && subjectId) {
+            fetchTopics();
+        }
     }, [semesterId, subjectId]);
 
-    const fetchTopics = async (userId: string, semesterId: string, subjectId: string) => {
+    const fetchTopics = async () => {
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
                 method: "GET",
-                headers: { "user-id": userId },
+                credentials: 'include'
             });
-
-            if (response.status === 404) {
-                router.push("/404");
-                return;
-            }
 
             if (response.ok) {
                 const data = await response.json();
-                setTopics(data);
-            } else {
-                console.error("Failed to fetch topics");
-                setTopics([]);
+                if (Array.isArray(data)) {
+                    const formattedData: Topic[] = data.map((topic: any) => ({
+                        id: topic.id,
+                        name: topic.name
+                    }))
+                    setTopics(formattedData);
+                } else {
+                    console.error('Failed to fetch subjects');
+                    setTopics([]);
+                }
             }
         } catch (error) {
             console.error("Error fetching topics:", error);
             setTopics([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleSubmit = async () => {
-        if (!name || !userId || !semesterId || !subjectId) return;
+        if (!name) return;
 
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "user-id": userId,
-                },
+                headers: { "Content-Type": "application/json" },
+                credentials: 'include',
                 body: JSON.stringify({ name }),
             });
 
             if (response.ok) {
                 const newTopic = await response.json();
                 setTopics((prev) => [...prev, newTopic]);
-                setName("");
+                setName('');
             } else {
                 console.error("Failed to add topic");
             }
@@ -145,8 +118,7 @@ const SubjectPage = () => {
                 ))}
             </ul>
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <FileDisplay subjectId={params.subjectId as string}/>
-            <UploadFileComponent userId={userId!} semesterId={semesterId} subjectId={subjectId} />
+            <FileDisplay />
         </div>
     );
 };

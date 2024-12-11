@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { MongoClient, ObjectId } from "mongodb";
-import { cookies } from 'next/headers';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 const DATABASE_NAME = "users";
 const COLLECTION_NAME = "users";
 
 export async function GET(req: Request, { params }: { params: { semesterId: string } }) {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user-id')?.value;
-    const { semesterId } = params;
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+    const { semesterId } = await params;
 
     if (!userId || !semesterId) {
         return NextResponse.json({ error: "UserId and SemesterId are required" }, { status: 400 });
@@ -33,9 +32,9 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
 
         if (!semester) {
             return NextResponse.json({ error: "Semester not found" }, { status: 404 });
-        }
+        } 
 
-        return NextResponse.json({ subjects: semester.subjects || [] });
+        return NextResponse.json(semester.subjects || []);
     } catch (error) {
         console.error("Error in GET /documents/semesters/[semesterId]:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -43,7 +42,8 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
 }
 
 export async function POST(req: Request, { params }: { params: { semesterId: string } }) {
-    const userId = req.headers.get("user-id");
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
     const { semesterId } = await params;
     const { name } = await req.json();
 

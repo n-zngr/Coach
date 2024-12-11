@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams } from 'next/navigation';
 
 import DisplayFiles from "@/app/components/DisplayFiles";
 import RecentFiles from "@/app/components/RecentFiles";
@@ -17,18 +17,12 @@ type Subject = {
     topics: Topic[];
 };
 
-type Semester = {
-    id: string;
-    name: string;
-    subjects: Subject[];
-};
-
-export default function SemesterPage({ params }: { params: { semesterId: string } }) {
+export default function SemesterPage() {
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
-    const { semesterId } = params;
+    const params = useParams();
+    const semesterId = params?.semesterId;
 
     useEffect(() => {
         if (semesterId) {
@@ -56,12 +50,9 @@ export default function SemesterPage({ params }: { params: { semesterId: string 
                     }));
                     setSubjects(formattedData);
                 } else {
-                    console.error('Invalid data format for subjects', data);
+                    console.error('Failed to fetch subjects');
                     setSubjects([]);
                 }
-            } else {
-                console.error('Failed to fetch subjects:');
-                setSubjects([]);
             }
         } catch (error) {
             console.error('Error fetching subjects:', error);
@@ -135,13 +126,6 @@ export default function SemesterPage({ params }: { params: { semesterId: string 
                             >
                                 {subject.name}
                             </a>
-                            {subject.topics.length > 0 && (
-                                <ul className="list-inside list-disc pl-5">
-                                    {subject.topics.map((topic) => (
-                                        <li key={topic.id}>{topic.name}</li>
-                                    ))}
-                                </ul>
-                            )}
                         </li>
                     ))}
                 </ul>

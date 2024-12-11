@@ -28,6 +28,8 @@ export async function GET(req: Request) {
         if (subjectId) query['metadata.subjectId'] = subjectId;
         if (topicId) query['metadata.topicId'] = topicId;
 
+        console.log('Query:', query); // Debugging log to see the query being executed
+
         const files = await filesCollection.find(query).toArray();
 
         return NextResponse.json(files, { status: 200 });
@@ -37,4 +39,5 @@ export async function GET(req: Request) {
     } finally {
         await client.close();
     }
+
 }

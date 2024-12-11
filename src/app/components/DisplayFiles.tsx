@@ -24,12 +24,10 @@ interface FileDisplayProps {
 const DisplayFiles: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicId }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchFiles = async () => {
             setLoading(true);
-            setError(null);
 
             try {
                 const params = new URLSearchParams();
@@ -37,7 +35,10 @@ const DisplayFiles: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topic
                 if (subjectId) params.append("subjectId", subjectId);
                 if (topicId) params.append("topicId", topicId);
 
-                const response = await fetch(`/api/documents/files?${params.toString()}`, {
+                const queryUrl = `/api/documents/files?${params.toString()}`;
+                console.log("Fetching files with URL: ", queryUrl); // 🛠️ Log for debugging
+
+                const response = await fetch(queryUrl, {
                     method: 'GET',
                     credentials: 'include',
                 });
@@ -48,24 +49,21 @@ const DisplayFiles: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topic
                 }
 
                 const data = await response.json();
+                console.log("Files received: ", data); // 🛠️ Log for debugging
                 setFiles(data);
             } catch (error: any) {
                 console.error("Error fetching files: ", error);
-                setError(error.message || "An unknown error occurred");
             } finally {
                 setLoading(false);
             }
         };
 
+        console.log("SemesterId: ", semesterId, " SubjectId: ", subjectId, " TopicId: ", topicId); // 🛠️ Log for debugging
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 
     if (loading) {
         return <p>Loading files...</p>;
-    }
-
-    if (error) {
-        return <p className="text-red-500">Error: {error}</p>;
     }
 
     if (files.length === 0) {
@@ -102,6 +100,5 @@ const DisplayFiles: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topic
         </div>
     );
 };
-
 
 export default DisplayFiles;

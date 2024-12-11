@@ -19,16 +19,19 @@ export async function GET(req: Request) {
         const subjectId = url.searchParams.get('subjectId');
         const topicId = url.searchParams.get('topicId');
 
+        console.log('Received request with semesterId:', semesterId, 'subjectId:', subjectId, 'topicId:', topicId); // 🛠️ Log for debugging
+
         await client.connect();
         const db = client.db('documents');
         const filesCollection = db.collection('fs.files');
 
         const query: any = { 'metadata.userId': userId };
+
         if (semesterId) query['metadata.semesterId'] = semesterId;
         if (subjectId) query['metadata.subjectId'] = subjectId;
         if (topicId) query['metadata.topicId'] = topicId;
 
-        console.log('Query:', query); // Debugging log to see the query being executed
+        console.log('Final Query:', query); // 🛠️ Log for debugging
 
         const files = await filesCollection.find(query).toArray();
 

@@ -14,10 +14,9 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "UserId is required" }, { status: 400 });
         }
 
-        const url = new URL(req.url);
-        const semesterId = url.searchParams.get('semesterId');
-        const subjectId = url.searchParams.get('subjectId');
-        const topicId = url.searchParams.get('topicId');
+        const semesterId = req.headers.get('semesterId');
+        const subjectId = req.headers.get('subjectId');
+        const topicId = req.headers.get('topicId');
 
         console.log('Received request with semesterId:', semesterId, 'subjectId:', subjectId, 'topicId:', topicId); // 🛠️ Log for debugging
 
@@ -42,5 +41,4 @@ export async function GET(req: Request) {
     } finally {
         await client.close();
     }
-
 }

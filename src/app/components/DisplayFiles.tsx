@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation"; // 🆕 Import usePathname
 
 interface File {
     _id: string;
@@ -15,32 +16,32 @@ interface File {
     };
 }
 
-interface FileDisplayProps {
-    semesterId?: string;
-    subjectId?: string;
-    topicId?: string;
-}
-
-const DisplayFiles: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topicId }) => {
+const DisplayFiles: React.FC = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const pathname = usePathname();
+    const pathSegments = pathname.split("/").filter(Boolean);
+
+    const semesterId = pathSegments[1] || null;
+    const subjectId = pathSegments[2] || null; 
+    const topicId = pathSegments[3] || null; 
 
     useEffect(() => {
         const fetchFiles = async () => {
             setLoading(true);
 
             try {
-                const params = new URLSearchParams();
-                if (semesterId) params.append("semesterId", semesterId);
-                if (subjectId) params.append("subjectId", subjectId);
-                if (topicId) params.append("topicId", topicId);
+                console.log("Requesting files with:", { semesterId, subjectId, topicId }); // 🛠️ Log for debugging
 
-                const queryUrl = `/api/documents/files?${params.toString()}`;
-                console.log("Fetching files with URL: ", queryUrl); // 🛠️ Log for debugging
-
-                const response = await fetch(queryUrl, {
+                const response = await fetch(`/api/documents/files`, {
                     method: 'GET',
                     credentials: 'include',
+                    headers: {
+                        'semesterId': semesterId ?? '',
+                        'subjectId': subjectId ?? '',
+                        'topicId': topicId ?? '',
+                    }
                 });
 
                 if (!response.ok) {
@@ -58,7 +59,7 @@ const DisplayFiles: React.FC<FileDisplayProps> = ({ semesterId, subjectId, topic
             }
         };
 
-        console.log("SemesterId: ", semesterId, " SubjectId: ", subjectId, " TopicId: ", topicId); // 🛠️ Log for debugging
+        console.log("Path data - SemesterId:", semesterId, "SubjectId:", subjectId, "TopicId:", topicId); // 🛠️ Log for debugging
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 

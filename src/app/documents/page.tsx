@@ -23,7 +23,7 @@ type Semester = {
     subjects: Subject[];
 };
 
-const Documents = () => {
+export default function Documents() {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -143,5 +143,3 @@ const Documents = () => {
         </div>
     );
 };
-
-export default Documents;

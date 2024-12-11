@@ -151,8 +151,7 @@ const TopicPage = () => {
                 </button>
             </div>
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <FileDisplay topicId={params.topicId as string}/>
-            <UploadFileComponent userId={userId!} semesterId={semesterId} subjectId={subjectId} topicId={topicId} />
+            <FileDisplay />
         </div>
     );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation"; // 🆕 Import usePathname
+import { usePathname } from "next/navigation";
 
 interface File {
     _id: string;
@@ -32,7 +32,7 @@ const DisplayFiles: React.FC = () => {
             setLoading(true);
 
             try {
-                console.log("Requesting files with:", { semesterId, subjectId, topicId }); // 🛠️ Log for debugging
+                console.log("Requesting files with:", { semesterId, subjectId, topicId }); // Log for debugging
 
                 const response = await fetch(`/api/documents/files`, {
                     method: 'GET',
@@ -50,7 +50,7 @@ const DisplayFiles: React.FC = () => {
                 }
 
                 const data = await response.json();
-                console.log("Files received: ", data); // 🛠️ Log for debugging
+                console.log("Files received: ", data); // Log for debugging
                 setFiles(data);
             } catch (error: any) {
                 console.error("Error fetching files: ", error);
@@ -59,7 +59,7 @@ const DisplayFiles: React.FC = () => {
             }
         };
 
-        console.log("Path data - SemesterId:", semesterId, "SubjectId:", subjectId, "TopicId:", topicId); // 🛠️ Log for debugging
+        console.log("Path data - SemesterId:", semesterId, "SubjectId:", subjectId, "TopicId:", topicId); // Log for debugging
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 

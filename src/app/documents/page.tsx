@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
-import UploadFileComponent from "@/app/components/UploadFile";
+import UploadFile from "@/app/components/UploadFile";
 
 type Topic = {
     id: string;
@@ -134,12 +134,11 @@ export default function Documents() {
                 ))}
             </ul>
 
+            <UploadFile />
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <DisplayFiles />
             <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
             <RecentFiles />
-            {/*<UploadFileComponent userId={userId!} */}
-
         </div>
     );
 };

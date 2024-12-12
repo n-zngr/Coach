@@ -56,8 +56,8 @@ export default function Documents() {
     
     const fetchSemesters = async () => {
         try {
-            const response = await fetch("/api/documents/semesters", {
-                method: "GET",
+            const response = await fetch('/api/documents/semesters', {
+                method: 'GET',
                 credentials: 'include'
             });
 

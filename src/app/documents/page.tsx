@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 
 import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
@@ -27,9 +28,30 @@ export default function Documents() {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
-        fetchSemesters();
+        const authenticateUser = async () => {
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
+                    router.push('/login');
+                    return;
+                }
+
+                await fetchSemesters();
+            } catch (error) {
+                console.error('Error authenticating user:', error);
+                router.push('/login');
+            }
+        }
+
+        authenticateUser();
     }, []);
     
     const fetchSemesters = async () => {
@@ -76,10 +98,10 @@ export default function Documents() {
         if (!name) return;
 
         try {
-            const response = await fetch("/api/documents/semesters", {
-                method: "POST",
+            const response = await fetch('/api/documents/semesters', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                 },
                 credentials: 'include',
                 body: JSON.stringify({ name }),
@@ -88,12 +110,12 @@ export default function Documents() {
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
-                setName("");
+                setName('');
             } else {
-                console.error("Failed to add semester");
+                console.error('Failed to add semester');
             }
         } catch (error) {
-            console.error("Error adding semester:", error);
+            console.error('Error adding semester:', error);
         }
     };
 

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import FileDisplay from "@/app/components/DisplayFiles";
-import UploadFileComponent from "@/app/components/UploadFile";
 
 const TopicPage = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -18,53 +17,8 @@ const TopicPage = () => {
     const topicId = params.topicId as string;
 
     useEffect(() => {
-        const checkTopicExistence = async () => {
-            try {
-                const storedUserId = localStorage.getItem('userId');
-
-                if (!storedUserId) {
-                    router.push('/login');
-                    return;
-                }
-
-                setUserId(storedUserId);
-
-                const authResponse = await fetch('/api/auth/verify', {
-                    method: 'GET',
-                    headers: { 'user-id': storedUserId }
-                });
-
-                if (authResponse.status === 401) {
-                    router.push('/login');
-                    return;
-                }
-
-                const authData = await authResponse.json();
-                if (!authData.isLoggedIn) {
-                    router.push('/login');
-                    return;
-                }
-
-                const topicResponse = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}/${topicId}`, {
-                    method: 'GET',
-                    headers: { 'user-id': storedUserId }
-                });
-
-                if (topicResponse.status === 404) {
-                    router.push('/404');
-                    return;
-                }
-
-            } catch (error) {
-                console.error('Error during authentication or topic check: ', error);
-                router.push('/login');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkTopicExistence();
-    }, [semesterId, subjectId, topicId]);
+        setIsLoading(false);
+    })
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {

@@ -17,8 +17,27 @@ const TopicPage = () => {
     const topicId = params.topicId as string;
 
     useEffect(() => {
+        const authenticateUser = async () => {
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
+                    router.push('/login');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error authenticating user:', error);
+                router.push('/login');
+            }
+        }
+
+        authenticateUser();
         setIsLoading(false);
-    })
+    }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {

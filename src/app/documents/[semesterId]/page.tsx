@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import DisplayFiles from "@/app/components/DisplayFiles";
 import RecentFiles from "@/app/components/RecentFiles";
@@ -22,12 +22,35 @@ export default function SemesterPage() {
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const params = useParams();
+    const router = useRouter();
     const semesterId = params?.semesterId;
 
     useEffect(() => {
-        if (semesterId) {
-            fetchSubjects();
+        const authenticateUser = async () => {
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
+                    router.push('/login');
+                    return;
+                }
+
+                if (semesterId) {
+                    await fetchSubjects();
+                }
+            } catch (error) {
+                console.error('Error authenticating user:', error);
+                router.push('/login');
+            }
         }
+
+        authenticateUser();
+
+        
     }, [semesterId]);
 
     const fetchSubjects = async () => {
@@ -53,6 +76,9 @@ export default function SemesterPage() {
                     console.error('Failed to fetch subjects');
                     setSubjects([]);
                 }
+            } else if (response.status === 404) {
+                console.error(`Invalid subject page: ${semesterId}`);
+                router.back();
             }
         } catch (error) {
             console.error('Error fetching subjects:', error);

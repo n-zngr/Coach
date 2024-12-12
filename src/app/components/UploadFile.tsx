@@ -2,196 +2,127 @@
 
 import { useState, useEffect } from "react";
 
-type Topic = {
-    id: string;
-    name: string;
-};
-
-type Subject = {
-    id: string;
-    name: string;
-    topics: Topic[];
-};
-
-type Semester = {
+interface Semester {
     id: string;
     name: string;
     subjects: Subject[];
-};
+}
 
-type UploadFileComponentProps = {
-    userId: string;
-    semesterId?: string;
-    subjectId?: string;
-    topicId?: string;
-};
+interface Subject {
+    id: string;
+    name: string;
+    topics: Topic[];
+}
 
-const UploadFileComponent = ({ userId, semesterId, subjectId, topicId }: UploadFileComponentProps) => {
+interface Topic {
+    id: string;
+    name: string;
+}
+
+const FileUpload: React.FC = () => {
     const [semesters, setSemesters] = useState<Semester[]>([]);
-    const [selectedSemester, setSelectedSemester] = useState<Semester | null>(null);
-    const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-    const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [file, setFile] = useState<File | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadMessage, setUploadMessage] = useState<string>('');
+    const [loading, setLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchData();
-    }, [userId, semesterId, subjectId, topicId]);
-
-    const fetchData = async () => {
-        if (!userId) return;
-
-        try {
-            if (!semesterId) {
-                const response = await fetch("/api/documents/semesters", {
-                    headers: { "user-id": userId },
+        const fetchSemesters = async () => {
+            try {
+                const response = await fetch('/api/documents/semesters', {
+                    method: 'GET',
+                    credentials: 'include',
                 });
                 const data = await response.json();
                 setSemesters(data);
-            } else if (!subjectId) {
-                const response = await fetch(`/api/documents/semesters/${semesterId}`, {
-                    headers: { "user-id": userId },
-                });
-                const data = await response.json();
-                setSelectedSemester(data);
-            } else if (!topicId) {
-                const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
-                    headers: { "user-id": userId },
-                });
-                const data = await response.json();
-                setSelectedSubject(data);
-            } else {
-                const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}/${topicId}`, {
-                    headers: { "user-id": userId },
-                });
-                const data = await response.json();
-                setSelectedTopic(data);
+            } catch (error) {
+                console.error("Error fetching semesters, subjects, and topics: ", error);
             }
-        } catch (error) {
-            console.error("Error fetching data:", error);
+        };
+
+        fetchSemesters();
+    }, []);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setFile(e.target.files[0]);
         }
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            setFile(event.target.files[0]);
-        }
+    const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedOption(e.target.value);
     };
 
-    const handleFileUpload = async () => {
-        if (!file || !userId || !semesterId || !subjectId || !topicId) {
-            setUploadMessage('Please select all required fields and a file before uploading.');
+    const handleUpload = async () => {
+        if (!file || !selectedOption) {
+            setErrorMessage("Please select a file and a topic to upload.");
             return;
         }
 
+        const [semesterId, subjectId, topicId] = selectedOption.split("/");
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('semesterId', semesterId);
+        formData.append('subjectId', subjectId);
+        formData.append('topicId', topicId);
+
+        setLoading(true);
+        setErrorMessage(null);
+        setSuccessMessage(null);
+
         try {
-            setIsUploading(true);
-            const reader = new FileReader();
+            const response = await fetch('/api/documents/upload', {
+                method: 'POST',
+                body: formData,
+            });
 
-            reader.onload = async () => {
-                const fileContent = reader.result?.toString().split(',')[1];
-                const metadata = {
-                    userId,
-                    semesterId,
-                    subjectId,
-                    topicId,
-                };
+            if (!response.ok) {
+                throw new Error("Failed to upload file");
+            }
 
-                const response = await fetch("/api/documents/upload", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        fileName: file.name,
-                        fileContent,
-                        metadata,
-                    }),
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    setUploadMessage(result.message || 'File uploaded successfully!');
-                } else {
-                    setUploadMessage(result.message || 'Failed to upload file.');
-                }
-
-                setFile(null);
-            };
-
-            reader.readAsDataURL(file);
+            setSuccessMessage("File uploaded successfully!");
+            setFile(null);
+            setSelectedOption(null);
         } catch (error) {
-            setUploadMessage('Error uploading file.');
-            console.error('File upload error:', error);
+            console.error("Error during file upload: ", error);
+            setErrorMessage("File upload failed.");
         } finally {
-            setIsUploading(false);
+            setLoading(false);
         }
-    };
-
-    const renderSelectionDropdowns = () => {
-        if (!semesterId) {
-            return (
-                <select onChange={(e) => setSelectedSemester(semesters.find(s => s.id === e.target.value) || null)}>
-                    <option value="">Select Semester</option>
-                    {semesters.map(semester => (
-                        <option key={semester.id} value={semester.id}>{semester.name}</option>
-                    ))}
-                </select>
-            );
-        }
-
-        if (!subjectId && selectedSemester) {
-            return (
-                <select onChange={(e) => setSelectedSubject(selectedSemester.subjects.find(s => s.id === e.target.value) || null)}>
-                    <option value="">Select Subject</option>
-                    {selectedSemester.subjects.map(subject => (
-                        <option key={subject.id} value={subject.id}>{subject.name}</option>
-                    ))}
-                </select>
-            );
-        }
-
-        if (!topicId && selectedSubject) {
-            return (
-                <select onChange={(e) => setSelectedTopic(selectedSubject.topics.find(t => t.id === e.target.value) || null)}>
-                    <option value="">Select Topic</option>
-                    {selectedSubject.topics.map(topic => (
-                        <option key={topic.id} value={topic.id}>{topic.name}</option>
-                    ))}
-                </select>
-            );
-        }
-
-        return null;
     };
 
     return (
-        <div className="relative">
+        <div className="file-upload-container">
             <h2 className="text-xl font-semibold mb-4">Upload File</h2>
-            
-            {renderSelectionDropdowns()}
 
-            <input 
-                type="file" 
-                onChange={handleFileChange} 
-                className="w-full p-2 border rounded mb-4 mt-4"
-            />
-            
-            <button 
-                onClick={handleFileUpload}
-                disabled={isUploading || !file || !semesterId || !subjectId || !topicId}
-                className={`w-full bg-green-500 text-white p-2 rounded ${isUploading || !file || !semesterId || !subjectId || !topicId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-600'}`}
-            >
-                {isUploading ? 'Uploading...' : 'Submit File'}
+            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+            {successMessage && <p className="text-green-500">{successMessage}</p>}
+
+            <input type="file" onChange={handleFileChange} />
+
+            <select onChange={handleDropdownChange} value={selectedOption || ''}>
+                <option value="">Select Semester / Subject / Topic</option>
+                {semesters.map(semester =>
+                    semester.subjects.map(subject =>
+                        subject.topics.map(topic => (
+                            <option 
+                                key={topic.id} 
+                                value={`${semester.id}/${subject.id}/${topic.id}`}
+                            >
+                                {semester.name} / {subject.name} / {topic.name}
+                            </option>
+                        ))
+                    )
+                )}
+            </select>
+
+            <button onClick={handleUpload} disabled={loading}>
+                {loading ? "Uploading..." : "Upload File"}
             </button>
-
-            {uploadMessage && (
-                <p className="mt-4 text-center text-gray-700">{uploadMessage}</p>
-            )}
         </div>
     );
 };
 
-export default UploadFileComponent;
+export default FileUpload;

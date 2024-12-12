@@ -24,8 +24,8 @@ const DisplayFiles: React.FC = () => {
     const pathSegments = pathname.split("/").filter(Boolean);
 
     const semesterId = pathSegments[1] || null;
-    const subjectId = pathSegments[2] || null; 
-    const topicId = pathSegments[3] || null; 
+    const subjectId = pathSegments[2] || null;
+    const topicId = pathSegments[3] || null;
 
     useEffect(() => {
         const fetchFiles = async () => {

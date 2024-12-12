@@ -18,8 +18,6 @@ export async function GET(req: Request) {
         const subjectId = req.headers.get('subjectId');
         const topicId = req.headers.get('topicId');
 
-        console.log('Received request with semesterId:', semesterId, 'subjectId:', subjectId, 'topicId:', topicId); // 🛠️ Log for debugging
-
         await client.connect();
         const db = client.db('documents');
         const filesCollection = db.collection('fs.files');
@@ -29,8 +27,6 @@ export async function GET(req: Request) {
         if (semesterId) query['metadata.semesterId'] = semesterId;
         if (subjectId) query['metadata.subjectId'] = subjectId;
         if (topicId) query['metadata.topicId'] = topicId;
-
-        console.log('Final Query:', query); // 🛠️ Log for debugging
 
         const files = await filesCollection.find(query).toArray();
 

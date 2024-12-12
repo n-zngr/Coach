@@ -71,7 +71,7 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
         const updateResult = await usersCollection.updateOne(
             { _id: new ObjectId(userId), "semesters.id": semesterId, "semesters.subjects.id": subjectId },
             { $addToSet: { "semesters.$[semester].subjects.$[subject].topics": newTopic } },
-            //{ arrayFilters: [{ "semester.id": semesterId }, { "subject.id": subjectId }] }
+            { arrayFilters: [{ "semester.id": semesterId }, { "subject.id": subjectId }] }
         );
 
         client.close();

@@ -84,15 +84,15 @@ const SubjectPage = () => {
 
     const handleSubmit = async () => {
         if (!name) return;
-
+    
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: 'include',
-                body: JSON.stringify({ name }),
+                body: JSON.stringify({ name: name.toLowerCase() }),
             });
-
+    
             if (response.ok) {
                 const newTopic = await response.json();
                 setTopics((prev) => [...prev, newTopic]);

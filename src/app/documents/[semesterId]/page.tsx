@@ -90,15 +90,15 @@ export default function SemesterPage() {
 
     const handleSubmit = async () => {
         if (!name) return;
-
+    
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ name })
+                body: JSON.stringify({ name: name.toLowerCase() })
             });
-
+    
             if (response.ok) {
                 const newSubject = await response.json();
                 setSubjects((prev) => [...prev, newSubject]);
@@ -110,6 +110,7 @@ export default function SemesterPage() {
             console.error('Error adding subject', error);
         }
     };
+    
 
     if (isLoading) {
         return (

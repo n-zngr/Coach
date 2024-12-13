@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Navigation from '@/app/components/Navigation';
 import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
-import UploadFile from "@/app/components/UploadFile";
+import UploadFile from '@/app/components/UploadFile';
 
 type Topic = {
     id: string;
@@ -131,38 +131,41 @@ export default function Documents() {
     return (
         <div className="flex h-screen">
             <Navigation />
-            <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
-            <div className="mb-4">
-                <input
-                    type="text"
-                    className="border rounded p-2 w-full"
-                    placeholder="Semester Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-                    onClick={handleSubmit}
-                >
-                    Add Semester
-                </button>
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Semesters</h2>
-            <ul className="list-disc pl-5">
-                {semesters.map((semester) => (
-                    <li key={semester.id} className="mb-1">
-                        <a href={`/documents/${semester.id}`} className="text-blue-500 underline">
-                            {semester.name}
-                        </a>
-                    </li>
-                ))}
-            </ul>
+            <div className="flex flex-col p-16">
+                <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        className="border rounded p-2 w-full"
+                        placeholder="Semester Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                        onClick={handleSubmit}
+                    >
+                        Add Semester
+                    </button>
+                </div>
+                <h2 className="text-xl font-semibold mb-2">Semesters</h2>
+                <ul className="list-disc pl-5">
+                    {semesters.map((semester) => (
+                        <li key={semester.id} className="mb-1">
+                            <a href={`/documents/${semester.id}`} className="text-blue-500 underline">
+                                {semester.name}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
 
-            <UploadFile />
-            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <DisplayFiles />
-            <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
-            <RecentFiles />
+                <UploadFile />
+                <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+                <DisplayFiles />
+                <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
+                <RecentFiles />
+            </div>
+            
         </div>
     );
 };

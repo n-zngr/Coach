@@ -76,7 +76,7 @@ const DisplayFiles: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4">Files</h2>
             <ul className="space-y-4">
                 {files.map((file) => (
-                    <li key={file._id} className="flex items-center p-2 border rounded-lg shadow-sm bg-gray-100">
+                    <li key={file._id} className="flex items-center p-2 border rounded-lg shadow-sm bg-gray-100 text-black">
                         <img 
                             src="/icon-document.svg" 
                             alt="Document Icon" 

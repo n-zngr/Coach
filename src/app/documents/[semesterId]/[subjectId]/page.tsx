@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import FileDisplay from "@/app/components/DisplayFiles";
+import RecentFiles from "@/app/components/RecentFiles";
 
 type Topic = {
     id: string;
@@ -143,6 +144,8 @@ const SubjectPage = () => {
             </ul>
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <FileDisplay />
+            <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
+            <RecentFiles />
         </div>
     );
 };

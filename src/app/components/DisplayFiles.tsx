@@ -74,27 +74,25 @@ const DisplayFiles: React.FC = () => {
     return (
         <div>
             <h2 className="text-xl font-semibold mb-4">Files</h2>
-            <ul className="list-disc pl-5">
+            <ul className="space-y-4">
                 {files.map((file) => (
-                    <li key={file._id} className="mb-4 p-2 border rounded-lg shadow-sm bg-gray-100">
-                        <p>
-                            <strong>Filename:</strong> {file.filename}
-                        </p>
-                        <p>
-                            <strong>Uploaded on:</strong> {new Date(file.uploadDate).toLocaleDateString()}
-                        </p>
-                        <p>
-                            <strong>Size:</strong> {(file.length / 1024).toFixed(2)} KB
-                        </p>
-                        <p>
-                            <strong>Path:</strong> 
-                            <span className="text-sm text-gray-600">
-                                /{file.metadata.userId} 
-                                {file.metadata.semesterId ? ` / ${file.metadata.semesterId}` : ""} 
-                                {file.metadata.subjectId ? ` / ${file.metadata.subjectId}` : ""} 
-                                {file.metadata.topicId ? ` / ${file.metadata.topicId}` : ""}
-                            </span>
-                        </p>
+                    <li key={file._id} className="flex items-center p-2 border rounded-lg shadow-sm bg-gray-100">
+                        <img 
+                            src="/icon-document.svg" 
+                            alt="Document Icon" 
+                            className="w-6 h-6 mr-3"
+                        />
+                        <span className="text-lg font-medium flex-1">{file.filename}</span>
+                        <button 
+                            className="text-white bg-blue-500 hover:bg-blue-700 font-medium py-1 px-2 rounded mr-2"
+                        >
+                            Rename
+                        </button>
+                        <button 
+                            className="text-white bg-red-500 hover:bg-red-700 font-medium py-1 px-2 rounded"
+                        >
+                            Delete
+                        </button>
                     </li>
                 ))}
             </ul>

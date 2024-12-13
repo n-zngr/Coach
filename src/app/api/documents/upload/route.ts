@@ -1,51 +1,58 @@
-import { NextResponse } from "next/server";
-import { MongoClient, GridFSBucket } from "mongodb";
-import { Readable } from "stream";
+import { NextResponse } from 'next/server';
+import { MongoClient, GridFSBucket } from 'mongodb';
+import { Readable } from 'stream';
 
-const uri = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI! as string;
 
 export async function POST(req: Request) {
-    const client = new MongoClient(uri);
+    const client = new MongoClient(MONGODB_URI);
 
     try {
-        const { fileName, fileContent, metadata } = await req.json();
-        if (!fileName || !fileContent || !metadata) {
-            return NextResponse.json(
-                { message: "Missing required data for file upload" },
-                { status: 400 }
-            );
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+
+        if (!userId) {
+            return NextResponse.json({ message: 'UserId is required'}, { status: 400 });
         }
 
-        const fileBuffer = Buffer.from(fileContent, "base64");
-        const fileStream = Readable.from(fileBuffer);
+        const formData = await req.formData();
+        const file = formData.get('file') as File;
+        const fileName = file?.name;
+        const semesterId = formData.get('semesterId') as string;
+        const subjectId = formData.get('subjectId') as string;
+        const topicId = formData.get('topicId') as string;
+
+        if (!file || !fileName || !semesterId || !subjectId || !topicId) {
+            return NextResponse.json({ message: 'Missing required data for file upload' }, { status: 400 });
+        }
+
+        const fileBuffer = await file.arrayBuffer();
+        const fileStream = Readable.from(Buffer.from(fileBuffer));
 
         await client.connect();
-        const db = client.db("documents");
+        const db = client.db('documents');
         const bucket = new GridFSBucket(db);
 
         const uploadStream = bucket.openUploadStream(fileName, {
             metadata: {
-                userId: metadata.userId,
-                semesterId: metadata.semesterId,
-                subjectId: metadata.subjectId,
-                topicId: metadata.topicId,
-            },
+                userId: userId,
+                semesterId: semesterId,
+                subjectId: subjectId,
+                topicId: topicId
+            }
         });
 
         fileStream.pipe(uploadStream);
 
         await new Promise((resolve, reject) => {
-            uploadStream.on("finish", resolve);
-            uploadStream.on("error", reject);
+            uploadStream.on('finish', resolve);
+            uploadStream.on('error', reject);
         });
 
-        return NextResponse.json({ message: "File uploaded successfully" });
+        return NextResponse.json({ message: 'File uploaded successfully' });
     } catch (error) {
-        console.error("Error during file upload:", error);
-        return NextResponse.json(
-            { message: "Failed to upload file", error },
-            { status: 500 }
-        );
+        console.error('Error during file upload:', error);
+        return NextResponse.json({ message: 'Failed to upload file', error }, { status: 500 });
     } finally {
         await client.close();
     }

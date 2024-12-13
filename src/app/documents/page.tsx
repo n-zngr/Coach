@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-import FileDisplay from '@/app/components/DisplayFiles';
-import ShowRecent from '@/app/components/DisplayRecent'
-import UploadFileComponent from "@/app/components/UploadFile";
+import DisplayFiles from '@/app/components/DisplayFiles';
+import RecentFiles from '@/app/components/RecentFiles';
+import UploadFile from "@/app/components/UploadFile";
 
 type Topic = {
     id: string;
@@ -24,58 +24,41 @@ type Semester = {
     subjects: Subject[];
 };
 
-const Documents = () => {
+export default function Documents() {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [name, setName] = useState('');
-    const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
-        const checkUserAuthentication = async () => {
+        const authenticateUser = async () => {
             try {
-                const storedUserId = localStorage.getItem('userId');
-
-                if (!storedUserId) {
-                    router.push('/login');
-                    return;
-                }
-
-                setUserId(storedUserId);
-
-                const authResponse = await fetch('/api/auth/verify', {
+                const response = await fetch('/api/auth', {
                     method: 'GET',
-                    headers: { 'user-id': storedUserId }
+                    credentials: 'include'
                 });
 
-                if (authResponse.status === 401) {
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
                     router.push('/login');
                     return;
                 }
 
-                const authData = await authResponse.json();
-                if (!authData.isLoggedIn) {
-                    router.push('/login');
-                    return;
-                }
-
-                await fetchSemesters(storedUserId);
+                await fetchSemesters();
             } catch (error) {
-                console.error('Error during authentication check: ', error);
+                console.error('Error authenticating user:', error);
                 router.push('/login');
-            } finally {
-                setIsLoading(false);
             }
         }
 
-        checkUserAuthentication();
+        authenticateUser();
     }, []);
     
-    const fetchSemesters = async (userId: string) => {
+    const fetchSemesters = async () => {
         try {
-            const response = await fetch("/api/documents/semesters", {
-                method: "GET",
-                headers: { "user-id": userId },
+            const response = await fetch('/api/documents/semesters', {
+                method: 'GET',
+                credentials: 'include'
             });
 
             if (response.ok) {
@@ -106,31 +89,33 @@ const Documents = () => {
         } catch (error) {
             console.error('Error fetching semesters:', error);
             setSemesters([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleSubmit = async () => {
-        if (!name || !userId) return;
+        if (!name) return;
 
         try {
-            const response = await fetch("/api/documents/semesters", {
-                method: "POST",
+            const response = await fetch('/api/documents/semesters', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
-                    "user-id": userId,
+                    'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({ name }),
             });
 
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
-                setName("");
+                setName('');
             } else {
-                console.error("Failed to add semester");
+                console.error('Failed to add semester');
             }
         } catch (error) {
-            console.error("Error adding semester:", error);
+            console.error('Error adding semester:', error);
         }
     };
 
@@ -171,14 +156,11 @@ const Documents = () => {
                 ))}
             </ul>
 
+            <UploadFile />
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <FileDisplay />
+            <DisplayFiles />
             <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
-            <ShowRecent />
-            <UploadFileComponent semesters={semesters} userId={userId!} />
-
+            <RecentFiles />
         </div>
     );
 };
-
-export default Documents;

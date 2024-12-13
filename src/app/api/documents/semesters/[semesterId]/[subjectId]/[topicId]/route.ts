@@ -6,7 +6,8 @@ const DATABASE_NAME = 'users';
 const COLLECTION_NAME = 'users';
 
 export async function GET(req: Request, { params }: { params: { semesterId: string; subjectId: string; topicId: string } }) {
-    const userId = req.headers.get('user-id');
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
     const { semesterId, subjectId, topicId } = await params;
 
     if (!userId || !semesterId || !subjectId || !topicId) {

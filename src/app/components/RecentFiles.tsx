@@ -21,32 +21,28 @@ interface ShowRecentProps {
     topicId?: string;
 }
 
-const ShowRecent: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId }) => {
+const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchFiles = async () => {
             try {
-                const userId = localStorage.getItem("userId");
-                if (!userId) {
-                    console.error("User ID is not available in localStorage.");
-                    return;
-                }
-
                 const params = new URLSearchParams();
-                params.append("userId", userId);
                 if (semesterId) params.append("semesterId", semesterId);
                 if (subjectId) params.append("subjectId", subjectId);
                 if (topicId) params.append("topicId", topicId);
 
-                const response = await fetch(`/api/documents/files?${params.toString()}`);
+                const response = await fetch(`/api/documents/files?${params.toString()}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
                 if (response.ok) {
                     const data = await response.json();
-                    // Sort files by uploadDate in descending order and take the first 6
                     const sortedFiles = data
                         .sort((a: File, b: File) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
-                        .slice(0, 6);
+                        .slice(0, 3);
                     setFiles(sortedFiles);
                 } else {
                     console.error("Failed to fetch files");
@@ -91,4 +87,4 @@ const ShowRecent: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId 
     );
 };
 
-export default ShowRecent;
+export default RecentFiles;

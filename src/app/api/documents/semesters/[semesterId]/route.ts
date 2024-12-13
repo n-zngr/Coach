@@ -6,7 +6,8 @@ const DATABASE_NAME = "users";
 const COLLECTION_NAME = "users";
 
 export async function GET(req: Request, { params }: { params: { semesterId: string } }) {
-    const userId = req.headers.get("user-id");
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
     const { semesterId } = await params;
 
     if (!userId || !semesterId) {
@@ -31,17 +32,18 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
 
         if (!semester) {
             return NextResponse.json({ error: "Semester not found" }, { status: 404 });
-        }
+        } 
 
         return NextResponse.json(semester.subjects || []);
     } catch (error) {
-        console.error("Error in GET /documents/[semesterId]:", error);
+        console.error("Error in GET /documents/semesters/[semesterId]:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
 
 export async function POST(req: Request, { params }: { params: { semesterId: string } }) {
-    const userId = req.headers.get("user-id");
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
     const { semesterId } = await params;
     const { name } = await req.json();
 

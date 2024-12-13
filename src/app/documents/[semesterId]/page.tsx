@@ -1,113 +1,113 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from 'next/navigation';
 
-import FileDisplay from "@/app/components/DisplayFiles";
+import DisplayFiles from "@/app/components/DisplayFiles";
+import RecentFiles from "@/app/components/RecentFiles";
 
-const SemesterPage = () => {
-    const [subjects, setSubjects] = useState<{ id: string; name: string; topics: string[] }[]>([]);
-    const [name, setName] = useState("");
-    const [userId, setUserId] = useState<string | null>(null);
+type Topic = {
+    id: string;
+    name: string;
+};
+
+type Subject = {
+    id: string;
+    name: string;
+    topics: Topic[];
+};
+
+export default function SemesterPage() {
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
     const params = useParams();
-    const semesterId = params.semesterId as string;
+    const router = useRouter();
+    const semesterId = params?.semesterId;
 
     useEffect(() => {
-        const checkUserAuthentication = async () => {
+        const authenticateUser = async () => {
             try {
-                const storedUserId = localStorage.getItem('userId');
-
-                if (!storedUserId) {
-                    router.push('/login');
-                    return;
-                }
-
-                setUserId(storedUserId);
-
-                const authResponse = await fetch('/api/auth/verify', {
+                const response = await fetch('/api/auth', {
                     method: 'GET',
-                    headers: { 'user-id': storedUserId }
+                    credentials: 'include'
                 });
 
-                if (authResponse.status === 401) {
-                    router.push('/login');
-                    return;
-                }
-
-                const authData = await authResponse.json();
-                if (!authData.isLoggedIn) {
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
                     router.push('/login');
                     return;
                 }
 
                 if (semesterId) {
-                    await fetchSubjects(storedUserId, semesterId);
+                    await fetchSubjects();
                 }
             } catch (error) {
-                console.error('Error during authentication check: ', error);
+                console.error('Error authenticating user:', error);
                 router.push('/login');
-            } finally {
-                setIsLoading(false);
             }
         }
 
-        checkUserAuthentication();
+        authenticateUser();
+
+        
     }, [semesterId]);
 
-    const fetchSubjects = async (userId: string, semesterId: string) => {
+    const fetchSubjects = async () => {
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
-                method: "GET",
-                headers: { "user-id": userId },
+                method: 'GET',
+                credentials: 'include'
             });
-
-            if (response.status === 404) {
-                router.push('/404');
-            }
 
             if (response.ok) {
                 const data = await response.json();
-                
                 if (Array.isArray(data)) {
-                    setSubjects(data);
+                    const formattedData: Subject[] = data.map((subject: any) => ({
+                        id: subject.id,
+                        name: subject.name,
+                        topics: (subject.topics || []).map((topic: any) => ({
+                            id: topic.id,
+                            name: topic.name
+                        }))
+                    }));
+                    setSubjects(formattedData);
                 } else {
-                    console.error('Invalid data format for subjects: ', data);
+                    console.error('Failed to fetch subjects');
                     setSubjects([]);
                 }
-            } else {
-                console.error("Failed to fetch subjects");
-                setSubjects([]);
+            } else if (response.status === 404) {
+                console.error(`Invalid subject page: ${semesterId}`);
+                router.back();
             }
         } catch (error) {
-            console.error("Error fetching subjects:", error);
+            console.error('Error fetching subjects:', error);
             setSubjects([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleSubmit = async () => {
-        if (!name || !userId || !semesterId) return;
+        if (!name) return;
 
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "user-id": userId,
-                },
-                body: JSON.stringify({ name }),
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ name })
             });
 
             if (response.ok) {
                 const newSubject = await response.json();
                 setSubjects((prev) => [...prev, newSubject]);
-                setName("");
+                setName('');
             } else {
-                console.error("Failed to add subject");
+                console.error('Failed to add subject');
             }
         } catch (error) {
-            console.error("Error adding subject:", error);
+            console.error('Error adding subject', error);
         }
     };
 
@@ -119,10 +119,10 @@ const SemesterPage = () => {
         );
     }
 
-
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Manage Subjects</h1>
+
             <div className="mb-4">
                 <input
                     type="text"
@@ -138,21 +138,29 @@ const SemesterPage = () => {
                     Add Subject
                 </button>
             </div>
-            <h2 className="text-xl font-semibold mb-2">Subjects</h2>
-            <ul className="list-disc pl-5">
-                {subjects.map((subject) => (
-                    <li key={subject.id} className="mb-1">
-                        <a href={`/documents/${semesterId}/${subject.id}`} className='text-blue-500 underline'>
-                            {subject.name}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <FileDisplay semesterId={params.semesterId as string} />
 
+            <h2 className="text-xl font-semibold mb-2">Subjects</h2>
+            {subjects.length === 0 ? (
+                <p>No subjects found. Add a new subject to get started.</p>
+            ) : (
+                <ul className="list-disc pl-5">
+                    {subjects.map((subject) => (
+                        <li key={subject.id} className="mb-1">
+                            <a 
+                                href={`/documents/${semesterId}/${subject.id}`} 
+                                className="text-blue-500 underline"
+                            >
+                                {subject.name}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+            <DisplayFiles />
+            <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
+            <RecentFiles />
         </div>
     );
-};
-
-export default SemesterPage;
+}

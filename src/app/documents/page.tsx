@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
+import Navigation from '@/app/components/Navigation';
 import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from "@/app/components/UploadFile";
@@ -128,7 +129,8 @@ export default function Documents() {
     }
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="flex h-screen">
+            <Navigation />
             <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
             <div className="mb-4">
                 <input

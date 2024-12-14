@@ -63,6 +63,28 @@ const DisplayFiles: React.FC = () => {
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 
+    const handleDownload = async (fileId: string, filename: string) => {
+        try {
+            const response = await fetch(`/api/documents/download/${fileId}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to download file');
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = filename;
+            link.click();
+
+            URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error("Error downloading file:", error);
+        }
+    }
+
     if (loading) {
         return <p>Loading files...</p>;
     }
@@ -83,16 +105,24 @@ const DisplayFiles: React.FC = () => {
                             className="w-6 h-6 mr-3"
                         />
                         <span className="text-lg font-medium flex-1">{file.filename}</span>
-                        <button 
-                            className="text-white bg-blue-500 hover:bg-blue-700 font-medium py-1 px-2 rounded mr-2"
-                        >
-                            Rename
-                        </button>
-                        <button 
-                            className="text-white bg-red-500 hover:bg-red-700 font-medium py-1 px-2 rounded"
-                        >
-                            Delete
-                        </button>
+                        <div className="flex space-x-2">
+                            <button 
+                                className="text-white bg-blue-500 hover:bg-blue-700 font-medium py-1 px-2 rounded"
+                            >
+                                Rename
+                            </button>
+                            <button 
+                                className="text-white bg-red-500 hover:bg-red-700 font-medium py-1 px-2 rounded"
+                            >
+                                Delete
+                            </button>
+                            <button 
+                                className="text-white bg-green-500 hover:bg-green-700 font-medium py-1 px-2 rounded"
+                                onClick={() => handleDownload(file._id, file.filename)}
+                            >
+                                Download
+                            </button>
+                        </div>
                     </li>
                 ))}
             </ul>

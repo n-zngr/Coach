@@ -38,7 +38,7 @@ function LoginPage() {
       <input type="text" name="email" placeholder="E-Mail" onChange={handleChange} className="text-black" required />
       <input type="password" name="password" placeholder="Password" onChange={handleChange} className="text-black" required />
       <button type="submit" onClick={handleSubmit}>Login</button>
-      <button type="button" onClick={() => router.push("/checkEmail")}>Forgot Password?</button>
+      <button type="button" onClick={() => router.push("/resetPassword")}>Forgot Password?</button>
     </form>
   );
 }

@@ -1,29 +1,39 @@
 import { NextResponse } from "next/server";
-import { MongoClient, GridFSBucket } from "mongodb";
+import { MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI! as string;
 
-export async function GET() {
-    const client = new MongoClient(uri);
+export async function GET(req: Request) {
+    const client = new MongoClient(MONGODB_URI);
 
     try {
-        await client.connect();
-        const db = client.db("documents");
-        const bucket = new GridFSBucket(db);
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
 
-        const fileList: any[] = [];
-        const cursor = bucket.find();
-
-        for await (const file of cursor) {
-            fileList.push(file);
+        if (!userId) {
+            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
         }
 
-        return NextResponse.json(fileList);
+        const semesterId = req.headers.get('semesterId');
+        const subjectId = req.headers.get('subjectId');
+        const topicId = req.headers.get('topicId');
+
+        await client.connect();
+        const db = client.db('documents');
+        const filesCollection = db.collection('fs.files');
+
+        const query: any = { 'metadata.userId': userId };
+
+        if (semesterId) query['metadata.semesterId'] = semesterId;
+        if (subjectId) query['metadata.subjectId'] = subjectId;
+        if (topicId) query['metadata.topicId'] = topicId;
+
+        const files = await filesCollection.find(query).toArray();
+
+        return NextResponse.json(files, { status: 200 });
     } catch (error) {
-        return NextResponse.json(
-            { message: "Failed to retrieve files", error },
-            { status: 500 }
-        );
+        console.error('Error fetching files:', error);
+        return NextResponse.json({ message: 'Failed to fetch files', error }, { status: 500 });
     } finally {
         await client.close();
     }

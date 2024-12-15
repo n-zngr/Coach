@@ -13,4 +13,4 @@ Organize, structure, and study with Coach. Organized Tasks, Documents and time t
 - [MongoDB](https://mongodb.com/), Datebase
 - [Vercel](https://vercel.com/), Hosting
 
-This project is part of the module M245 in which a developed proof of concept should be created. A mockup and overall concept have been created part of module M241. 
+This project is part of the module M245 in which a proof of concept for an innovative student-use application should be created. A mockup and overall concept have been created part of the module M241. 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Semester {
     id: string;
@@ -26,6 +26,9 @@ const FileUpload: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [showUploadCard, setShowUploadCard] = useState(false);
+
+    const uploadButtonRef = useRef<HTMLButtonElement | null>(null);
 
     useEffect(() => {
         const fetchSemesters = async () => {
@@ -85,6 +88,7 @@ const FileUpload: React.FC = () => {
             setSuccessMessage("File uploaded successfully!");
             setFile(null);
             setSelectedOption(null);
+            setShowUploadCard(false);
         } catch (error) {
             console.error("Error during file upload: ", error);
             setErrorMessage("File upload failed.");
@@ -93,34 +97,76 @@ const FileUpload: React.FC = () => {
         }
     };
 
+    const toggleUploadCard = () => {
+        setShowUploadCard(prevState => !prevState);
+    };
+
     return (
-        <div className="file-upload-container">
+        <div className="file-upload-container relative">
             <h2 className="text-xl font-semibold mb-4">Upload File</h2>
 
             {errorMessage && <p className="text-red-500">{errorMessage}</p>}
             {successMessage && <p className="text-green-500">{successMessage}</p>}
 
-            <input type="file" onChange={handleFileChange} />
-
-            <select onChange={handleDropdownChange} value={selectedOption || ''}>
-                <option value="">Select Semester / Subject / Topic</option>
-                {semesters.map(semester =>
-                    semester.subjects.map(subject =>
-                        subject.topics.map(topic => (
-                            <option 
-                                key={topic.id} 
-                                value={`${semester.id}/${subject.id}/${topic.id}`}
-                            >
-                                {semester.name} / {subject.name} / {topic.name}
-                            </option>
-                        ))
-                    )
-                )}
-            </select>
-
-            <button onClick={handleUpload} disabled={loading}>
-                {loading ? "Uploading..." : "Upload File"}
+            <button 
+                onClick={toggleUploadCard} 
+                ref={uploadButtonRef} 
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+                Upload File
             </button>
+
+            {showUploadCard && (
+                <div 
+                    className="absolute mt-2 bg-white shadow-lg border rounded p-4" 
+                    style={{ top: uploadButtonRef.current?.offsetHeight || 0 }}
+                >
+                    <h3 className="text-lg font-semibold mb-2 text-black">Select Semester, Subject, and Topic</h3>
+
+                    <select 
+                        onChange={handleDropdownChange} 
+                        value={selectedOption || ''} 
+                        className="w-full border border-gray-300 rounded p-2 mb-4"
+                    >
+                        <option value="">Select file location</option>
+                        {semesters.map(semester => (
+                            <option key={semester.id} value={`${semester.id}`} disabled className="text-gray">{semester.name}</option>
+                        ))}
+                        {semesters.map(semester => 
+                            semester.subjects.map(subject => (
+                                <option key={subject.id} value={`${semester.id}/${subject.id}`} disabled className="text-gray"> &nbsp;&nbsp;{subject.name}</option>
+                            ))
+                        )}
+                        {semesters.map(semester => 
+                            semester.subjects.map(subject => 
+                                subject.topics.map(topic => (
+                                    <option 
+                                        key={topic.id} 
+                                        value={`${semester.id}/${subject.id}/${topic.id}`}
+                                        className="text-black"
+                                    >
+                                        &nbsp;&nbsp;&nbsp;&nbsp;{topic.name}
+                                    </option>
+                                ))
+                            )
+                        )}
+                    </select>
+
+                    <input 
+                        type="file" 
+                        onChange={handleFileChange} 
+                        className="w-full mb-4" 
+                    />
+
+                    <button 
+                        onClick={handleUpload} 
+                        disabled={loading} 
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    >
+                        {loading ? "Uploading..." : "Upload File"}
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

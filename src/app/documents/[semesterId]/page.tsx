@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 
 import DisplayFiles from "@/app/components/DisplayFiles";
 import RecentFiles from "@/app/components/RecentFiles";
+import UploadFile from '@/app/components/UploadFile';
 
 type Topic = {
     id: string;
@@ -157,6 +158,7 @@ export default function SemesterPage() {
                 </ul>
             )}
 
+            <UploadFile />
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <DisplayFiles />
             <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>

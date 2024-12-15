@@ -119,7 +119,6 @@ function SignupPage() {
         </div>
 
         {error && <p className="error">{error}</p>}
-
             <button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Signing Up..." : "Sign Up"}
             </button>

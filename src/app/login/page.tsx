@@ -62,6 +62,7 @@ function LoginPage() {
             >
                 Login
             </button>
+            <button type="button" onClick={() => router.push("/resetPassword")}>Forgot Password?</button>
         </form>
     );
 }

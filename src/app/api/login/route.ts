@@ -21,46 +21,31 @@ async function connectToDatabase(): Promise<Collection> {
 }
 
 export async function POST(request: Request) {
-  try {
-    const { email, password } = await request.json();
+  const { email, password } = await request.json();
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { message: "Username and password are required" },
-        { status: 400 }
-      );
-    }
-
-    // Connect to the database
-    const collection = await connectToDatabase();
-
-    // Fetch the user from the database by username
-    const user = await collection.findOne({ email });
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
-    // Compare the provided password with the hashed password
-    const isMatch = verifyPassword(password, user.hashedPassword);
-
-    if (!isMatch) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
-    }
-
-    return NextResponse.json({ message: "Login successful!" });
-  } catch (error) {
-    // Safely handle unknown error types
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "An unexpected error occurred";
-
-    console.error("Error during login:", error);
-
+  if (!email || !password) {
     return NextResponse.json(
-      { message: "Failed to login", error: errorMessage },
-      { status: 500 }
+      { message: "Username and password are required" },
+      { status: 400 }
     );
+  }
+
+  // Connect to the database
+  const collection = await connectToDatabase();
+
+  // Fetch the user from the database by username
+  const user = await collection.findOne({ email });
+  console.log(user)
+
+  if (!user) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+  // Compare the provided password with the hashed password
+  const isMatch = await verifyPassword(password, user.hashedPassword);
+
+  if (!isMatch) {
+    return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
+  } else {
+    return NextResponse.json({ message: "Login successful!" });
   }
 }

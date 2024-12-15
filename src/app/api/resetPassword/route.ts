@@ -36,12 +36,12 @@ export async function POST(request: Request) {
     }
 
     // Use your custom password hashing utility
-    const hashedPassword = await hashPassword(password);
+    const newpassword = await hashPassword(password);
 
     // Update user's password and clear the reset token
     await collection.updateOne(
       { email },
-      { $set: { password: hashedPassword }}
+      { $set: {hashedPassword: newpassword}}
     );
 
     return NextResponse.json({ message: "Password reset successful!" });

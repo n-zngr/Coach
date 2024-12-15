@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
+import { getCollection } from "@/app/utils/mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI! as string;
+const DATABASE_NAME = 'documents';
+const COLLECTION_NAME = 'fs.files';
 
 export async function GET(req: Request) {
-    const client = new MongoClient(MONGODB_URI);
-
     try {
         const cookies = req.headers.get('cookie');
         const userId = cookies?.match(/userId=([^;]*)/)?.[1];
@@ -18,9 +17,7 @@ export async function GET(req: Request) {
         const subjectId = req.headers.get('subjectId');
         const topicId = req.headers.get('topicId');
 
-        await client.connect();
-        const db = client.db('documents');
-        const filesCollection = db.collection('fs.files');
+        const filesCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
 
         const query: any = { 'metadata.userId': userId };
 
@@ -34,7 +31,5 @@ export async function GET(req: Request) {
     } catch (error) {
         console.error('Error fetching files:', error);
         return NextResponse.json({ message: 'Failed to fetch files', error }, { status: 500 });
-    } finally {
-        await client.close();
     }
 }

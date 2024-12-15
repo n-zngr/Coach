@@ -45,7 +45,7 @@ const TopicPage = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Implement topic name here</h1>
+            <h1 className="text-2xl font-bold mb-4">Topic</h1>
 
             <UploadFile />
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>

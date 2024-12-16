@@ -5,7 +5,8 @@ import { getCollection } from '@/app/utils/mongodb';
 export async function GET(req: Request, { params }: { params: { fileId: string } }) {
     const { fileId } = await params;
 
-    if (!ObjectId.isValid) {
+    if (!ObjectId.isValid(fileId)) {
+        console.error(`Invalid fileId: ${fileId}`);
         return NextResponse.json({ message: 'Invalid fileId' }, { status: 400 });
     }
 
@@ -16,6 +17,7 @@ export async function GET(req: Request, { params }: { params: { fileId: string }
         const file = await filesCollection.findOne({ _id: new ObjectId(fileId) });
 
         if (!file) {
+            console.warn(`File not found for fileId: ${fileId}`);
             return NextResponse.json({ message: 'File not found' }, { status: 404 });
         }
 
@@ -23,12 +25,12 @@ export async function GET(req: Request, { params }: { params: { fileId: string }
             .find({ files_id: new ObjectId(fileId) })
             .sort({ n: 1 })
             .toArray();
-        
+
         if (!chunks.length) {
             return NextResponse.json({ message: 'File chunks not found' }, { status: 404 });
         }
 
-        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
+        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer ?? chunk.data));
 
         return new Response(fileBuffer, {
             status: 200,
@@ -38,7 +40,7 @@ export async function GET(req: Request, { params }: { params: { fileId: string }
             }
         });
     } catch (error) {
-        console.error('Error fetching file:', error);
+        console.error(`Error fetching file with fileId: ${fileId}`, error);
         return NextResponse.json({ message: 'Error fetching file' }, { status: 500 });
     }
 }

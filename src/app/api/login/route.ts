@@ -1,25 +1,11 @@
 import { NextResponse } from "next/server";
-import { MongoClient, Db, Collection } from "mongodb";
+import { getCollection } from "@/app/utils/mongodb";
 import { verifyPassword } from "@/app/utils/passwordHash";
 
-const uri = process.env.MONGODB_URI as string;
-const dbName = "users";
-const collectionName = "users"; 
-
-let client: MongoClient | null = null;
-
-async function connectToDatabase(): Promise<Collection> {
-    if (!client) {
-        client = new MongoClient(uri);
-        await client.connect();
-    }
-    const db: Db = client.db(dbName);
-    return db.collection(collectionName);
-}
+const DATABASE_NAME = 'users';
+const COLLECTION_NAME = 'users'; 
 
 export async function POST(request: Request) {
-
-
     try {
         const { email, password } = await request.json();
 
@@ -27,7 +13,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Username and password are required" }, { status: 400 });
         }
 
-        const collection = await connectToDatabase();
+        const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
 
         const user = await collection.findOne({ email });
 

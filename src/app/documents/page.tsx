@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import Navigation from '@/app/components/Navigation';
@@ -165,7 +165,6 @@ export default function Documents() {
                 <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
                 <RecentFiles />
             </div>
-            
         </div>
     );
 };

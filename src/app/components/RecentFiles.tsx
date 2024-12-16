@@ -67,23 +67,27 @@ const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId
 
     return (
         <div>
-            <h2 className="text-xl font-semibold mb-4">Recent Files</h2>
-            <ul className="list-disc pl-5">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Recent Files</h2>
+            <div className="flex flex-wrap gap-4">
                 {files.map((file) => (
-                    <li key={file._id} className="mb-2">
-                        <p>
-                            <strong>Filename:</strong> {file.filename}
+                    <div key={file._id} className="flex items-center gap-4 p-4 rounded-lg shadow-md bg-white dark:bg-gray-800 dark:shadow-gray-700 hover:shadow-lg transition-shadow">
+                        <img
+                        src="/icon-document.svg"
+                        alt="Document Icon"
+                        className="w-12 h-12"
+                        />
+                    <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{file.filename}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {new Date(file.uploadDate).toLocaleDateString()} &middot;{" "}
+                            {(file.length / (1024 * 1024)).toFixed(1)} MB
                         </p>
-                        <p>
-                            <strong>Uploaded on:</strong> {new Date(file.uploadDate).toLocaleDateString()}
-                        </p>
-                        <p>
-                            <strong>Size:</strong> {(file.length / 1024).toFixed(2)} KB
-                        </p>
-                    </li>
+                    </div>
+                    </div>
                 ))}
-            </ul>
+            </div>
         </div>
+
     );
 };
 

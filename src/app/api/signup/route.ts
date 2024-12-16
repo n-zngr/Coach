@@ -1,22 +1,9 @@
 import { NextResponse } from "next/server";
-import { MongoClient, Db, Collection } from "mongodb";
+import { getCollection } from "@/app/utils/mongodb";
 import { hashPassword } from "@/app/utils/passwordHash";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-const DATABASE_NAME = "users";
-const COLLECTION_NAME = "users";
-
-let client: MongoClient | null = null;
-
-// Function to connect to the MongoDB database
-async function connectToDatabase(): Promise<Collection> {
-    if (!client) {
-        client = new MongoClient(MONGODB_URI);
-        await client.connect();
-    }
-    const db: Db = client.db(DATABASE_NAME);
-    return db.collection(COLLECTION_NAME);
-}
+const db_Name = "users";
+const col_Name = "users";
 
 export async function POST(request: Request) {
     try {
@@ -42,7 +29,7 @@ export async function POST(request: Request) {
         }
 
         // Connect to the MongoDB database and get the collection
-        const collection = await connectToDatabase();
+        const collection = await getCollection(db_Name, col_Name);
 
         // Check if the email already exists
         const existingUser = await collection.findOne({ email });

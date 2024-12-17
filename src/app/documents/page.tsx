@@ -29,6 +29,7 @@ export default function Documents() {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -120,6 +121,10 @@ export default function Documents() {
         }
     };
 
+    const toggleNavigation = () => {
+        setIsExpanded(!isExpanded);
+    };
+
     if (isLoading) {
         return (
             <div className="container mx-auto p-4">
@@ -130,8 +135,11 @@ export default function Documents() {
 
     return (
         <div className="flex h-screen">
-            <Navigation />
-            <div className="flex flex-col p-16">
+            <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
+            <div className={`flex-1 p-16 transition-all duration-300 ${
+                    isExpanded ? "ml-64" : "ml-12"
+                }`}
+                >
                 <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                 <div className="mb-4">
                     <input
@@ -160,10 +168,9 @@ export default function Documents() {
                 </ul>
 
                 <UploadFile />
+                <RecentFiles />
                 <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                 <DisplayFiles />
-                <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
-                <RecentFiles />
             </div>
         </div>
     );

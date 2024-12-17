@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+import FileView from "@/app/components/FileView";
+
 interface File {
     _id: string;
     filename: string;
@@ -23,6 +25,8 @@ const DisplayFiles: React.FC = () => {
     const [newFilename, setNewFilename] = useState<string>("");
     const [query, setQuery] = useState<string>("");
     const [searchActive, setSearchActive] = useState<boolean>(false);
+
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const pathname = usePathname();
     const pathSegments = pathname.split("/").filter(Boolean);
@@ -63,6 +67,14 @@ const DisplayFiles: React.FC = () => {
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 
+    const handleFileClick = (file: File) => {
+        setSelectedFile(file);
+    };
+
+    const handleCloseFileView = () => {
+        setSelectedFile(null);
+    }
+
     const handleDownload = async (fileId: string, filename: string) => {
         try {
             const response = await fetch(`/api/documents/download/${fileId}`);
@@ -85,16 +97,7 @@ const DisplayFiles: React.FC = () => {
         }
     };
 
-    const handleRenameClick = (fileId: string, currentFilename: string) => {
-        setEditingFileId(fileId);
-        setNewFilename(currentFilename);
-    };
-
-    const handleFilenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setNewFilename(e.target.value);
-    };
-
-    const handleRenameSubmit = async (fileId: string) => {
+    const handleRename = async (fileId: string, newFilename: string) => {
         try {
             const response = await fetch(`/api/documents/rename/${fileId}`, {
                 method: 'PATCH',
@@ -112,12 +115,14 @@ const DisplayFiles: React.FC = () => {
                 file._id === fileId ? { ...file, filename: newFilename } : file
             ));
 
-            setEditingFileId(null);
-            setNewFilename("");
+            if (selectedFile && selectedFile._id === fileId) {
+                setSelectedFile({ ...selectedFile, filename: newFilename });
+            }
         } catch (error) {
             console.error("Error renaming file:", error);
         }
     };
+
 
     const handleDelete = async (fileId: string) => {
         try {
@@ -237,53 +242,25 @@ const DisplayFiles: React.FC = () => {
     
             <ul className="space-y-4">
                 {files.map((file) => (
-                    <li key={file._id} className="flex items-center p-2 border rounded-lg shadow-sm bg-white dark:bg-gray-800 text-black">
-                        <img 
-                            src="/icon-document.svg" 
-                            alt="Document Icon" 
-                            className="w-6 h-6 mr-3"
-                        />
-    
-                        {editingFileId === file._id ? (
-                            <input 
-                                type="text" 
-                                value={newFilename} 
-                                onChange={handleFilenameChange} 
-                                className="flex-1 p-1 border rounded"
-                            />
-                        ) : (
-                            <span className="text-lg font-medium flex-1">{file.filename}</span>
-                        )}
-    
-                        <div className="flex space-x-2">
-                            <button 
-                                className="text-white bg-blue-500 hover:bg-blue-700 font-medium py-1 px-2 rounded"
-                                onClick={() => 
-                                    editingFileId === file._id 
-                                    ? handleRenameSubmit(file._id) 
-                                    : handleRenameClick(file._id, file.filename)
-                                }
-                            >
-                                {editingFileId === file._id ? "Submit" : "Rename"}
-                            </button>
-    
-                            <button 
-                                className="text-white bg-red-500 hover:bg-red-700 font-medium py-1 px-2 rounded"
-                                onClick={() => handleDelete(file._id)}
-                            >
-                                Delete
-                            </button>
-    
-                            <button 
-                                className="text-white bg-green-500 hover:bg-green-700 font-medium py-1 px-2 rounded"
-                                onClick={() => handleDownload(file._id, file.filename)}
-                            >
-                                Download
-                            </button>
-                        </div>
+                    <li 
+                        key={file._id}
+                        className="flex items-center p-2 border rounded-lg shadow-sm bg-white dark:bg-gray-800 text-black"
+                        onClick={() => handleFileClick(file)}
+                    >
+                        <img src="/icon-document.svg" alt="Document Icon" className="w-6 h-6 mr-3"/>
+                        <span className="text-lg font-medium flex-1">{file.filename}</span>
                     </li>
                 ))}
             </ul>
+            {selectedFile && (
+                <FileView 
+                    file={selectedFile} 
+                    onClose={handleCloseFileView} 
+                    onRename={handleRename} 
+                    onDelete={handleDelete} 
+                    onDownload={handleDownload} 
+                />
+            )}
         </div>
     );
 };

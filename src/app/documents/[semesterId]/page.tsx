@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import DisplayFiles from "@/app/components/DisplayFiles";
 import RecentFiles from "@/app/components/RecentFiles";
 import UploadFile from '@/app/components/UploadFile';
+import Navigation from '@/app/components/Navigation';
 
 type Topic = {
     id: string;
@@ -22,6 +23,7 @@ export default function SemesterPage() {
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(true);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId;
@@ -112,6 +114,10 @@ export default function SemesterPage() {
         }
     };
 
+    const toggleNavigation = () => {
+        setIsExpanded(!isExpanded);
+    };
+
     if (isLoading) {
         return (
             <div className="container mx-auto p-4">
@@ -121,48 +127,53 @@ export default function SemesterPage() {
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Manage Subjects</h1>
-
-            <div className="mb-4">
-                <input
-                    type="text"
-                    className="border rounded p-2 w-full"
-                    placeholder="Subject Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-                    onClick={handleSubmit}
+        <div>
+            <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
+            <div className={`flex-1 p-16 transition-all duration-300 ${
+                    isExpanded ? "ml-64" : "ml-12"
+                }`}
                 >
-                    Add Subject
-                </button>
+                <h1 className="text-2xl font-bold mb-4">Manage Subjects</h1>
+
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        className="border rounded p-2 w-full"
+                        placeholder="Subject Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                        onClick={handleSubmit}
+                    >
+                        Add Subject
+                    </button>
+                </div>
+
+                <h2 className="text-xl font-semibold mb-2">Subjects</h2>
+                {subjects.length === 0 ? (
+                    <p>No subjects found. Add a new subject to get started.</p>
+                ) : (
+                    <ul className="list-disc pl-5">
+                        {subjects.map((subject) => (
+                            <li key={subject.id} className="mb-1">
+                                <a 
+                                    href={`/documents/${semesterId}/${subject.id}`} 
+                                    className="text-blue-500 underline"
+                                >
+                                    {subject.name}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+    
+                <UploadFile />
+                <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+                <RecentFiles />
+                <DisplayFiles />
             </div>
-
-            <h2 className="text-xl font-semibold mb-2">Subjects</h2>
-            {subjects.length === 0 ? (
-                <p>No subjects found. Add a new subject to get started.</p>
-            ) : (
-                <ul className="list-disc pl-5">
-                    {subjects.map((subject) => (
-                        <li key={subject.id} className="mb-1">
-                            <a 
-                                href={`/documents/${semesterId}/${subject.id}`} 
-                                className="text-blue-500 underline"
-                            >
-                                {subject.name}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            <UploadFile />
-            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <DisplayFiles />
-            <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
-            <RecentFiles />
         </div>
     );
 }

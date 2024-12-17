@@ -61,7 +61,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         <a 
                             href="/signup" 
                             className="block p-3 rounded-md 
-                            hover:bg-green-100 dark:hover:bg-blue-800 
+                            hover:bg-blue-100 dark:hover:bg-blue-800 
                             font-semibold text-blue-600 dark:text-blue-400 
                             transition-all"
                         >

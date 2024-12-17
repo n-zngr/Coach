@@ -14,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Coach ― Proof of Concept",
+  title: "Coach – Proof of Concept",
   description: "Proof of Concept for Coach",
 };
 

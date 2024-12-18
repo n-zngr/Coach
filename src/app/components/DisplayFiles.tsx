@@ -273,7 +273,7 @@ const DisplayFiles: React.FC = () => {
                             font-bold text-black dark:text-white
                             transition-colors duration-300
                             ">
-                                <p >View File</p>
+                                <p>View File</p>
                             </div>
                         </div>
                     </button>

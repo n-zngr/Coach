@@ -38,7 +38,11 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
-            <div className="w-96 bg-white dark:bg-gray-900 h-full p-6 overflow-y-auto transition-transform transform translate-x-0">
+            <div className={`
+                h-full bg-white dark:bg-gray-900 p-6 overflow-y-auto 
+                transition-transform duration-300 
+                ${file ? 'translate-x-0 w-96' : 'translate-x-full w-0'}`}
+            >
                 <button 
                     className="text-red-500 mb-4" 
                     onClick={onClose}

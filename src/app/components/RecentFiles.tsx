@@ -72,7 +72,8 @@ const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId
                 {files.map((file) => (
                     <button key={file._id} className="
                         flex flex-1 basis-[calc(33.333%-1rem)] gap-4 p-4 
-                        bg-white dark:bg-neutral-950 border border-rounded rounded-lg border-neutral-200 dark:border-neutral-800
+                        bg-white dark:bg-neutral-950
+                        border border-rounded rounded-lg border-neutral-200 dark:border-neutral-800
                         hover:bg-neutral-100 hover:dark:bg-neutral-900
                         cursor-pointer transition-colors duration-300
                     ">

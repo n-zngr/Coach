@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import FileDisplay from "@/app/components/DisplayFiles";
+import FileDisplay from '@/app/components/DisplayFiles';
+import RecentFiles from '@/app/components/RecentFiles';
+import UploadFile from '@/app/components/UploadFile';
 
 type Topic = {
     id: string;
@@ -54,7 +56,7 @@ const SubjectPage = () => {
     const fetchTopics = async () => {
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
-                method: "GET",
+                method: 'GET',
                 credentials: 'include'
             });
 
@@ -141,8 +143,11 @@ const SubjectPage = () => {
                     </li>
                 ))}
             </ul>
+            <UploadFile />
             <h1 className='text-2xl font-semibold my-4'>Documents</h1>
             <FileDisplay />
+            <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
+            <RecentFiles />
         </div>
     );
 };

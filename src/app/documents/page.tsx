@@ -159,11 +159,11 @@ export default function Documents() {
                 <h2 className="text-xl font-semibold mb-2">Semesters</h2>
                 <ul className="flex flex-wrap gap-4 mb-4">
                     {semesters.map((semester) => (
-                        <a key={semester.id}href={`/documents/${semester.id}`} className="
-                            flex gap-4 p-4
-                            bg-slate-100 dark:bg-slate-900
-                            border-rounded rounded-lg
-                            hover:bg-slate-200 hover:dark:bg-slate-800
+                        <a key={semester.id} href={`/documents/${semester.id}`} className="
+                            flex flex-1 gap-4 p-4
+                            bg-white dark:bg-neutral-950
+                            border border-rounded rounded-lg border-neutral-200 dark:border-neutral-800
+                            hover:bg-neutral-100 hover:dark:bg-neutral-900
                             transition-colors duration-300
                         ">
                             <div className='flex justify-center'>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LogoutButton from "./LogOut";
 import Link from "next/link";
 
 export default function Navigation() {
@@ -39,9 +40,7 @@ export default function Navigation() {
                         <a href="/signup" className="p-2 hover:bg-gray-400 font-bold">
                             Signup
                         </a>
-                        <a href="/login" className="p-2 hover:bg-gray-400 font-bold">
-                            Login
-                        </a>
+                        <LogoutButton/>
                     </div>
                 )}
             </div>

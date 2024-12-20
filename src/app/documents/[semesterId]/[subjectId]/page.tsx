@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import FileDisplay from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
+import Navigation from "@/app/components/Navigation";
 
 type Topic = {
     id: string;
@@ -22,6 +23,7 @@ const SubjectPage = () => {
     const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
     const [name, setName] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(true);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId as string;
@@ -107,6 +109,10 @@ const SubjectPage = () => {
         }
     };
 
+    const toggleNavigation = () => {
+        setIsExpanded(!isExpanded);
+    }
+
     if (isLoading) {
         return (
             <div className="container mx-auto p-4">
@@ -116,38 +122,43 @@ const SubjectPage = () => {
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Manage Topics</h1>
-            <div className="mb-4">
-                <input
-                    type="text"
-                    className="border rounded p-2 w-full"
-                    placeholder="Topic Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-                    onClick={handleSubmit}
+        <div>
+            <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
+            <div className={`flex-1 p-16 transition-all duration-300 ${
+                    isExpanded ? "ml-64" : "ml-12"
+                }`}
                 >
-                    Add Topic
-                </button>
+                <h1 className="text-2xl font-bold mb-4">Manage Topics</h1>
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        className="border rounded p-2 w-full"
+                        placeholder="Topic Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                        onClick={handleSubmit}
+                    >
+                        Add Topic
+                    </button>
+                </div>
+                <h2 className="text-xl font-semibold mb-2">Topics</h2>
+                <ul className="list-disc pl-5">
+                    {topics.map((topic) => (
+                        <li key={topic.id} className="mb-1">
+                            <a href={`/documents/${semesterId}/${subjectId}/${topic.id}`} className='text-blue-500 underline'>
+                                {topic.name}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+                <UploadFile />
+                <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+                <RecentFiles />
+                <FileDisplay />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Topics</h2>
-            <ul className="list-disc pl-5">
-                {topics.map((topic) => (
-                    <li key={topic.id} className="mb-1">
-                        <a href={`/documents/${semesterId}/${subjectId}/${topic.id}`} className='text-blue-500 underline'>
-                            {topic.name}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-            <UploadFile />
-            <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-            <FileDisplay />
-            <h1 className='text-2xl font-semibold my-4'>Recent Documents</h1>
-            <RecentFiles />
         </div>
     );
 };

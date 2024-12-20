@@ -1,31 +1,17 @@
 import { NextResponse } from "next/server";
 import { MongoClient, Db, Collection } from "mongodb";
 import { hashPassword } from "@/app/utils/passwordHash";
+import { getCollection } from "@/app/utils/mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-const DATABASE_NAME = "users";
-const COLLECTION_NAME = "users";
-
-let client: MongoClient | null = null;
-
-// Function to connect to the MongoDB database
-async function connectToDatabase(): Promise<Collection> {
-    if (!client) {
-        client = new MongoClient(MONGODB_URI);
-        await client.connect();
-    }
-    const db: Db = client.db(DATABASE_NAME);
-    return db.collection(COLLECTION_NAME);
-}
+const DATABASE_NAME = 'users';
+const COLLECTION_NAME = 'users';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json(); // Parse the incoming JSON
+        const body = await request.json();
 
-        // Destructure fields from the request body
         const { fullname, email, password, confirmPassword } = body;
 
-        // Check for missing fields
         if (!fullname || !email || !password || !confirmPassword) {
             return NextResponse.json(
                 { message: "Fullname, E-mail, password, and confirm password are required" }, 
@@ -33,7 +19,6 @@ export async function POST(request: Request) {
             );
         }
 
-        // Check if password and confirmPassword match
         if (password !== confirmPassword) {
             return NextResponse.json(
                 { message: "Passwords do not match" },
@@ -41,10 +26,8 @@ export async function POST(request: Request) {
             );
         }
 
-        // Connect to the MongoDB database and get the collection
-        const collection = await connectToDatabase();
+        const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
 
-        // Check if the email already exists
         const existingUser = await collection.findOne({ email });
 
         if (existingUser) {

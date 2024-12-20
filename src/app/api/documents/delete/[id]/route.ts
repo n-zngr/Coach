@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
+import { getCollection } from '@/app/utils/mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI! as string;
+const DATABASE_NAME = 'documents';
+const COLLECTION_NAME = 'fs.files';
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const client = new MongoClient(MONGODB_URI);
 
     try {
         const { id } = await params;
 
-        await client.connect();
-        const db = client.db('documents');
-        const bucket = db.collection('fs.files');
-
+        const bucket = await getCollection(DATABASE_NAME, COLLECTION_NAME);
         const deleteFile = await bucket.deleteOne({ _id: new ObjectId(id) });
 
         if (!deleteFile.deletedCount) {
@@ -23,7 +21,5 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     } catch (error) {
         console.error('Error deleting file:', error);
         return NextResponse.json({ message: 'Failed to delete file', error }, { status: 500 });
-    } finally {
-        await client.close();
     }
 }

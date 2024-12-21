@@ -3,82 +3,104 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import FileDisplay from '@/app/components/DisplayFiles';
+import RecentFiles from '@/app/components/RecentFiles';
+import UploadFile from '@/app/components/UploadFile';
+import Navigation from "@/app/components/Navigation";
+
+type Topic = {
+    id: string;
+    name: string;
+};
+
+type Subject = {
+    id: string;
+    name: string;
+    topics: Topic[];
+};
+
 const SubjectPage = () => {
     const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
     const [name, setName] = useState("");
-    const [userId, setUserId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(true);
     const params = useParams();
     const router = useRouter();
-    const semesterId = params.semesterId as string;
-    const subjectId = params.subjectId as string;
+    const semesterId = params?.semesterId as string;
+    const subjectId = params?.subjectId as string;
 
-    const verifyLogin = async () => {
-        const userIdFromStorage = localStorage.getItem("userId");
+    useEffect(() => {
+        const authenticateUser = async () => {
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
 
-        if (!userIdFromStorage) {
-            router.push("/login");
-            return false;
-        }
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
+                    router.push('/login');
+                    return;
+                }
 
-        setUserId(userIdFromStorage);
-
-        try {
-            const response = await fetch("/api/auth/verify", {
-                headers: {
-                    "user-id": userIdFromStorage,
-                },
-            });
-
-            if (!response.ok) {
-                router.push("/login");
-                return false;
+                if (semesterId && subjectId) {
+                    fetchTopics();
+                }
+            } catch (error) {
+                console.error('Error authenticating user:', error);
+                router.push('/login');
             }
-
-            return true;
-        } catch (error) {
-            console.error("Error verifying login:", error);
-            router.push("/login");
-            return false;
         }
-    };
+
+        authenticateUser();
+    }, [semesterId, subjectId]);
 
     const fetchTopics = async () => {
-        if (!userId || !semesterId || !subjectId) return;
-
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
-                method: "GET",
-                headers: { "user-id": userId },
+                method: 'GET',
+                credentials: 'include'
             });
 
             if (response.ok) {
                 const data = await response.json();
-                setTopics(data);
-            } else {
-                console.error("Failed to fetch topics");
+                if (Array.isArray(data)) {
+                    const formattedData: Topic[] = data.map((topic: any) => ({
+                        id: topic.id,
+                        name: topic.name
+                    }))
+                    setTopics(formattedData);
+                } else {
+                    console.error('Failed to fetch subjects');
+                    setTopics([]);
+                }
+            } else if (response.status === 404) {
+                console.error(`Invalid subject page: ${subjectId}`);
+                router.back();
             }
         } catch (error) {
             console.error("Error fetching topics:", error);
+            setTopics([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleSubmit = async () => {
-        if (!name || !userId || !semesterId || !subjectId) return;
+        if (!name) return;
 
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "user-id": userId,
-                },
+                headers: { "Content-Type": "application/json" },
+                credentials: 'include',
                 body: JSON.stringify({ name }),
             });
 
             if (response.ok) {
                 const newTopic = await response.json();
                 setTopics((prev) => [...prev, newTopic]);
-                setName("");
+                setName('');
             } else {
                 console.error("Failed to add topic");
             }
@@ -87,43 +109,56 @@ const SubjectPage = () => {
         }
     };
 
-    useEffect(() => {
-        const initializePage = async () => {
-            const loggedIn = await verifyLogin();
-            if (loggedIn) {
-                fetchTopics();
-            }
-        };
+    const toggleNavigation = () => {
+        setIsExpanded(!isExpanded);
+    }
 
-        initializePage();
-    }, [semesterId, subjectId]);
+    if (isLoading) {
+        return (
+            <div className="container mx-auto p-4">
+                <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+            </div>
+        );
+    }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Manage Topics</h1>
-            <div className="mb-4">
-                <input
-                    type="text"
-                    className="border rounded p-2 w-full"
-                    placeholder="Topic Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-                    onClick={handleSubmit}
+        <div>
+            <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
+            <div className={`flex-1 p-16 transition-all duration-300 ${
+                    isExpanded ? "ml-64" : "ml-12"
+                }`}
                 >
-                    Add Topic
-                </button>
+                <h1 className="text-2xl font-bold mb-4">Manage Topics</h1>
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        className="border rounded p-2 w-full"
+                        placeholder="Topic Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                        onClick={handleSubmit}
+                    >
+                        Add Topic
+                    </button>
+                </div>
+                <h2 className="text-xl font-semibold mb-2">Topics</h2>
+                <ul className="list-disc pl-5">
+                    {topics.map((topic) => (
+                        <li key={topic.id} className="mb-1">
+                            <a href={`/documents/${semesterId}/${subjectId}/${topic.id}`} className='text-blue-500 underline'>
+                                {topic.name}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+                <UploadFile />
+                <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+                <RecentFiles />
+                <FileDisplay />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Topics</h2>
-            <ul className="list-disc pl-5">
-                {topics.map((topic) => (
-                    <li key={topic.id} className="mb-1">
-                        {topic.name}
-                    </li>
-                ))}
-            </ul>
         </div>
     );
 };

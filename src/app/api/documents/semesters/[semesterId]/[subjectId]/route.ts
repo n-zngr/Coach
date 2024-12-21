@@ -6,7 +6,8 @@ const DATABASE_NAME = "users";
 const COLLECTION_NAME = "users";
 
 export async function GET(req: Request, { params }: { params: { semesterId: string; subjectId: string } }) {
-    const userId = req.headers.get("user-id");
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
     const { semesterId, subjectId } = await params;
 
     if (!userId || !semesterId || !subjectId) {
@@ -47,7 +48,8 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
 }
 
 export async function POST(req: Request, { params }: { params: { semesterId: string; subjectId: string } }) {
-    const userId = req.headers.get("user-id");
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
     const { semesterId, subjectId } = await params;
     const { name } = await req.json();
 

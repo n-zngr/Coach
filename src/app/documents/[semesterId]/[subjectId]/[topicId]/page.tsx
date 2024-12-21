@@ -3,129 +3,100 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import FileDisplay from '@/app/components/DisplayFiles';
+import RecentFiles from '@/app/components/RecentFiles';
+import UploadFile from '@/app/components/UploadFile';
+import Navigation from "@/app/components/Navigation";
+
+type Topic = {
+    id: string;
+    name: string;
+};
+
 const TopicPage = () => {
-    const [file, setFile] = useState<File | null>(null);
-    const [uploading, setUploading] = useState(false);
-    const [userId, setUserId] = useState<string | null>(null);
+    const [topic, setTopic] = useState<Topic | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(true);
     const params = useParams();
     const router = useRouter();
-    const semesterId = params.semesterId as string;
-    const subjectId = params.subjectId as string;
-    const topicId = params.topicId as string;
-
-    const verifyLogin = async () => {
-        const userIdFromStorage = localStorage.getItem("userId");
-
-        if (!userIdFromStorage) {
-            router.push("/login");
-            return false;
-        }
-
-        setUserId(userIdFromStorage);
-
-        try {
-            const response = await fetch("/api/auth/verify", {
-                headers: {
-                    "user-id": userIdFromStorage,
-                },
-            });
-
-            if (!response.ok) {
-                router.push("/login");
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            console.error("Error verifying login:", error);
-            router.push("/login");
-            return false;
-        }
-    };
+    const semesterId = params?.semesterId as string;
+    const subjectId = params?.subjectId as string;
+    const topicId = params?.topicId as string;
 
     useEffect(() => {
-        const initializePage = async () => {
-            await verifyLogin();
-        };
-
-        initializePage();
-    }, []);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setFile(e.target.files[0]);
-        }
-    };
-
-    const handleFileUpload = async () => {
-        if (!file || !userId || !semesterId || !subjectId || !topicId) {
-            console.error("Missing required data for upload");
-            return;
-        }
-
-        setUploading(true);
-        const reader = new FileReader();
-
-        reader.onload = async () => {
-            const base64Content = reader.result?.toString().split(",")[1];
-
-            if (!base64Content) {
-                console.error("Failed to encode file");
-                setUploading(false);
-                return;
-            }
-
+        const authenticateUser = async () => {
             try {
-                const response = await fetch("/api/documents/upload", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        fileName: file.name,
-                        fileContent: base64Content,
-                        metadata: {
-                            userId,
-                            semesterId,
-                            subjectId,
-                            topicId,
-                        },
-                    }),
+                const response = await fetch('/api/auth', {
+                    method: 'GET',
+                    credentials: 'include'
                 });
 
-                if (response.ok) {
-                    console.log("File uploaded successfully");
-                } else {
-                    console.error("Failed to upload file");
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
+                    router.push('/login');
+                    return;
+                }
+
+                if (semesterId && subjectId && topicId) {
+                    fetchTopic();
                 }
             } catch (error) {
-                console.error("Error uploading file:", error);
-            } finally {
-                setUploading(false);
+                console.error('Error authenticating user:', error);
+                router.push('/login');
             }
-        };
+        }
 
-        reader.readAsDataURL(file);
+        authenticateUser();
+    }, [semesterId, subjectId, topicId]);
+
+    const fetchTopic = async () => {
+        try {
+            const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}/${topicId}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setTopic({ id: data.id, name: data.name });
+            } else if (response.status === 404) {
+                console.error(`Invalid topic page: ${topicId}`);
+                router.back();
+            }
+        } catch (error) {
+            console.error("Error fetching topic:", error);
+            setTopic(null);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Manage Topic</h1>
-            <p className="mb-4">Upload files specific to this topic.</p>
+    const toggleNavigation = () => {
+        setIsExpanded(!isExpanded);
+    }
 
-            <div>
-                <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="mb-4 border p-2 w-full"
-                />
-                <button
-                    onClick={handleFileUpload}
-                    disabled={uploading}
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
+    if (isLoading) {
+        return (
+            <div className="container mx-auto p-4">
+                <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
+            <div className={`flex-1 p-16 transition-all duration-300 ${
+                    isExpanded ? "ml-64" : "ml-12"
+                }`}
                 >
-                    {uploading ? "Uploading..." : "Upload File"}
-                </button>
+                <h1 className="text-2xl font-bold mb-4">{topic ? topic.name : "Unknown Topic"}</h1>
+                
+                <UploadFile />
+                
+                <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+                <RecentFiles />
+                <FileDisplay />
             </div>
         </div>
     );

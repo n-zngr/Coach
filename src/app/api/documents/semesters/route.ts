@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { MongoClient, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import { getCollection } from '@/app/utils/mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-const DATABASE_NAME = 'users';
-const COLLECTION_NAME = 'users';
+const dbName = 'users';
+const dbCol = 'users';
 
 export async function GET(req: Request) {
     try {
@@ -14,14 +14,8 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "UserId is required" }, { status: 400 });
         }
 
-        const client = new MongoClient(MONGODB_URI);
-        await client.connect();
-        const db = client.db(DATABASE_NAME);
-        const usersCollection = db.collection(COLLECTION_NAME);
-
+        const usersCollection = await getCollection(dbName, dbCol)
         const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
-
-        client.close();
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -46,11 +40,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "UserId and semester name are required" }, { status: 400 });
         }
 
-        const client = new MongoClient(MONGODB_URI);
-        await client.connect();
-        const db = client.db(DATABASE_NAME);
-        const usersCollection = db.collection(COLLECTION_NAME);
-
+        const usersCollection = await getCollection(dbName,dbCol)
         const newSemester = {
             id: new ObjectId().toString(),
             name,
@@ -61,8 +51,6 @@ export async function POST(req: Request) {
             { _id: new ObjectId(userId) },
             { $addToSet: { semesters: newSemester } }
         );
-
-        client.close();
 
         if (updateResult.modifiedCount === 0) {
             return NextResponse.json({ error: "Failed to add semester" }, { status: 400 });

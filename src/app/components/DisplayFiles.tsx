@@ -21,12 +21,9 @@ interface File {
 const DisplayFiles: React.FC = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
-    const [editingFileId, setEditingFileId] = useState<string | null>(null);
-    const [newFilename, setNewFilename] = useState<string>("");
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [query, setQuery] = useState<string>("");
     const [searchActive, setSearchActive] = useState<boolean>(false);
-
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const pathname = usePathname();
     const pathSegments = pathname.split("/").filter(Boolean);
@@ -50,18 +47,18 @@ const DisplayFiles: React.FC = () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to fetch files");
+                throw new Error("Failed to fetch files");
             }
 
             const data = await response.json();
             setFiles(data);
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error fetching files: ", error);
         } finally {
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         fetchFiles();
@@ -73,71 +70,6 @@ const DisplayFiles: React.FC = () => {
 
     const handleCloseFileView = () => {
         setSelectedFile(null);
-    }
-
-    const handleDownload = async (fileId: string, filename: string) => {
-        try {
-            const response = await fetch(`/api/documents/download/${fileId}`);
-
-            if (!response.ok) {
-                throw new Error('Failed to download file');
-            }
-
-            const blob = await response.blob();
-            const downloadUrl = URL.createObjectURL(blob);
-
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = filename;
-            link.click();
-
-            URL.revokeObjectURL(downloadUrl);
-        } catch (error) {
-            console.error("Error downloading file:", error);
-        }
-    };
-
-    const handleRename = async (fileId: string, newFilename: string) => {
-        try {
-            const response = await fetch(`/api/documents/rename/${fileId}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ newFilename })
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to rename file");
-            }
-
-            setFiles(files.map(file => 
-                file._id === fileId ? { ...file, filename: newFilename } : file
-            ));
-
-            if (selectedFile && selectedFile._id === fileId) {
-                setSelectedFile({ ...selectedFile, filename: newFilename });
-            }
-        } catch (error) {
-            console.error("Error renaming file:", error);
-        }
-    };
-
-
-    const handleDelete = async (fileId: string) => {
-        try {
-            const response = await fetch(`/api/documents/delete/${fileId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete files');
-            }
-
-            setFiles(files.filter(file => file._id !== fileId));
-        } catch (error) {
-            console.error('Error deleting file:', error);
-        }
     };
 
     const handleSearch = async () => {
@@ -280,12 +212,9 @@ const DisplayFiles: React.FC = () => {
                 ))}
             </ul>
             {selectedFile && (
-                <FileView 
-                    file={selectedFile} 
-                    onClose={handleCloseFileView} 
-                    onRename={handleRename} 
-                    onDelete={handleDelete} 
-                    onDownload={handleDownload} 
+                <FileView
+                    file={selectedFile}
+                    onClose={handleCloseFileView}
                 />
             )}
         </div>

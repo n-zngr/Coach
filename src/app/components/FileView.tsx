@@ -160,7 +160,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
             <div className={`
-                h-full bg-white dark:bg-neutral-900 p-6 overflow-y-auto 
+                h-full bg-white dark:bg-neutral-950 p-6 overflow-y-auto 
                 transition-transform duration-300 
                 ${file ? 'translate-x-0 w-96' : 'translate-x-full w-0'}`}
             >
@@ -178,7 +178,13 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     />
                     <button
                         onClick={handleRename}
-                        className="bg-blue-500 text-white px-4 py-2 mt-2 rounded-md"
+                        className="
+                            py-2 px-4 mt-4
+                            bg-blue-200 dark:bg-blue-950
+                            hover:bg-blue-100 hover:dark:bg-blue-900
+                            border border-rounded rounded-lg border-blue-200 dark:border-blue-800
+                            text-black dark:text-white
+                            transition-colors duration-300"
                     >
                         Rename
                     </button>
@@ -192,16 +198,43 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     </p>
                 </div>
                 <div className="mt-6 space-y-4">
-                    <button onClick={handleDownload} className="bg-green-500 text-white w-full py-2 rounded-md">
+                    <button
+                        onClick={handleDownload}
+                        className="
+                            w-full py-2 px-4
+                            bg-green-200 dark:bg-green-950
+                            hover:bg-green-100 hover:dark:bg-green-900
+                            border border-rounded rounded-lg border-green-200 dark:border-green-800
+                            text-black dark:text-white
+                            transition-colors duration-300
+                        "
+                    >
                         Download
                     </button>
-                    <button onClick={handleDelete} className="bg-red-500 text-white w-full py-2 rounded-md">
+                    <button
+                        onClick={handleDelete}
+                        className="
+                            w-full py-2 px-4
+                            bg-red-200 dark:bg-red-950
+                            hover:bg-red-100 hover:dark:bg-red-900
+                            border border-rounded rounded-lg border-red-200 dark:border-red-800
+                            text-black dark:text-white
+                            transition-colors duration-300
+                        "
+                    >
                         Delete
                     </button>
                     <button
                     onClick={toggleMoveCard}
                     ref={moveButtonRef}
-                    className="bg-yellow-500 text-white px-4 py-2 mt-2 rounded-md w-full"
+                    className="
+                        w-full py-2 px-4
+                        bg-blue-200 dark:bg-blue-950
+                        hover:bg-blue-100 hover:dark:bg-blue-900
+                        border border-rounded rounded-lg border-blue-200 dark:border-blue-800
+                        text-black dark:text-white
+                        transition-colors duration-300
+                    "
                 >
                     Move File
                 </button>

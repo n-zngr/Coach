@@ -1,19 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MongoClient, ObjectId } from 'mongodb';
+import { getCollection } from '@/app/utils/mongodb';
+import { ObjectId } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-const DATABASE_NAME = 'users';
-const COLLECTION_NAME = 'users';
-
-let client: MongoClient | null = null;
-
-async function connectToDatabase() {
-    if (!client) {
-        client = new MongoClient(MONGODB_URI);
-        await client.connect();
-    }
-    return client.db(DATABASE_NAME).collection(COLLECTION_NAME);
-}
+const dbName = 'users';
+const dbCol = 'users';
 
 export async function GET(req: NextRequest) {
     const cookies = req.headers.get('cookie');
@@ -30,7 +20,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const collection = await connectToDatabase();
+        const collection = await getCollection(dbName, dbCol);
         const user = await collection.findOne({ _id: new ObjectId(userId) });
 
         if (!user) {

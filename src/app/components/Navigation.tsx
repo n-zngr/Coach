@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LogoutButton from "./LogOut";
 import Link from "next/link";
 
 interface NavigationProps {
@@ -67,6 +68,9 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         >
                             Signup
                         </a>
+
+                        <LogoutButton/>
+
                         <a 
                             href="/login" 
                             className="block p-3 rounded-md 

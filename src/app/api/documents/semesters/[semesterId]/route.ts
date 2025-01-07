@@ -47,9 +47,26 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
 
     try {
         const usersCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME)
+
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        let subjectType = (user.subjectTypes || []).find((type: any) => type.name === name);
+
+        if (!subjectType) {
+            subjectType = { id: new ObjectId().toString(), name};
+            await usersCollection.updateOne(
+                { _id: new ObjectId(userId) },
+                { $addToSet: { subjectTypes: subjectType } }
+            );
+        }
+
         const newSubject = {
             id: new ObjectId().toString(),
             name,
+            typeId: subjectType.id,
             topics: [],
         };
 

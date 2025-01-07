@@ -2,12 +2,10 @@ import { NextResponse } from "next/server";
 import { getCollection } from "@/app/utils/mongodb";
 import { verifyPassword } from "@/app/utils/passwordHash";
 
-const dbName = "users";
-const collectionName = "users"; 
+const DATABASE_NAME = 'users';
+const COLLECTION_NAME = 'users'; 
 
 export async function POST(request: Request) {
-
-
     try {
         const { email, password } = await request.json();
 
@@ -15,7 +13,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Username and password are required" }, { status: 400 });
         }
 
-        const collection = await getCollection(dbName, collectionName);
+        const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
 
         const user = await collection.findOne({ email });
 

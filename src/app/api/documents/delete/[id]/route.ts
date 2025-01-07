@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getCollection } from '@/app/utils/mongodb';
-import { ObjectId } from 'mongodb';
 
-const dbName = 'documents'
-const dbCol = 'fs.files'
+import { MongoClient, ObjectId } from 'mongodb';
+import { getCollection } from '@/app/utils/mongodb';
+
+const DATABASE_NAME = 'documents';
+const COLLECTION_NAME = 'fs.files';
+
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
 
     try {
         const { id } = await params;
-        const collection = await getCollection(dbName,dbCol)
-        const deleteFile = await collection.deleteOne({ _id: new ObjectId(id) });
+
+        const bucket = await getCollection(DATABASE_NAME, COLLECTION_NAME);
+        const deleteFile = await bucket.deleteOne({ _id: new ObjectId(id) });
 
         if (!deleteFile.deletedCount) {
             throw new Error('File not found or already deleted');

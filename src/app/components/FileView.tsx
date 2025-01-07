@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface File {
     _id: string;
@@ -15,6 +15,28 @@ interface File {
     };
 }
 
+interface Semester {
+    id: string;
+    name: string;
+    subjects: Subject[];
+}
+
+interface Subject {
+    id: string;
+    name: string;
+    topics: Topic[];
+}
+
+interface Topic {
+    id: string;
+    name: string;
+}
+
+interface FileViewProps {
+    file: File | null;
+    onClose: () => void;
+}
+
 interface FileViewProps {
     file: File | null;
     onClose: () => void;
@@ -22,9 +44,28 @@ interface FileViewProps {
 
 const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const [newFilename, setNewFilename] = useState<string>(file?.filename || "");
+    const [semesters, setSemesters] = useState<Semester[]>([]);
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [showMoveCard, setShowMoveCard] = useState(false);
+    const moveButtonRef = useRef<HTMLButtonElement | null>(null);
     
     useEffect(() => {
         setNewFilename(file?.filename || "");
+
+        const fetchSemesters = async () => {
+            try {
+                const response = await fetch('/api/documents/semesters', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+                const data = await response.json();
+                setSemesters(data);
+            } catch (error) {
+                console.error("Error fetching semesters: ", error);
+            }
+        };
+
+        fetchSemesters();
     }, [file]);
 
     if (!file) return null;
@@ -45,6 +86,36 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         } catch (error) {
             console.error("Error renaming file:", error);
         }
+    };
+
+    const handleMoveFile = async () => {
+        if (!selectedOption) {
+            alert('Please select a new location for the file.');
+            return;
+        }
+
+        const [semesterId, subjectId, topicId] = selectedOption.split('/');
+
+        try {
+            const response = await fetch (`/api/documents/move/${file._id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ semesterId, subjectId, topicId })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to move file');
+            }
+
+            console.log('File moved successfully');
+            setShowMoveCard(false);
+        } catch (error) {
+            console.error('Error moving file:', error);
+        }
+    };
+
+    const toggleMoveCard = () => {
+        setShowMoveCard((prev) => !prev);
     };
 
     const handleDownload = async () => {
@@ -127,7 +198,54 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     <button onClick={handleDelete} className="bg-red-500 text-white w-full py-2 rounded-md">
                         Delete
                     </button>
+                    <button
+                    onClick={toggleMoveCard}
+                    ref={moveButtonRef}
+                    className="bg-yellow-500 text-white px-4 py-2 mt-2 rounded-md w-full"
+                >
+                    Move File
+                </button>
                 </div>
+                
+                {showMoveCard && (
+                    <div className="absolute mt-2 bg-white shadow-lg border rounded p-4" style={{ top: moveButtonRef.current?.offsetHeight || 0 }}>
+                        <h3 className="text-lg font-semibold mb-2 text-black">Select New Location</h3>
+                        <select
+                            onChange={(e) => setSelectedOption(e.target.value)}
+                            value={selectedOption || ''}
+                            className="w-full border border-gray-300 rounded p-2 mb-4"
+                        >
+                            <option value="">Select new file location</option>
+                            {semesters.map(semester => (
+                                <option key={semester.id} value={`${semester.id}`} disabled className="text-gray">{semester.name}</option>
+                            ))}
+                            {semesters.map(semester =>
+                                semester.subjects.map(subject => (
+                                    <option key={subject.id} value={`${semester.id}/${subject.id}`} disabled className="text-gray"> &nbsp;&nbsp;{subject.name}</option>
+                                ))
+                            )}
+                            {semesters.map(semester =>
+                                semester.subjects.map(subject =>
+                                    subject.topics.map(topic => (
+                                        <option
+                                            key={topic.id}
+                                            value={`${semester.id}/${subject.id}/${topic.id}`}
+                                            className="text-black"
+                                        >
+                                            &nbsp;&nbsp;&nbsp;&nbsp;{topic.name}
+                                        </option>
+                                    ))
+                                )
+                            )}
+                        </select>
+                        <button
+                            onClick={handleMoveFile}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
+                        >
+                            Move File
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -98,7 +98,7 @@ export default function Documents() {
 
     const handleSubmit = async () => {
         if (!name) return;
-
+    
         try {
             const response = await fetch('/api/documents/semesters', {
                 method: 'POST',
@@ -106,9 +106,9 @@ export default function Documents() {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
-                body: JSON.stringify({ name }),
+                body: JSON.stringify({ name: name.toLowerCase() }),
             });
-
+    
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
@@ -120,6 +120,7 @@ export default function Documents() {
             console.error('Error adding semester:', error);
         }
     };
+    
 
     const toggleNavigation = () => {
         setIsExpanded(!isExpanded);

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
-        const isMatch = verifyPassword(password, user.hashedPassword);
+        const isMatch = await verifyPassword(password, user.hashedPassword);
 
         if (!isMatch) {
             return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { MongoClient, ObjectId } from 'mongodb';
+import { getCollection } from '@/app/utils/mongodb';
+import { ObjectId } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-const DATABASE_NAME = 'users';
-const COLLECTION_NAME = 'users';
+const dbName = 'users';
+const dbCol = 'users';
 
 export async function GET(req: Request, { params }: { params: { semesterId: string; subjectId: string; topicId: string } }) {
     const cookies = req.headers.get('cookie');
@@ -15,14 +15,9 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
     }
 
     try {
-        const client = new MongoClient(MONGODB_URI);
-        await client.connect();
-        const db = client.db(DATABASE_NAME);
-        const usersCollection = db.collection(COLLECTION_NAME);
+        const usersCollection = await getCollection(dbName, dbCol)
 
         const user = await usersCollection.findOne({ _id: new ObjectId(userId)});
-
-        client.close();
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });

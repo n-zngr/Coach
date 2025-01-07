@@ -1,22 +1,9 @@
 import { NextResponse } from "next/server";
-import { MongoClient, Db, Collection } from "mongodb";
+import { getCollection } from "@/app/utils/mongodb";
 import { hashPassword } from "@/app/utils/passwordHash";
 
-const MONGODB_URI = process.env.MONGODB_URI! as string; // Ensure this is defined in your .env file
-const DATABASE_NAME = "users";
-const COLLECTION_NAME = "users";
-
-let client: MongoClient | null = null;
-
-async function connectToDatabase(): Promise<Collection> {
-  if (!client) {
-    client = new MongoClient(MONGODB_URI);
-    await client.connect();
-  }
-  const db: Db = client.db(DATABASE_NAME);
-  return db.collection(COLLECTION_NAME);
-}
-
+const dbName = "users";
+const dbCol = "users";
 export async function POST(request: Request) {
   try {
     const { email, password} = await request.json();
@@ -27,7 +14,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    const collection = await connectToDatabase();
+    const collection = await getCollection(dbName, dbCol);
 
     const user = await collection.findOne({ email });
 

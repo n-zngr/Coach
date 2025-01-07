@@ -47,11 +47,10 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [showMoveCard, setShowMoveCard] = useState(false);
+    const [filePath, setFilePath] = useState<string | null>(null);
     const moveButtonRef = useRef<HTMLButtonElement | null>(null);
     
     useEffect(() => {
-        setNewFilename(file?.filename || "");
-
         const fetchSemesters = async () => {
             try {
                 const response = await fetch('/api/documents/semesters', {
@@ -60,11 +59,19 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 });
                 const data = await response.json();
                 setSemesters(data);
+    
+                if (file?.metadata.semesterId && file?.metadata.subjectId && file?.metadata.topicId) {
+                    const semester = data.find((s: Semester) => s.id === file.metadata.semesterId);
+                    const subject = semester?.subjects.find((sub: Subject) => sub.id === file.metadata.subjectId);
+                    const topic = subject?.topics.find((t: Topic) => t.id === file.metadata.topicId);
+    
+                    setFilePath(`${semester?.name || ''} / ${subject?.name || ''} / ${topic?.name || ''}`);
+                }
             } catch (error) {
                 console.error("Error fetching semesters: ", error);
             }
         };
-
+    
         fetchSemesters();
     }, [file]);
 
@@ -195,6 +202,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     </p>
                     <p>
                         <strong>File Size:</strong> {(file.length / 1024).toFixed(2)} KB
+                    </p>
+                    <p>
+                        <strong>File Location:</strong> {filePath || "Location not set"}
                     </p>
                 </div>
                 <div className="mt-6 space-y-4">

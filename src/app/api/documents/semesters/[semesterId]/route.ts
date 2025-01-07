@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/app/utils/mongodb";
 import { ObjectId } from "mongodb";
+import { getCollection } from "@/app/utils/mongodb";
 
-const dbName = "users";
-const dbCol = "users";
+const DATABASE_NAME = "users";
+const COLLECTION_NAME = "users";
 
 export async function GET(req: Request, { params }: { params: { semesterId: string } }) {
     const cookies = req.headers.get('cookie');
@@ -15,7 +15,7 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
     }
 
     try {
-        const usersCollection = await getCollection(dbName, dbCol)
+        const usersCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME)
         const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
 
         if (!user) {
@@ -46,7 +46,7 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
     }
 
     try {
-        const usersCollection = await getCollection(dbName, dbCol)
+        const usersCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME)
         const newSubject = {
             id: new ObjectId().toString(),
             name,

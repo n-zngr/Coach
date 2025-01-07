@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { MongoClient, ObjectId } from "mongodb";
+import { getCollection } from "@/app/utils/mongodb";
+import { ObjectId } from "mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-const DATABASE_NAME = "users";
-const COLLECTION_NAME = "users";
+const dbName = "users";
+const dbCol = "users";
 
 export async function GET(req: Request, { params }: { params: { semesterId: string; subjectId: string } }) {
     const cookies = req.headers.get('cookie');
@@ -15,14 +15,8 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
     }
 
     try {
-        const client = new MongoClient(MONGODB_URI);
-        await client.connect();
-        const db = client.db(DATABASE_NAME);
-        const usersCollection = db.collection(COLLECTION_NAME);
-
+        const usersCollection = await getCollection(dbName,dbCol)
         const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
-
-        client.close();
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -58,10 +52,7 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
     }
 
     try {
-        const client = new MongoClient(MONGODB_URI);
-        await client.connect();
-        const db = client.db(DATABASE_NAME);
-        const usersCollection = db.collection(COLLECTION_NAME);
+        const usersCollection = await getCollection(dbName, dbCol)
 
         const newTopic = {
             id: new ObjectId().toString(),
@@ -73,8 +64,6 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
             { $addToSet: { "semesters.$[semester].subjects.$[subject].topics": newTopic } },
             { arrayFilters: [{ "semester.id": semesterId }, { "subject.id": subjectId }] }
         );
-
-        client.close();
 
         if (updateResult.modifiedCount === 0) {
             return NextResponse.json({ error: "Failed to add topic" }, { status: 400 });

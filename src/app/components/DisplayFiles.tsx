@@ -24,6 +24,8 @@ const DisplayFiles: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [query, setQuery] = useState<string>("");
     const [searchActive, setSearchActive] = useState<boolean>(false);
+    const [subjectTypes, setSubjectTypes] = useState<{ id: string; name: string }[]>([]);
+    const [selectedSubjectType, setSelectedSubjectType] = useState<string | null>(null);
 
     const pathname = usePathname();
     const pathSegments = pathname.split("/").filter(Boolean);
@@ -61,6 +63,20 @@ const DisplayFiles: React.FC = () => {
 
 
     useEffect(() => {
+        const fetchSubjectTypes = async () => {
+            try {
+                const response = await fetch('/api/documents/subjectTypes', { method: 'GET', credentials: 'include' });
+                console.log(response);
+                if (!response.ok) throw new Error('Failed to fetch subject types');
+    
+                const data = await response.json();
+                setSubjectTypes(data);
+            } catch (error) {
+                console.error('Error fetching subject types:', error);
+            }
+        };
+    
+        fetchSubjectTypes();
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 
@@ -73,23 +89,23 @@ const DisplayFiles: React.FC = () => {
     };
 
     const handleSearch = async () => {
-        if (query.trim() === '') return;
-
+        if (query.trim() === '' && !selectedSubjectType) return;
+    
         setLoading(true);
         setSearchActive(true);
-
+    
         try {
             const response = await fetch('/api/documents/search', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
+                body: JSON.stringify({ query, subjectTypeId: selectedSubjectType }),
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to fetch search results');
             }
-
+    
             const data = await response.json();
             setFiles(data);
         } catch (error) {
@@ -176,6 +192,18 @@ const DisplayFiles: React.FC = () => {
                     </button>
                 )}
             </div>
+            <select
+                value={selectedSubjectType || ''}
+                onChange={(e) => setSelectedSubjectType(e.target.value || null)}
+                className="p-2 border rounded-lg"
+            >
+                <option value="">All Subject Types</option>
+                {subjectTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                        {type.name}
+                    </option>
+                ))}
+            </select>
     
             {files.length === 0 && searchActive && (
                 <p>No files found for the selected filters.</p>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { ObjectId } from 'mongodb';
 import { getCollection, closeMongoDB } from '@/app/utils/mongodb';
 
 const DATABASE_NAME = 'documents';
@@ -15,6 +16,22 @@ export async function POST(req: Request) {
 
         if (!userId) {
             return NextResponse.json({ error: 'UserId is required' }, { status: 401 });
+        }
+        
+        const usersCollection = await getCollection('users', 'users');
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        let subjectIds: string[] = [];
+        if (subjectTypeId) {
+            subjectIds = user.semesters.flatMap((semester: any) =>
+                semester.subjects
+                    .filter((subject: any) => subject.typeId === subjectTypeId)
+                    .map((subject: any) => subject.id)
+            );
         }
 
         if (!query || query.trim() === '') {
@@ -42,8 +59,12 @@ export async function POST(req: Request) {
 
         const searchQuery: any = {
             'metadata.userId': userId,
-            'filename': { $regex: query, $options: 'i' },
+            'filename': { $regex: query || '', $options: 'i' },
         };
+        
+        if (subjectIds.length > 0) {
+            searchQuery['metadata.subjectId'] = { $in: subjectIds };
+        }
 
         // If subjectIds are available, include them in the query
         if (subjectIds.length > 0) {

@@ -78,6 +78,20 @@ const DisplayFiles: React.FC = () => {
     };
 
     useEffect(() => {
+        const fetchSubjectTypes = async () => {
+            try {
+                const response = await fetch('/api/documents/subjectTypes', { method: 'GET', credentials: 'include' });
+                console.log(response);
+                if (!response.ok) throw new Error('Failed to fetch subject types');
+    
+                const data = await response.json();
+                setSubjectTypes(data);
+            } catch (error) {
+                console.error('Error fetching subject types:', error);
+            }
+        };
+    
+        fetchSubjectTypes();
         fetchFiles();
         fetchSubjectTypes();
     }, [semesterId, subjectId, topicId]);
@@ -91,11 +105,11 @@ const DisplayFiles: React.FC = () => {
     };
 
     const handleSearch = async () => {
-        if (query.trim() === '') return;
-
+        if (query.trim() === '' && !selectedSubjectType) return;
+    
         setLoading(true);
         setSearchActive(true);
-
+    
         try {
             const response = await fetch('/api/documents/search', {
                 method: 'POST',
@@ -103,12 +117,11 @@ const DisplayFiles: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query, subjectTypeId: selectedSubjectType })
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to fetch search results');
             }
-            
-            console.log('Response Status:', response.status);
+
             const data = await response.json();
             console.log('Search Data:', data);
             
@@ -191,6 +204,18 @@ const DisplayFiles: React.FC = () => {
                     </button>
                 )}
             </div>
+            <select
+                value={selectedSubjectType || ''}
+                onChange={(e) => setSelectedSubjectType(e.target.value || null)}
+                className="p-2 border rounded-lg"
+            >
+                <option value="">All Subject Types</option>
+                {subjectTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                        {type.name}
+                    </option>
+                ))}
+            </select>
     
             {files.length === 0 && searchActive && (
                 <p>No files found for the selected filters.</p>

@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getCollection } from '@/app/utils/mongodb';
-import { ObjectId } from 'mongodb';
 
-const DATABASE_NAME = 'users';
-const COLLECTION_NAME = 'users';
+import { ObjectId } from 'mongodb';
+import { getCollection } from '@/app/utils/mongodb';
 
 export async function GET(req: Request) {
     try {
@@ -14,18 +12,21 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'UserId is required' }, { status: 401 });
         }
 
-        const usersCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
-
+        const usersCollection = await getCollection('users', 'users');
         const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const subjectTypes = user.subjectTypes || [];
+        const subjectTypes = user.subjectTypes.map((type: any) => ({
+            id: type.id,
+            name: type.name,
+        }));
+
         return NextResponse.json(subjectTypes, { status: 200 });
     } catch (error) {
         console.error('Error fetching subject types:', error);
         return NextResponse.json({ message: 'Failed to fetch subject types', error }, { status: 500 });
     }
-
 }

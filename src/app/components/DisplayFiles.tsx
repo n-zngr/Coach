@@ -24,6 +24,8 @@ const DisplayFiles: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [query, setQuery] = useState<string>("");
     const [searchActive, setSearchActive] = useState<boolean>(false);
+    const [subjectTypes, setSubjectTypes] = useState<{ id: string; name: string }[]>([]);
+    const [selectedSubjectType, setSelectedSubjectType] = useState<string | null>(null);
 
     const pathname = usePathname();
     const pathSegments = pathname.split("/").filter(Boolean);
@@ -32,9 +34,9 @@ const DisplayFiles: React.FC = () => {
     const subjectId = pathSegments[2] || null;
     const topicId = pathSegments[3] || null;
 
-    const fetchFiles = async () => {
+    const fetchFiles = async (subjectTypeId: string | null = null) => {
         setLoading(true);
-
+    
         try {
             const response = await fetch(`/api/documents/files`, {
                 method: 'GET',
@@ -43,25 +45,41 @@ const DisplayFiles: React.FC = () => {
                     'semesterId': semesterId ?? '',
                     'subjectId': subjectId ?? '',
                     'topicId': topicId ?? '',
-                }
+                    'subjectTypeId': subjectTypeId ?? '',
+                },
             });
-
+    
             if (!response.ok) {
-                throw new Error("Failed to fetch files");
+                throw new Error('Failed to fetch files');
             }
-
+    
             const data = await response.json();
             setFiles(data);
         } catch (error) {
-            console.error("Error fetching files: ", error);
+            console.error('Error fetching files:', error);
         } finally {
             setLoading(false);
         }
     };
 
+    const fetchSubjectTypes = async () => {
+        try {
+            const response = await fetch('/api/documents/subjectTypes', { credentials: 'include' });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch subject types');
+            }
+
+            const data = await response.json();
+            setSubjectTypes(data);
+        } catch (error) {
+            console.error('Error fetching subject types:', error);
+        }
+    };
 
     useEffect(() => {
         fetchFiles();
+        fetchSubjectTypes();
     }, [semesterId, subjectId, topicId]);
 
     const handleFileClick = (file: File) => {
@@ -83,14 +101,17 @@ const DisplayFiles: React.FC = () => {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
+                body: JSON.stringify({ query, subjectTypeId: selectedSubjectType })
             });
 
             if (!response.ok) {
                 throw new Error('Failed to fetch search results');
             }
-
+            
+            console.log('Response Status:', response.status);
             const data = await response.json();
+            console.log('Search Data:', data);
+            
             setFiles(data);
         } catch (error) {
             console.error('Error searching files:', error);
@@ -99,38 +120,13 @@ const DisplayFiles: React.FC = () => {
         }
     };
 
+
     const resetSearch = () => {
         setQuery('');
         setSearchActive(false);
-        const fetchFiles = async () => {
-            setLoading(true);
-
-            try {
-                const response = await fetch(`/api/documents/files`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'semesterId': semesterId ?? '',
-                        'subjectId': subjectId ?? '',
-                        'topicId': topicId ?? '',
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch files");
-                }
-
-                const data = await response.json();
-                setFiles(data);
-            } catch (error: any) {
-                console.error("Error fetching files: ", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchFiles();
+        fetchFiles(selectedSubjectType);
     };
+    
 
     if (loading) {
         return <p>Loading files...</p>;
@@ -153,6 +149,25 @@ const DisplayFiles: React.FC = () => {
                     className="w-full p-2
                         border text-black border-neutral-200 dark:border-neutral-800 rounded-lg focus:outline-none"
                 />
+                <div className="flex space-x-2 mb-4">
+                    <select
+                        value={selectedSubjectType ?? ''}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setSelectedSubjectType(value || null);
+                            fetchFiles(value || null);
+                        }}
+                        className="w-full p-2 border text-black border-neutral-200 dark:border-neutral-800 rounded-lg"
+                    >
+                        <option value="">Filter by Subject Type</option>
+                        {subjectTypes.map((type) => (
+                            <option key={type.id} value={type.id}>
+                                {type.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
                 <button 
                     onClick={handleSearch} 
                     className="

@@ -66,7 +66,6 @@ const DisplayFiles: React.FC = () => {
         const fetchSubjectTypes = async () => {
             try {
                 const response = await fetch('/api/documents/subjectTypes', { method: 'GET', credentials: 'include' });
-                console.log(response);
                 if (!response.ok) throw new Error('Failed to fetch subject types');
     
                 const data = await response.json();
@@ -89,7 +88,10 @@ const DisplayFiles: React.FC = () => {
     };
 
     const handleSearch = async () => {
-        if (query.trim() === '' && !selectedSubjectType) return;
+        if (!query.trim() && !selectedSubjectType) {
+            resetSearch();
+            return;
+        }
     
         setLoading(true);
         setSearchActive(true);
@@ -181,6 +183,18 @@ const DisplayFiles: React.FC = () => {
                 >
                     Search
                 </button>
+                <select
+                    value={selectedSubjectType || ''}
+                    onChange={(e) => setSelectedSubjectType(e.target.value || null)}
+                    className="p-2 border rounded-lg text-black"
+                >
+                    <option value="">All Subject Types</option>
+                    {subjectTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                            {type.name}
+                        </option>
+                    ))}
+                </select>
                 {searchActive && (
                     <button 
                         onClick={resetSearch} 
@@ -192,18 +206,7 @@ const DisplayFiles: React.FC = () => {
                     </button>
                 )}
             </div>
-            <select
-                value={selectedSubjectType || ''}
-                onChange={(e) => setSelectedSubjectType(e.target.value || null)}
-                className="p-2 border rounded-lg text-black"
-            >
-                <option value="">All Subject Types</option>
-                {subjectTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                        {type.name}
-                    </option>
-                ))}
-            </select>
+            
 
             {files.length === 0 && searchActive && (
                 <p>No files found for the selected filters.</p>

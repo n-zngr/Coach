@@ -33,15 +33,15 @@ export async function POST(req: Request) {
             );
         }
 
-        if (!query || query.trim() === '') {
-            return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
+        if (!query?.trim() && !subjectTypeId) {
+            return NextResponse.json({ error: 'No search parameters provided' }, { status: 400 });
         }
 
         const filesCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
 
         const searchQuery: any = {
             'metadata.userId': userId,
-            'filename': { $regex: query || '', $options: 'i' },
+            ...(query?.trim() && { 'filename': { $regex: query, $options: 'i' } }),
         };
         
         if (subjectIds.length > 0) {

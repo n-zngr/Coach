@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { ObjectId } from 'mongodb';
 import { getCollection } from '@/app/utils/mongodb';
 

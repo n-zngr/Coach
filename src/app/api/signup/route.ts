@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/app/utils/mongodb";
 import { hashPassword } from "@/app/utils/passwordHash";
-import { getCollection } from "@/app/utils/mongodb";
 
 const DATABASE_NAME = 'users';
 const COLLECTION_NAME = 'users';

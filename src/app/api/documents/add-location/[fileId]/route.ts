@@ -13,7 +13,6 @@ export async function PATCH(req: Request, { params }: { params: { fileId: string
             return NextResponse.json({ message: 'File ID is required' }, { status: 400 });
         }
 
-        // Validate fileId format
         if (!ObjectId.isValid(fileId)) {
             return NextResponse.json({ message: 'Invalid file ID format' }, { status: 400 });
         }
@@ -29,7 +28,6 @@ export async function PATCH(req: Request, { params }: { params: { fileId: string
         const db = client.db('documents');
         const filesCollection = db.collection('fs.files');
 
-        // Ensure metadata field is updated correctly
         const updateResult = await filesCollection.updateOne(
             { _id: new ObjectId(fileId) },
             {

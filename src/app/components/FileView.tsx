@@ -9,9 +9,9 @@ interface File {
     length: number;
     metadata: {
         userId: string;
-        semesterId?: string;
-        subjectId?: string;
-        topicId?: string;
+        semesterIds?: string[];
+        subjectIds?: string[];
+        topicIds?: string[];
     };
 }
 
@@ -63,12 +63,16 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 const data = await response.json();
                 setSemesters(data);
 
-                if (file?.metadata.semesterId && file?.metadata.subjectId && file?.metadata.topicId) {
-                    const semester = data.find((s: Semester) => s.id === file.metadata.semesterId);
-                    const subject = semester?.subjects.find((sub: Subject) => sub.id === file.metadata.subjectId);
-                    const topic = subject?.topics.find((t: Topic) => t.id === file.metadata.topicId);
+                if (file?.metadata.semesterIds && file?.metadata.subjectIds && file?.metadata.topicIds) {
+                    const paths = file.metadata.topicIds.map((topicId, index) => {
+                        const semester = data.find((s: Semester) => s.id === file.metadata.semesterIds![0]);
+                        const subject = semester?.subjects.find((sub: Subject) => sub.id === file.metadata.subjectIds![0]);
+                        const topic = subject?.topics.find((t: Topic) => t.id === topicId);
 
-                    setFilePath(`${semester?.name || ''} / ${subject?.name || ''} / ${topic?.name || ''}`);
+                        return `${semester?.name || ''} / ${subject?.name || ''} / ${topic?.name || ''}`;
+                    });
+
+                    setFilePath(paths.join(', '));
                 }
             } catch (error) {
                 console.error("Error fetching semesters: ", error);
@@ -180,7 +184,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: file.metadata.userId, // Include the userId
+                    userId: file.metadata.userId,
                     semesterId,
                     subjectId,
                     topicId,

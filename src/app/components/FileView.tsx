@@ -49,6 +49,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const [showMoveCard, setShowMoveCard] = useState(false);
     const [filePath, setFilePath] = useState<string | null>(null);
     const moveButtonRef = useRef<HTMLButtonElement | null>(null);
+    const [selectedAddLocation, setSelectedAddLocation] = useState<string | null>(null);
+    const [showAddLocationCard, setShowAddLocationCard] = useState(false);
+    const addLocationButtonRef = useRef<HTMLButtonElement | null>(null);
     
     useEffect(() => {
         const fetchSemesters = async () => {
@@ -59,19 +62,19 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 });
                 const data = await response.json();
                 setSemesters(data);
-    
+
                 if (file?.metadata.semesterId && file?.metadata.subjectId && file?.metadata.topicId) {
                     const semester = data.find((s: Semester) => s.id === file.metadata.semesterId);
                     const subject = semester?.subjects.find((sub: Subject) => sub.id === file.metadata.subjectId);
                     const topic = subject?.topics.find((t: Topic) => t.id === file.metadata.topicId);
-    
+
                     setFilePath(`${semester?.name || ''} / ${subject?.name || ''} / ${topic?.name || ''}`);
                 }
             } catch (error) {
                 console.error("Error fetching semesters: ", error);
             }
         };
-    
+
         fetchSemesters();
     }, [file]);
 
@@ -162,6 +165,42 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         } catch (error) {
             console.error('Error deleting file', error);
         }
+    };
+
+    const handleAddLocation = async () => {
+        if (!selectedAddLocation) {
+            alert('Please select an additional location for the file.');
+            return;
+        }
+    
+        const [semesterId, subjectId, topicId] = selectedAddLocation.split('/');
+    
+        try {
+            const response = await fetch(`/api/documents/add-location/${file._id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: file.metadata.userId, // Include the userId
+                    semesterId,
+                    subjectId,
+                    topicId,
+                }),
+            });
+    
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to add location');
+            }
+    
+            console.log('Location added successfully');
+            setShowAddLocationCard(false);
+        } catch (error) {
+            console.error('Error adding location:', error);
+        }
+    };
+
+    const toggleAddLocationCard = () => {
+        setShowAddLocationCard((prev) => !prev);
     };
 
     return (
@@ -286,6 +325,80 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
                         >
                             Move File
+                        </button>
+                    </div>
+                )}
+
+                <div className="mt-6 space-y-4">
+                    <button
+                        onClick={toggleAddLocationCard}
+                        ref={addLocationButtonRef}
+                        className="
+                            w-full py-2 px-4
+                            bg-blue-200 dark:bg-blue-950
+                            hover:bg-blue-100 hover:dark:bg-blue-900
+                            border border-rounded rounded-lg border-blue-200 dark:border-blue-800
+                            text-black dark:text-white
+                            transition-colors duration-300
+                        "
+                    >
+                        Add to Location
+                    </button>
+                </div>
+
+                {showAddLocationCard && (
+                    <div
+                        className="absolute mt-2 bg-white shadow-lg border rounded p-4"
+                        style={{ top: addLocationButtonRef.current?.offsetHeight || 0 }}
+                    >
+                        <h3 className="text-lg font-semibold mb-2 text-black">Select Additional Location</h3>
+                        <select
+                            onChange={(e) => setSelectedAddLocation(e.target.value)}
+                            value={selectedAddLocation || ''}
+                            className="w-full border border-gray-300 rounded p-2 mb-4"
+                        >
+                            <option value="">Select additional file location</option>
+                            {semesters.map((semester) => (
+                                <option
+                                    key={semester.id}
+                                    value={`${semester.id}`}
+                                    disabled
+                                    className="text-gray"
+                                >
+                                    {semester.name}
+                                </option>
+                            ))}
+                            {semesters.map((semester) =>
+                                semester.subjects.map((subject) => (
+                                    <option
+                                        key={subject.id}
+                                        value={`${semester.id}/${subject.id}`}
+                                        disabled
+                                        className="text-gray"
+                                    >
+                                        &nbsp;&nbsp;{subject.name}
+                                    </option>
+                                ))
+                            )}
+                            {semesters.map((semester) =>
+                                semester.subjects.map((subject) =>
+                                    subject.topics.map((topic) => (
+                                        <option
+                                            key={topic.id}
+                                            value={`${semester.id}/${subject.id}/${topic.id}`}
+                                            className="text-black"
+                                        >
+                                            &nbsp;&nbsp;&nbsp;&nbsp;{topic.name}
+                                        </option>
+                                    ))
+                                )
+                            )}
+                        </select>
+                        <button
+                            onClick={handleAddLocation}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
+                        >
+                            Add Location
                         </button>
                     </div>
                 )}

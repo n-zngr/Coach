@@ -18,11 +18,12 @@ export async function POST(req: Request) {
         const formData = await req.formData();
         const file = formData.get('file') as File;
         const fileName = file?.name;
-        const semesterId = formData.get('semesterId') as string;
-        const subjectId = formData.get('subjectId') as string;
-        const topicId = formData.get('topicId') as string;
 
-        if (!file || !fileName || !semesterId || !subjectId || !topicId) {
+        const semesterIds = formData.getAll('semesterIds') as string[];
+        const subjectIds = formData.getAll('subjectIds') as string[];
+        const topicIds = formData.getAll('topicIds') as string[];
+
+        if (!file || !fileName || semesterIds.length === 0 || subjectIds.length === 0 || topicIds.length === 0) {
             return NextResponse.json({ message: 'Missing required data for file upload' }, { status: 400 });
         }
 
@@ -36,9 +37,9 @@ export async function POST(req: Request) {
         const uploadStream = bucket.openUploadStream(fileName, {
             metadata: {
                 userId: userId,
-                semesterId: semesterId,
-                subjectId: subjectId,
-                topicId: topicId
+                semesterIds: semesterIds,
+                subjectIds: subjectIds,
+                topicIds: topicIds
             }
         });
 

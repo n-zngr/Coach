@@ -21,7 +21,7 @@ interface Topic {
 
 const FileUpload: React.FC = () => {
     const [semesters, setSemesters] = useState<Semester[]>([]);
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -54,22 +54,32 @@ const FileUpload: React.FC = () => {
     };
 
     const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedOption(e.target.value);
+        const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
+        setSelectedOptions(selectedValues);
     };
 
     const handleUpload = async () => {
-        if (!file || !selectedOption) {
-            setErrorMessage("Please select a file and a topic to upload.");
+        if (!file || selectedOptions.length === 0) {
+            setErrorMessage("Please select a file and at least one topic to upload.");
             return;
         }
 
-        const [semesterId, subjectId, topicId] = selectedOption.split("/");
+        const semesterIds: string[] = [];
+        const subjectIds: string[] = [];
+        const topicIds: string[] = [];
+
+        selectedOptions.forEach(option => {
+            const [semesterId, subjectId, topicId] = option.split("/");
+            if (semesterId && !semesterIds.includes(semesterId)) semesterIds.push(semesterId);
+            if (subjectId && !subjectIds.includes(subjectId)) subjectIds.push(subjectId);
+            if (topicId && !topicIds.includes(topicId)) topicIds.push(topicId);
+        });
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('semesterId', semesterId);
-        formData.append('subjectId', subjectId);
-        formData.append('topicId', topicId);
+        semesterIds.forEach(id => formData.append('semesterIds', id));
+        subjectIds.forEach(id => formData.append('subjectIds', id));
+        topicIds.forEach(id => formData.append('topicIds', id));
 
         setLoading(true);
         setErrorMessage(null);
@@ -87,7 +97,7 @@ const FileUpload: React.FC = () => {
 
             setSuccessMessage("File uploaded successfully!");
             setFile(null);
-            setSelectedOption(null);
+            setSelectedOptions([]);
             setShowUploadCard(false);
         } catch (error) {
             console.error("Error during file upload: ", error);
@@ -100,6 +110,7 @@ const FileUpload: React.FC = () => {
     const toggleUploadCard = () => {
         setShowUploadCard(prevState => !prevState);
     };
+
 
     return (
         <div className="file-upload-container relative">
@@ -125,27 +136,18 @@ const FileUpload: React.FC = () => {
 
                     <select 
                         onChange={handleDropdownChange} 
-                        value={selectedOption || ''} 
+                        value={selectedOptions}
+                        multiple 
                         className="w-full border border-gray-300 rounded p-2 mb-4"
                     >
-                        <option value="">Select file location</option>
-                        {semesters.map(semester => (
-                            <option key={semester.id} value={`${semester.id}`} disabled className="text-gray">{semester.name}</option>
-                        ))}
-                        {semesters.map(semester => 
-                            semester.subjects.map(subject => (
-                                <option key={subject.id} value={`${semester.id}/${subject.id}`} disabled className="text-gray"> &nbsp;&nbsp;{subject.name}</option>
-                            ))
-                        )}
                         {semesters.map(semester => 
                             semester.subjects.map(subject => 
                                 subject.topics.map(topic => (
                                     <option 
-                                        key={topic.id} 
+                                        key={`${semester.id}/${subject.id}/${topic.id}`} 
                                         value={`${semester.id}/${subject.id}/${topic.id}`}
-                                        className="text-black"
                                     >
-                                        &nbsp;&nbsp;&nbsp;&nbsp;{topic.name}
+                                        {semester.name} / {subject.name} / {topic.name}
                                     </option>
                                 ))
                             )

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-interface File {
+interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;
@@ -33,12 +33,7 @@ interface Topic {
 }
 
 interface FileViewProps {
-    file: File | null;
-    onClose: () => void;
-}
-
-interface FileViewProps {
-    file: File | null;
+    file: AppFile | null;
     onClose: () => void;
 }
 
@@ -49,6 +44,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const [showMoveCard, setShowMoveCard] = useState(false);
     const [filePath, setFilePath] = useState<string | null>(null);
     const moveButtonRef = useRef<HTMLButtonElement | null>(null);
+    const [replaceFile, setReplaceFile] = useState<File | null>(null);
     
     useEffect(() => {
         const fetchSemesters = async () => {
@@ -164,6 +160,32 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         }
     };
 
+    const handleReplaceFile = async () => {
+        if (!replaceFile) {
+            alert("Please select a file to replace.");
+            return;
+        }
+    
+        const formData = new FormData();
+        formData.append("file", replaceFile as Blob, replaceFile.name);
+    
+        try {
+            const response = await fetch(`/api/documents/replace/${file._id}`, {
+                method: "POST",
+                body: formData,
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to replace file");
+            }
+    
+            console.log("File replaced successfully");
+        } catch (error) {
+            console.error("Error replacing file:", error);
+        }
+    };
+
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
             <div className={`
@@ -235,19 +257,39 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         Delete
                     </button>
                     <button
-                    onClick={toggleMoveCard}
-                    ref={moveButtonRef}
-                    className="
-                        w-full py-2 px-4
-                        bg-blue-200 dark:bg-blue-950
-                        hover:bg-blue-100 hover:dark:bg-blue-900
-                        border border-rounded rounded-lg border-blue-200 dark:border-blue-800
-                        text-black dark:text-white
-                        transition-colors duration-300
-                    "
-                >
-                    Move File
-                </button>
+                        onClick={toggleMoveCard}
+                        ref={moveButtonRef}
+                        className="
+                            w-full py-2 px-4
+                            bg-blue-200 dark:bg-blue-950
+                            hover:bg-blue-100 hover:dark:bg-blue-900
+                            border border-rounded rounded-lg border-blue-200 dark:border-blue-800
+                            text-black dark:text-white
+                            transition-colors duration-300
+                        "
+                    >
+                        Move File
+                    </button>
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Replace File</label>
+                        <input
+                            type="file"
+                            onChange={(e) => setReplaceFile(e.target.files?.[0] || null)}
+                            className="w-full p-2 border rounded-md"
+                        />
+                        <button
+                            onClick={handleReplaceFile}
+                            className="
+                                w-full py-2 px-4 mt-4
+                                bg-yellow-200 dark:bg-yellow-950
+                                hover:bg-yellow-100 hover:dark:bg-yellow-900
+                                border border-rounded rounded-lg border-yellow-200 dark:border-yellow-800
+                                text-black dark:text-white
+                                transition-colors duration-300"
+                        >
+                            Replace
+                        </button>
+                    </div>
                 </div>
                 
                 {showMoveCard && (

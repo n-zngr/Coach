@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { MongoClient, ObjectId } from 'mongodb';
+import { getCollection } from '@/app/utils/mongodb';
+import { ObjectId } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-
+const dbName = 'documents'
+const dbCol = 'fs.files'
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const client = new MongoClient(MONGODB_URI);
 
     try {
         const { id } = await params;
@@ -14,12 +14,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         if (!newFilename) {
             return NextResponse.json({ message: 'New filename is required' }, { status: 400 });
         }
+        const collection = await getCollection(dbName, dbCol)
 
-        await client.connect();
-        const db = client.db('documents');
-        const filesCollection = db.collection('fs.files');
-
-        const result = await filesCollection.updateOne(
+        const result = await collection.updateOne(
             { _id: new ObjectId(fileId) },
             { $set: { filename: newFilename } }
         );
@@ -32,7 +29,5 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     } catch (error) {
         console.error('Error renaming file:', error);
         return NextResponse.json({ message: 'Failed to rename file', error }, { status: 500 });
-    } finally {
-        await client.close();
     }
 }

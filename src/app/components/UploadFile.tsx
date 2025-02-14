@@ -125,27 +125,17 @@ const FileUpload: React.FC = () => {
 
                     <select 
                         onChange={handleDropdownChange} 
-                        value={selectedOption || ''} 
-                        className="w-full border border-gray-300 rounded p-2 mb-4"
+                        value=""
+                        className="w-full border border-gray-300 rounded text-black p-2 mb-4"
                     >
-                        <option value="">Select file location</option>
-                        {semesters.map(semester => (
-                            <option key={semester.id} value={`${semester.id}`} disabled className="text-gray">{semester.name}</option>
-                        ))}
-                        {semesters.map(semester => 
-                            semester.subjects.map(subject => (
-                                <option key={subject.id} value={`${semester.id}/${subject.id}`} disabled className="text-gray"> &nbsp;&nbsp;{subject.name}</option>
-                            ))
-                        )}
                         {semesters.map(semester => 
                             semester.subjects.map(subject => 
                                 subject.topics.map(topic => (
                                     <option 
-                                        key={topic.id} 
+                                        key={`${semester.id}/${subject.id}/${topic.id}`} 
                                         value={`${semester.id}/${subject.id}/${topic.id}`}
-                                        className="text-black"
                                     >
-                                        &nbsp;&nbsp;&nbsp;&nbsp;{topic.name}
+                                        {semester.name} / {subject.name} / {topic.name}
                                     </option>
                                 ))
                             )
@@ -155,7 +145,7 @@ const FileUpload: React.FC = () => {
                     <input 
                         type="file" 
                         onChange={handleFileChange} 
-                        className="w-full mb-4" 
+                        className="w-full mb-4 text-black" 
                     />
 
                     <button 

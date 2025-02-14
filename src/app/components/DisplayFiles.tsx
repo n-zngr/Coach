@@ -21,12 +21,11 @@ interface File {
 const DisplayFiles: React.FC = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
-    const [editingFileId, setEditingFileId] = useState<string | null>(null);
-    const [newFilename, setNewFilename] = useState<string>("");
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [query, setQuery] = useState<string>("");
     const [searchActive, setSearchActive] = useState<boolean>(false);
-
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [subjectTypes, setSubjectTypes] = useState<{ id: string; name: string }[]>([]);
+    const [selectedSubjectType, setSelectedSubjectType] = useState<string | null>(null);
 
     const pathname = usePathname();
     const pathSegments = pathname.split("/").filter(Boolean);
@@ -50,20 +49,33 @@ const DisplayFiles: React.FC = () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to fetch files");
+                throw new Error("Failed to fetch files");
             }
 
             const data = await response.json();
             setFiles(data);
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error fetching files: ", error);
         } finally {
             setLoading(false);
         }
     };
 
+
     useEffect(() => {
+        const fetchSubjectTypes = async () => {
+            try {
+                const response = await fetch('/api/documents/subjectTypes', { method: 'GET', credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to fetch subject types');
+    
+                const data = await response.json();
+                setSubjectTypes(data);
+            } catch (error) {
+                console.error('Error fetching subject types:', error);
+            }
+        };
+    
+        fetchSubjectTypes();
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 
@@ -73,91 +85,29 @@ const DisplayFiles: React.FC = () => {
 
     const handleCloseFileView = () => {
         setSelectedFile(null);
-    }
-
-    const handleDownload = async (fileId: string, filename: string) => {
-        try {
-            const response = await fetch(`/api/documents/download/${fileId}`);
-
-            if (!response.ok) {
-                throw new Error('Failed to download file');
-            }
-
-            const blob = await response.blob();
-            const downloadUrl = URL.createObjectURL(blob);
-
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = filename;
-            link.click();
-
-            URL.revokeObjectURL(downloadUrl);
-        } catch (error) {
-            console.error("Error downloading file:", error);
-        }
-    };
-
-    const handleRename = async (fileId: string, newFilename: string) => {
-        try {
-            const response = await fetch(`/api/documents/rename/${fileId}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ newFilename })
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to rename file");
-            }
-
-            setFiles(files.map(file => 
-                file._id === fileId ? { ...file, filename: newFilename } : file
-            ));
-
-            if (selectedFile && selectedFile._id === fileId) {
-                setSelectedFile({ ...selectedFile, filename: newFilename });
-            }
-        } catch (error) {
-            console.error("Error renaming file:", error);
-        }
-    };
-
-
-    const handleDelete = async (fileId: string) => {
-        try {
-            const response = await fetch(`/api/documents/delete/${fileId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete files');
-            }
-
-            setFiles(files.filter(file => file._id !== fileId));
-        } catch (error) {
-            console.error('Error deleting file:', error);
-        }
     };
 
     const handleSearch = async () => {
-        if (query.trim() === '') return;
-
+        if (!query.trim() && !selectedSubjectType) {
+            resetSearch();
+            return;
+        }
+    
         setLoading(true);
         setSearchActive(true);
-
+    
         try {
             const response = await fetch('/api/documents/search', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
+                body: JSON.stringify({ query, subjectTypeId: selectedSubjectType }),
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to fetch search results');
             }
-
+    
             const data = await response.json();
             setFiles(data);
         } catch (error) {
@@ -233,6 +183,18 @@ const DisplayFiles: React.FC = () => {
                 >
                     Search
                 </button>
+                <select
+                    value={selectedSubjectType || ''}
+                    onChange={(e) => setSelectedSubjectType(e.target.value || null)}
+                    className="p-2 border rounded-lg text-black"
+                >
+                    <option value="">All Subject Types</option>
+                    {subjectTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                            {type.name}
+                        </option>
+                    ))}
+                </select>
                 {searchActive && (
                     <button 
                         onClick={resetSearch} 
@@ -244,11 +206,12 @@ const DisplayFiles: React.FC = () => {
                     </button>
                 )}
             </div>
-    
+            
+
             {files.length === 0 && searchActive && (
                 <p>No files found for the selected filters.</p>
             )}
-    
+
             <ul className="flex flex-col space-y-4">
                 {files.map((file) => (
                     <button 
@@ -280,12 +243,9 @@ const DisplayFiles: React.FC = () => {
                 ))}
             </ul>
             {selectedFile && (
-                <FileView 
-                    file={selectedFile} 
-                    onClose={handleCloseFileView} 
-                    onRename={handleRename} 
-                    onDelete={handleDelete} 
-                    onDownload={handleDownload} 
+                <FileView
+                    file={selectedFile}
+                    onClose={handleCloseFileView}
                 />
             )}
         </div>

@@ -7,7 +7,7 @@ import Navigation from '@/app/components/Navigation';
 import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
-import Search from '@/app/components/search';
+import Search from '../components/search';
 
 
 type Topic = {
@@ -186,19 +186,9 @@ export default function Documents() {
                 <RecentFiles />
                 <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                 <DisplayFiles />
-
-                {/* Button zum Öffnen des Search-Modals mit Lupe-Emoji */}
-                <button
-                    className="bg-green-500 text-white px-4 py-2 rounded mt-4 flex items-center gap-2"
-                    onClick={() => setIsSearchOpen(true)}
-                >
-                    <span role="img" aria-label="search">🔍</span>
-                    <span>Open Search</span>
-                </button>
             </div>
-
-            {/* Search Modal */}
-            <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      {/* Search Modal */}
+      <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </div>
     );
 }

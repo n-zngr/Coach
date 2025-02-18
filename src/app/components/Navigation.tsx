@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import LogoutButton from "./LogOut";
+import { useState } from "react";
+import Search from "./search";
 
 interface NavigationProps {
   isExpanded: boolean;
@@ -9,6 +11,8 @@ interface NavigationProps {
 }
 
 export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   return (
     <nav 
       className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}  
@@ -49,6 +53,17 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                   Documents
                 </Link>
               </li>
+              <li>
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="block w-full text-left p-3 rounded-md 
+                  hover:bg-gray-200 dark:hover:bg-gray-700 
+                  font-semibold text-gray-900 dark:text-gray-100 
+                  transition-all"
+                >
+                  Search
+                </button>
+              </li>
             </ul>
           )}
         </div>
@@ -80,6 +95,8 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
           </div>
         )}
       </div>
+      {/* Search Modal */}
+      <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </nav>
   );
 };

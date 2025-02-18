@@ -6,10 +6,9 @@ import LogoutButton from "./LogOut";
 interface NavigationProps {
   isExpanded: boolean;
   toggleNavigation: () => void;
-  onSearchOpen: () => void; // Neuer Callback für den Search-Button
 }
 
-export default function Navigation({ isExpanded, toggleNavigation, onSearchOpen }: NavigationProps) {
+export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
   return (
     <nav 
       className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}  
@@ -49,16 +48,6 @@ export default function Navigation({ isExpanded, toggleNavigation, onSearchOpen 
                 >
                   Documents
                 </Link>
-              </li>
-              {/* Neuer Search-Button unter Documents */}
-              <li>
-                <button
-                  onClick={onSearchOpen}
-                  className="flex items-center gap-2 p-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all w-full text-left"
-                >
-                  <span role="img" aria-label="search">🔍</span>
-                  <span>Search</span>
-                </button>
               </li>
             </ul>
           )}

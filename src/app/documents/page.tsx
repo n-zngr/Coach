@@ -7,8 +7,6 @@ import Navigation from '@/app/components/Navigation';
 import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
-import Search from '../components/search';
-
 
 type Topic = {
     id: string;
@@ -32,7 +30,6 @@ export default function Documents() {
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -54,11 +51,11 @@ export default function Documents() {
                 console.error('Error authenticating user:', error);
                 router.push('/login');
             }
-        };
+        }
 
         authenticateUser();
     }, []);
-
+    
     const fetchSemesters = async () => {
         try {
             const response = await fetch('/api/documents/semesters', {
@@ -101,7 +98,7 @@ export default function Documents() {
 
     const handleSubmit = async () => {
         if (!name) return;
-
+    
         try {
             const response = await fetch('/api/documents/semesters', {
                 method: 'POST',
@@ -111,7 +108,7 @@ export default function Documents() {
                 credentials: 'include',
                 body: JSON.stringify({ name: name.toLowerCase() }),
             });
-
+    
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
@@ -123,6 +120,7 @@ export default function Documents() {
             console.error('Error adding semester:', error);
         }
     };
+    
 
     const toggleNavigation = () => {
         setIsExpanded(!isExpanded);
@@ -139,16 +137,15 @@ export default function Documents() {
     return (
         <div className="flex h-screen">
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-            <div
-                className={`flex-1 p-16 transition-all duration-300 ${
+            <div className={`flex-1 p-16 transition-all duration-300 ${
                     isExpanded ? "ml-64" : "ml-12"
                 }`}
-            >
+                >
                 <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                 <div className="mb-4">
                     <input
                         type="text"
-                        className="border rounded text-black p-2 w-full"
+                        className="border rounded p-2 w-full"
                         placeholder="Semester Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -187,8 +184,6 @@ export default function Documents() {
                 <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                 <DisplayFiles />
             </div>
-      {/* Search Modal */}
-      <Search isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </div>
     );
-}
+};

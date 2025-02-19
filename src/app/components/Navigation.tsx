@@ -3,6 +3,7 @@
 import { useState } from "react";
 import LogoutButton from "./LogOut";
 import Link from "next/link";
+import Search from "./Search"; // Import der Search Komponente
 
 interface NavigationProps {
     isExpanded: boolean;
@@ -10,10 +11,15 @@ interface NavigationProps {
 }
 
 export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
+    const [isSearchVisible, setIsSearchVisible] = useState(false); // Zustand, um die Sichtbarkeit der Suchleiste zu steuern
+
+    const toggleSearch = () => {
+        setIsSearchVisible(!isSearchVisible); // Umschalten der Sichtbarkeit der Suchleiste
+    };
 
     return (
         <nav 
-            className={`fixed top-0 left-0 h-screen ${ isExpanded ? "w-64" : "w-12" }  
+            className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}  
             border-r transition-width duration-300 
             bg-white dark:bg-gray-900
             border-r-gray-200 dark:border-r-gray-700
@@ -52,6 +58,18 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                                     Documents
                                 </Link>
                             </li>
+                            <li>
+                                {/* Search Button */}
+                                <button
+                                    className="block w-full p-3 rounded-md 
+                                    hover:bg-gray-200 dark:hover:bg-gray-700 
+                                    font-semibold text-gray-900 dark:text-gray-100 
+                                    transition-all text-left"  // Hinzugefügt: text-left für linksbündigen Text
+                                    onClick={toggleSearch}
+                                >
+                                    Search
+                                </button>
+                            </li>
                         </ul>
                     )}
                 </div>
@@ -83,6 +101,9 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                     </div>
                 )}
             </div>
+
+            {/* Zeigt die Suchleiste an, wenn isSearchVisible true ist */}
+            {isSearchVisible && <Search />}
         </nav>
     );
-};
+}

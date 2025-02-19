@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LogoutButton from "./LogOut";
 import Link from "next/link";
 import Search from "./Search"; // Import der Search Komponente
+import { useRouter } from "next/navigation";
 
 interface NavigationProps {
     isExpanded: boolean;
@@ -12,9 +13,35 @@ interface NavigationProps {
 
 export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
     const [isSearchVisible, setIsSearchVisible] = useState(false); // Zustand, um die Sichtbarkeit der Suchleiste zu steuern
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // Zustand für Authentifizierung
+    const router = useRouter();
+
+    useEffect(() => {
+        // Prüfen, ob das userId-Cookie gesetzt ist, um die Authentifizierung zu prüfen
+        const checkAuthentication = () => {
+            const userId = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('userId='))
+                ?.split('=')[1];
+
+            if (userId) {
+                setIsAuthenticated(true); // Benutzer ist authentifiziert
+            } else {
+                setIsAuthenticated(false); // Benutzer ist nicht authentifiziert
+            }
+        };
+
+        checkAuthentication(); // Authentifizierung bei Initialisierung prüfen
+    }, []);
 
     const toggleSearch = () => {
-        setIsSearchVisible(!isSearchVisible); // Umschalten der Sichtbarkeit der Suchleiste
+        // Nur wenn der Benutzer authentifiziert ist, die Suche anzeigen
+        if (isAuthenticated) {
+            setIsSearchVisible(!isSearchVisible); // Umschalten der Sichtbarkeit der Suchleiste
+        } else {
+            alert("Please log in to use the search functionality.");
+            router.push("/login"); // Umleitung zur Login-Seite, wenn nicht authentifiziert
+        }
     };
 
     return (
@@ -64,7 +91,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                                     className="block w-full p-3 rounded-md 
                                     hover:bg-gray-200 dark:hover:bg-gray-700 
                                     font-semibold text-gray-900 dark:text-gray-100 
-                                    transition-all text-left"  // Hinzugefügt: text-left für linksbündigen Text
+                                    transition-all text-left"  // text-left für linksbündigen Text
                                     onClick={toggleSearch}
                                 >
                                     Search

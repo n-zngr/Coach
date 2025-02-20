@@ -13,35 +13,10 @@ interface NavigationProps {
 
 export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
     const [isSearchVisible, setIsSearchVisible] = useState(false); // Zustand, um die Sichtbarkeit der Suchleiste zu steuern
-    const [isAuthenticated, setIsAuthenticated] = useState(false); // Zustand für Authentifizierung
     const router = useRouter();
 
-    useEffect(() => {
-        // Prüfen, ob das userId-Cookie gesetzt ist, um die Authentifizierung zu prüfen
-        const checkAuthentication = () => {
-            const userId = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('userId='))
-                ?.split('=')[1];
-
-            if (userId) {
-                setIsAuthenticated(true); // Benutzer ist authentifiziert
-            } else {
-                setIsAuthenticated(false); // Benutzer ist nicht authentifiziert
-            }
-        };
-
-        checkAuthentication(); // Authentifizierung bei Initialisierung prüfen
-    }, []);
-
     const toggleSearch = () => {
-        // Nur wenn der Benutzer authentifiziert ist, die Suche anzeigen
-        if (isAuthenticated) {
-            setIsSearchVisible(!isSearchVisible); // Umschalten der Sichtbarkeit der Suchleiste
-        } else {
-            alert("Please log in to use the search functionality.");
-            router.push("/login"); // Umleitung zur Login-Seite, wenn nicht authentifiziert
-        }
+        setIsSearchVisible(!isSearchVisible); // Umschalten der Sichtbarkeit der Suchleiste
     };
 
     return (
@@ -91,7 +66,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                                     className="block w-full p-3 rounded-md 
                                     hover:bg-gray-200 dark:hover:bg-gray-700 
                                     font-semibold text-gray-900 dark:text-gray-100 
-                                    transition-all text-left"  // text-left für linksbündigen Text
+                                    transition-all text-left"
                                     onClick={toggleSearch}
                                 >
                                     Search

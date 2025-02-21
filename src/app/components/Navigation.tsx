@@ -25,7 +25,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
         setSearchQuery(query);
         
         try {
-            const response = await fetch('/api/search', {
+            const response = await fetch('/api/documents/search', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -122,12 +122,14 @@ const FileUpload: React.FC = () => {
                     style={{ top: uploadButtonRef.current?.offsetHeight || 0 }}
                 >
                     <h3 className="text-lg font-semibold mb-2 text-black">Select Semester, Subject, and Topic</h3>
-
                     <select 
                         onChange={handleDropdownChange} 
-                        value=""
+                        value={selectedOption || ""}
                         className="w-full border border-gray-300 rounded text-black p-2 mb-4"
                     >
+                        <option value="" disabled>
+                            Select Semester / Subject / Topic
+                        </option>
                         {semesters.map(semester => 
                             semester.subjects.map(subject => 
                                 subject.topics.map(topic => (

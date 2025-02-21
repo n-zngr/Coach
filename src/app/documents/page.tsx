@@ -145,7 +145,7 @@ export default function Documents() {
                 <div className="mb-4">
                     <input
                         type="text"
-                        className="border rounded text-black p-2 w-full"
+                        className="border rounded p-2 w-full"
                         placeholder="Semester Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}

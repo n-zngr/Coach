@@ -43,7 +43,7 @@ export default function SemesterPage() {
                 }
 
                 if (semesterId) {
-                    await fetchSubjects();
+                    await fetchSubjects() as any; // Hotfix to avoid error, research
                 }
             } catch (error) {
                 console.error('Error authenticating user:', error);

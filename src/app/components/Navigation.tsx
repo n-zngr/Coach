@@ -12,9 +12,39 @@ interface NavigationProps {
 
 export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
     const [isSearchVisible, setIsSearchVisible] = useState(false); 
+    const [searchQuery, setSearchQuery] = useState<string>(""); // Zustand für die Eingabe
+    const [searchResults, setSearchResults] = useState<any[]>([]); // Zustand für Suchergebnisse
 
+    // Funktion zum Umschalten der Sichtbarkeit der Suchleiste
     const toggleSearch = () => {
         setIsSearchVisible(true);
+    };
+
+    // Funktion zum Handhaben der Suche
+    const handleSearch = async (query: string) => {
+        setSearchQuery(query);
+        
+        try {
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query, // Suchbegriff
+                    subjectTypeId: null, // Du kannst hier bei Bedarf auch das `subjectTypeId` setzen
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch search results');
+            }
+
+            const data = await response.json();
+            setSearchResults(data); // Ergebnisse setzen
+        } catch (error) {
+            console.error("Search error:", error);
+        }
     };
 
     return (
@@ -103,7 +133,14 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
             </nav>
 
             {/* Search Popup */}
-            {isSearchVisible && <Search onClose={() => setIsSearchVisible(false)} />}
+            {isSearchVisible && (
+                <Search 
+                onClose={() => setIsSearchVisible(false)} 
+                onSearch={handleSearch} 
+                searchQuery={searchQuery}  // Übergibt den Suchbegriff
+                searchResults={searchResults} // Übergibt die Suchergebnisse
+                />
+            )}
         </>
     );
 }

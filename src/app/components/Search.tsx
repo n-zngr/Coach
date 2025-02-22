@@ -4,22 +4,21 @@ interface SearchProps {
     onClose: () => void;
     onSearch: (searchQuery: string) => void;
     searchQuery: string;
-    searchResults: any[];  // Passe den Typ nach Bedarf an
+    searchResults: any[];  // Hier könnte der Typ weiter angepasst werden
 }
 
 const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchResults }) => {
-    const [query, setQuery] = useState(searchQuery);  // `query` State für das Eingabefeld
+    const [query, setQuery] = useState(searchQuery);  // Speichert den aktuellen Suchbegriff
 
-    // Handler, um den Wert im State zu aktualisieren
+    // Handler für die Eingabewertänderung
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log("Input value changed to:", e.target.value); // Zum Debuggen
-        setQuery(e.target.value);  // Hier wird der State korrekt aktualisiert
+        setQuery(e.target.value);  // Setzt den aktuellen Wert des Suchfeldes
     };
 
-    // Wenn der Suchbutton gedrückt wird oder Enter gedrückt wird
+    // Wenn der Suchbutton oder Enter gedrückt wird
     const handleSearch = () => {
-        console.log("Searching for:", query);  // Zum Debuggen
-        onSearch(query);  // Übergibt den aktuellen Suchbegriff zur Suchfunktion
+        console.log("Searching for:", query);  // Zeigt den Suchbegriff zum Debuggen
+        onSearch(query);  // Übergibt den Suchbegriff zur Suchfunktion
     };
 
     return (
@@ -34,10 +33,10 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                 <input
                     type="text"
                     className="mt-4 p-2 w-full rounded border border-gray-300 dark:border-gray-600"
-                    value={query}  // Bindung des Wertes an den `query` State
-                    onChange={handleSearchChange}  // Handler für die Eingabefeldänderung
-                    placeholder="Search documents..."
-                    autoFocus  // Optional: Der Fokus wird automatisch auf das Eingabefeld gesetzt, wenn es angezeigt wird
+                    value={query}
+                    onChange={handleSearchChange}
+                    placeholder="Search documents, folders, subjects, or semesters..."
+                    autoFocus
                 />
 
                 {/* Suchbutton */}
@@ -54,6 +53,10 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                         {searchResults.map((result) => (
                             <li key={result._id} className="flex justify-between items-center">
                                 <span>{result.filename}</span>
+                                {result.metadata?.folderName && <span>({result.metadata.folderName})</span>}
+                                {/* Hier werden die Namen anstelle der IDs angezeigt */}
+                                {result.metadata?.subjectName && <span> - Subject: {result.metadata.subjectName}</span>}
+                                {result.metadata?.semesterName && <span> - Semester: {result.metadata.semesterName}</span>}
                             </li>
                         ))}
                     </ul>

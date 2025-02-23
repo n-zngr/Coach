@@ -8,21 +8,20 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchResults }) => {
-    const [query, setQuery] = useState(searchQuery);  // Speichert den aktuellen Suchbegriff
+    const [query, setQuery] = useState(searchQuery);
 
     // Handler für die Eingabewertänderung
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(e.target.value);  // Setzt den aktuellen Wert des Suchfeldes
     };
 
-    // Wenn der Suchbutton oder Enter gedrückt wird
     const handleSearch = () => {
-        console.log("Searching for:", query);  // Zeigt den Suchbegriff zum Debuggen
-        onSearch(query);  // Übergibt den Suchbegriff zur Suchfunktion
+        console.log("Searching for:", query);
+        onSearch(query);
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-10">
+        <div className="fixed inset-0 bg-black-100 backdrop-blur-[2px] bg-opacity-25 flex justify-center items-center z-10 transition-all duration-500">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
                 <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Search</h2>

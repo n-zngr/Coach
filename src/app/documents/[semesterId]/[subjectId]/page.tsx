@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import FileDisplay from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
-import Navigation from "@/app/components/Navigation";
+import Navigation from "@/app/components/Navigation/Navigation";
 
 type Topic = {
     id: string;

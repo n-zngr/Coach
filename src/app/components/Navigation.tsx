@@ -39,7 +39,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
             if (!response.ok) {
                 throw new Error('Failed to fetch search results');
             }
-
+                
             const data = await response.json();
             setSearchResults(data); // Ergebnisse setzen
         } catch (error) {

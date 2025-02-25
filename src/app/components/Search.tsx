@@ -19,6 +19,9 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
         onSearch(query);
     };
 
+    // Hilfsfunktion, um zu prüfen, ob ein Resultat vom Typ 'subject' ist
+    const isSubject = (result: any) => result.type === 'subject';
+
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-10">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
@@ -32,7 +35,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                     className="mt-4 p-2 w-full rounded border border-gray-300 dark:border-gray-600"
                     value={query}
                     onChange={handleSearchChange}
-                    placeholder="Search documents, subjects, or semesters..."
+                    placeholder="Search documents or subjects..."
                     autoFocus
                 />
 
@@ -45,12 +48,27 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
 
                 {searchResults.length > 0 ? (
                     <ul className="mt-4 space-y-2">
-                        {searchResults.map((result) => (
-                            <li key={result.id || result._id} className="flex justify-between items-center">
-                                {result.type === "subject" ? (
-                                    <span>📚 {result.name} (Semester: {result.semesterName})</span>
+                        {searchResults.map((result, index) => (
+                            <li key={result.id || result._id || index} className="flex justify-between items-center">
+                                {/* Wenn das Ergebnis ein Subject ist, zeigen wir die zugehörigen Dateien an */}
+                                {isSubject(result) ? (
+                                    <div>
+                                        <span className="font-semibold">📚 {result.name} (Semester: {result.semesterName})</span>
+                                        {/* Zeige die Dateien, die diesem Subject zugeordnet sind */}
+                                        {result.files && result.files.length > 0 ? (
+                                            <ul className="ml-4 space-y-2">
+                                                {result.files.map((file: any) => (
+                                                    <li key={file.id || file._id} className="flex justify-between items-center">
+                                                        <span>📄 {file.filename} ({file.metadata?.folderName || "No folder"})</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="ml-4 text-gray-500">No files in this subject</p>
+                                        )}
+                                    </div>
                                 ) : (
-                                    <span>📄 {result.filename} ({result.metadata.folderName})</span>
+                                    <span>📄 {result.filename} ({result.metadata?.folderName || "No folder"})</span>
                                 )}
                             </li>
                         ))}

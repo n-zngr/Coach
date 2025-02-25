@@ -28,21 +28,24 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No search parameters provided' }, { status: 400 });
         }
 
-        // 🔹 Suche nach Subjects (Fächern)
+        // 🔹 Suche nach Subjects mit explizitem Typ für `subject`
         const matchingSubjects = user.semesters.flatMap((semester: any) => 
-            semester.subjects.filter((subject: any) => 
-                subject.name.toLowerCase().includes(query.toLowerCase())
-            ).map((subject: any) => ({
-                type: 'subject',
-                id: subject.id,
-                name: subject.name,
-                semesterId: semester.id,
-                semesterName: semester.name
-            }))
+            semester.subjects
+                .filter((subject: { name: string }) => 
+                    subject.name.toLowerCase().includes(query.toLowerCase())
+                )
+                .map((subject: { id: string; name: string }) => ({
+                    type: 'subject',
+                    id: subject.id,
+                    name: subject.name,
+                    semesterId: semester.id,
+                    semesterName: semester.name
+                }))
         );
 
-        // 🔹 Suche nach Files
         const filesCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
+
+        // 🔹 Standard-Dateisuche
         const searchQuery: any = {
             'metadata.userId': userId,
             $or: [
@@ -53,7 +56,21 @@ export async function POST(req: Request) {
             ]
         };
 
-        const files = await filesCollection.find(searchQuery).limit(6).toArray();
+        let files = await filesCollection.find(searchQuery).limit(6).toArray();
+
+        // 🔹 Falls ein Subject gefunden wurde, lade zusätzlich die zugehörigen Dateien und speichere sie im Subject
+        if (matchingSubjects.length > 0) {
+            const subjectNames = matchingSubjects.map((subject: { name: string }) => subject.name);
+            const subjectFiles = await filesCollection.find({
+                'metadata.userId': userId,
+                'metadata.subjectName': { $in: subjectNames }
+            }).toArray();
+
+            // Verbinde jedes Subject mit den zugehörigen Dateien
+            matchingSubjects.forEach((subject: any) => {
+                subject.files = subjectFiles.filter((file: any) => file.metadata.subjectName === subject.name);
+            });
+        }
 
         // 🔹 Kombiniere Subjects und Files in einer einzigen Antwort
         const results = [...matchingSubjects, ...files];

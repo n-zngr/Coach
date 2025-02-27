@@ -52,21 +52,27 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                             <li key={result.id || result._id || index} className="flex justify-between items-center">
                                 {isSubject(result) ? (
                                     <div>
-                                        <span className="font-semibold">{result.name} (Semester: {result.semesterName})</span>
+                                        <span className="font-semibold">
+                                            {result.name} (Semester: {result.semesterName})
+                                        </span>
                                         {Array.isArray(result.files) && result.files.length > 0 ? (
                                             <ul className="ml-4 space-y-2">
                                                 {result.files.map((file: any) => (
                                                     <li key={file.id || file._id} className="flex justify-between items-center">
-                                                        <span> {file.filename} ({file.metadata?.folderName || "No folder"})</span>
+                                                        <span>
+                                                          {file.filename} (Subject: {file.metadata?.subjectName || "No subject"}, 
+                                                          Semester: {file.metadata?.semesterName || "No semester"})
+                                                        </span>
                                                     </li>
                                                 ))}
                                             </ul>
-                                        ) : (
-                                            isSubject(result) && <p className="ml-4 text-gray-500">No files in this subject</p>
-                                        )}
+                                        ) : null}
                                     </div>
                                 ) : (
-                                    <span> {result.filename} ({result.metadata?.folderName || "No folder"})</span>
+                                    <span>
+                                      {result.filename} (Subject: {result.metadata?.subjectName || "No subject"}, 
+                                      Semester: {result.metadata?.semesterName || "No semester"})
+                                    </span>
                                 )}
                             </li>
                         ))}

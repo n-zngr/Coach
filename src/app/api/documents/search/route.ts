@@ -28,10 +28,10 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No search parameters provided' }, { status: 400 });
         }
 
-        // 🔹 Suche nach Subjects mit explizitem Typ für `subject`
-        const matchingSubjects = user.semesters.flatMap((semester: any) => 
+        // 🔹 Suche nach Subjects mit explizitem Typ für subject
+        const matchingSubjects = user.semesters.flatMap((semester: any) =>
             semester.subjects
-                .filter((subject: { name: string }) => 
+                .filter((subject: { name: string }) =>
                     subject.name.toLowerCase().includes(query.toLowerCase())
                 )
                 .map((subject: { id: string; name: string }) => ({
@@ -49,28 +49,40 @@ export async function POST(req: Request) {
         const searchQuery: any = {
             'metadata.userId': userId,
             $or: [
-                { 'filename': { $regex: query, $options: 'i' } },  
-                { 'metadata.folderName': { $regex: query, $options: 'i' } },  
-                { 'metadata.subjectName': { $regex: query, $options: 'i' } },  
+                { 'filename': { $regex: query, $options: 'i' } },
+                { 'metadata.folderName': { $regex: query, $options: 'i' } },
+                { 'metadata.subjectName': { $regex: query, $options: 'i' } },
                 { 'metadata.semesterName': { $regex: query, $options: 'i' } }
             ]
         };
 
         let files = await filesCollection.find(searchQuery).limit(6).toArray();
 
-        // 🔹 Falls ein Subject gefunden wurde, lade zusätzlich die zugehörigen Dateien und speichere sie im Subject
-        if (matchingSubjects.length > 0) {
-            const subjectIds = matchingSubjects.map((subject: any) => subject.id);
-            const subjectFiles = await filesCollection.find({
-                'metadata.userId': userId,
-                'metadata.subjectId': { $in: subjectIds }
-            }).toArray();
+        // 🔹 Verbinde jedes File mit dem entsprechenden Subject und Semester
+        files = files.map((file: any) => {
+            let foundSubject: any = null;
+            // Suche das Subject, dessen ID mit file.metadata.subjectId übereinstimmt
+            for (const semester of user.semesters) {
+                const subject = semester.subjects.find((subject: any) => subject.id === file.metadata.subjectId);
+                if (subject) {
+                    foundSubject = subject;
+                    break;
+                }
+            }
+            // Finde das Semester anhand der semesterId
+            const foundSemester = user.semesters.find((semester: any) =>
+                semester.id === file.metadata.semesterId
+            );
 
-            // Verbinde jedes Subject mit den zugehörigen Dateien
-            matchingSubjects.forEach((subject: any) => {
-                subject.files = subjectFiles.filter((file: any) => file.metadata.subjectId === subject.id);
-            });
-        }
+            if (foundSubject) {
+                file.metadata.subjectName = foundSubject.name;
+            }
+            if (foundSemester) {
+                file.metadata.semesterName = foundSemester.name;
+            }
+
+            return file;
+        });
 
         // 🔹 Kombiniere Subjects und Files in einer einzigen Antwort
         const results = [...matchingSubjects, ...files];

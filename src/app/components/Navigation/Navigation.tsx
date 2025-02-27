@@ -5,7 +5,7 @@ import LogoutButton from "../LogOut";
 import Link from "next/link";
 import Search from "./Search";
 import Notification from "./Notification";
-import AccountInfo from "./AccountINfo";
+import AccountInfo from "./AccountInfo";
 import NavList from "./NavList";
 
 interface NavigationProps {
@@ -58,14 +58,13 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                 border-r-white-300 dark:border-r-black-700
                 text-black-900 dark:text-white-100`}
             >
-                <div className="flex flex-col">
+                <div className="flex flex-col h-full">
                     <div className="flex m-2">
                         {isExpanded &&
                             <div className="font-black text-2xl text-black-100 dark:text-white-900">
                                 <h1>COACH</h1>
                             </div>
                         }
-                        
                         <button 
                             className="w-8 h-8 p-2 ml-auto
                             rounded-full
@@ -78,9 +77,8 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                             </svg>
                         </button>
                     </div>
-                    <div className="flex">
-                        {isExpanded && (
-                            
+                    {isExpanded && (
+                        <div className="flex">
                             <button className="flex flex-1 m-2 p-2 rounded-full bg-white-400 hover:bg-white-400 dark:bg-black-300 dark:hover:bg-black-400 transition-colors duartion-500" onClick={toggleSearch}>
                                 <div className="flex gap-2">
                                     <div className="flex justify-center items-center pl-1">
@@ -93,18 +91,23 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                                     </div>
                                 </div>
                             </button>
-                        )}
-
-                    </div>
+                        </div>
+                    )}
+                    {isExpanded && (
                     <NavList isExpanded={isExpanded} />
-                    <AccountInfo />
+                )}
+                    <div className="mt-auto">
+                        <div className="flex flex-col">
+                            <Notification />
+                            <div className="mb-2">
+                                <AccountInfo />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {isExpanded && (
-                    <div className="flex flex-col">
-                        <Notification />
-                    </div>
-                )}
+                
+                    
             </nav>
 
             {/* Search Popup */}

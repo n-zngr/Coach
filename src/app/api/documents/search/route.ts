@@ -60,15 +60,15 @@ export async function POST(req: Request) {
 
         // 🔹 Falls ein Subject gefunden wurde, lade zusätzlich die zugehörigen Dateien und speichere sie im Subject
         if (matchingSubjects.length > 0) {
-            const subjectNames = matchingSubjects.map((subject: { name: string }) => subject.name);
+            const subjectIds = matchingSubjects.map((subject: any) => subject.id);
             const subjectFiles = await filesCollection.find({
                 'metadata.userId': userId,
-                'metadata.subjectName': { $in: subjectNames }
+                'metadata.subjectId': { $in: subjectIds }
             }).toArray();
 
             // Verbinde jedes Subject mit den zugehörigen Dateien
             matchingSubjects.forEach((subject: any) => {
-                subject.files = subjectFiles.filter((file: any) => file.metadata.subjectName === subject.name);
+                subject.files = subjectFiles.filter((file: any) => file.metadata.subjectId === subject.id);
             });
         }
 

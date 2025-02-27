@@ -19,7 +19,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
         onSearch(query);
     };
 
-    // Hilfsfunktion, um zu prüfen, ob ein Resultat vom Typ 'subject' ist
+    // Prüft, ob ein Resultat ein 'Subject' ist
     const isSubject = (result: any) => result.type === 'subject';
 
     return (
@@ -50,25 +50,23 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                     <ul className="mt-4 space-y-2">
                         {searchResults.map((result, index) => (
                             <li key={result.id || result._id || index} className="flex justify-between items-center">
-                                {/* Wenn das Ergebnis ein Subject ist, zeigen wir die zugehörigen Dateien an */}
                                 {isSubject(result) ? (
                                     <div>
-                                        <span className="font-semibold">📚 {result.name} (Semester: {result.semesterName})</span>
-                                        {/* Zeige die Dateien, die diesem Subject zugeordnet sind */}
-                                        {result.files && result.files.length > 0 ? (
+                                        <span className="font-semibold">{result.name} (Semester: {result.semesterName})</span>
+                                        {Array.isArray(result.files) && result.files.length > 0 ? (
                                             <ul className="ml-4 space-y-2">
                                                 {result.files.map((file: any) => (
                                                     <li key={file.id || file._id} className="flex justify-between items-center">
-                                                        <span>📄 {file.filename} ({file.metadata?.folderName || "No folder"})</span>
+                                                        <span> {file.filename} ({file.metadata?.folderName || "No folder"})</span>
                                                     </li>
                                                 ))}
                                             </ul>
                                         ) : (
-                                            <p className="ml-4 text-gray-500">No files in this subject</p>
+                                            isSubject(result) && <p className="ml-4 text-gray-500">No files in this subject</p>
                                         )}
                                     </div>
                                 ) : (
-                                    <span>📄 {result.filename} ({result.metadata?.folderName || "No folder"})</span>
+                                    <span> {result.filename} ({result.metadata?.folderName || "No folder"})</span>
                                 )}
                             </li>
                         ))}

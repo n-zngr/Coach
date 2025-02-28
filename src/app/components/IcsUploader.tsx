@@ -26,15 +26,15 @@ export default function IcsUploader({ onUploadSuccess }: IcsUploaderProps) {
             alert("Please select an ICS file.");
             return;
         }
-
+    
         if (!semesterId) {
             alert("Semester ID is required.");
             return;
         }
-
+    
         setLoading(true);
         setMessage(null);
-
+    
         const reader = new FileReader();
         reader.onload = async (event) => {
             if (!event.target?.result) {
@@ -42,41 +42,45 @@ export default function IcsUploader({ onUploadSuccess }: IcsUploaderProps) {
                 setMessage("Error reading the file.");
                 return;
             }
-
+    
             const fileContent = event.target.result as string;
             const filteredSubjects = parseIcsFile(fileContent);
-
+    
             console.log("Filtered Subjects:", filteredSubjects);
-
+    
             if (filteredSubjects.length === 0) {
                 setLoading(false);
                 setMessage("No valid subjects found in the ICS file.");
                 return;
             }
-
+    
             try {
-                // Send each subject to the API
-                for (const subject of filteredSubjects) {
-                    await fetch(`/api/documents/semesters/${semesterId}`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ name: subject }),
-                        credentials: "include",
-                    });
+                // Send all subjects in a single POST request to the batch endpoint
+                const response = await fetch(`/api/documents/semesters/${semesterId}/batch`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ subjects: filteredSubjects }), // Send subjects as an array
+                    credentials: "include",
+                });
+    
+                if (response.ok) {
+                    setMessage("Subjects successfully added!");
+                    onUploadSuccess(); // Trigger the callback to refresh subjects
+                } else {
+                    const errorData = await response.json();
+                    console.error("Error adding subjects:", errorData);
+                    setMessage("Error adding subjects.");
                 }
-
-                setMessage("Subjects successfully added!");
-                onUploadSuccess(); // Trigger the callback to refresh subjects
             } catch (error) {
                 console.error("Error adding subjects:", error);
                 setMessage("Error adding subjects.");
             }
-
+    
             setLoading(false);
         };
-
+    
         reader.readAsText(file);
     };
 

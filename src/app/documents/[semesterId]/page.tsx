@@ -7,6 +7,7 @@ import DisplayFiles from "@/app/components/DisplayFiles";
 import RecentFiles from "@/app/components/RecentFiles";
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from '@/app/components/Navigation';
+import IcsUploader from '@/app/components/IcsUploader';
 
 type Topic = {
     id: string;
@@ -52,8 +53,6 @@ export default function SemesterPage() {
         }
 
         authenticateUser();
-
-        
     }, [semesterId]);
 
     const fetchSubjects = async () => {
@@ -93,15 +92,15 @@ export default function SemesterPage() {
 
     const handleSubmit = async () => {
         if (!name) return;
-    
+
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
-                method: 'POST',
+                method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({ name: name.toLowerCase() })
             });
-    
+
             if (response.ok) {
                 const newSubject = await response.json();
                 setSubjects((prev) => [...prev, newSubject]);
@@ -113,7 +112,6 @@ export default function SemesterPage() {
             console.error('Error adding subject', error);
         }
     };
-    
 
     const toggleNavigation = () => {
         setIsExpanded(!isExpanded);
@@ -150,6 +148,8 @@ export default function SemesterPage() {
                     >
                         Add Subject
                     </button>
+                    {/* Pass fetchSubjects as a prop to IcsUploader */}
+                    <IcsUploader onUploadSuccess={fetchSubjects} />
                 </div>
 
                 <h2 className="text-xl font-semibold mb-2">Subjects</h2>
@@ -177,7 +177,7 @@ export default function SemesterPage() {
                         ))}
                     </ul>
                 )}
-    
+
                 <UploadFile />
                 <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                 <RecentFiles />

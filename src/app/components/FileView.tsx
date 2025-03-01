@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, useCallback, ChangeEvent } from "react";
 
 interface Tag {
-    _id: string;
+    _id?: string;
+    id?: string;
     name: string;
 }
 
@@ -40,16 +41,18 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
         if (file) {
             fetchTags(file._id);
         }
+        // Clear any selected tag when file changes.
+        setSelectedTag(null);
+        setTagInput("");
     }, [file]);
 
     if (!file) return null;
 
-    const handleRenameSubmit = () => {
+    const handleRenameSubmit = useCallback(() => {
         onRename(file._id, newFilename);
-    };
+    }, [file._id, newFilename, onRename]);
 
-    // Fetch tags from the file's document.
-    const fetchTags = async (fileId: string) => {
+    const fetchTags = useCallback(async (fileId: string) => {
         try {
             const res = await fetch(`/api/documents/tags?fileId=${fileId}`, { credentials: "include" });
             if (!res.ok) {
@@ -61,10 +64,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
         } catch (error) {
             console.error("Error fetching tags:", error);
         }
-    };
+    }, []);
 
-    // Add a tag: update global user tags (if necessary) and the file's metadata.
-    const handleAddTag = async () => {
+    const handleAddTag = useCallback(async () => {
         const newTag = tagInput.trim();
         if (!newTag) return;
         try {
@@ -78,35 +80,39 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
                 console.error("Failed to add tag");
                 return;
             }
-            const data = await res.json();
-            setTags(data.tags || []);
+            // Refresh tags for this file.
+            fetchTags(file._id);
         } catch (error) {
             console.error("Error adding tag:", error);
         }
         setTagInput("");
-    };
+        setSelectedTag(null);
+    }, [file._id, tagInput, fetchTags]);
 
-    const handleRenameTag = async (tagId: string, newName: string) => {
+    const handleRenameTag = useCallback(async () => {
+        if (!selectedTag) return;
+        const newName = tagInput.trim();
+        if (!newName) return;
         try {
             const res = await fetch("/api/documents/tags", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ tagId, newName }),
+                body: JSON.stringify({ fileId: file._id, tagId: selectedTag._id || selectedTag.id, newName }),
             });
             if (!res.ok) {
                 console.error("Failed to rename tag");
                 return;
             }
-            // Re-fetch tags after renaming.
             fetchTags(file._id);
         } catch (error) {
             console.error("Error renaming tag:", error);
         }
-    };
+        setTagInput("");
+        setSelectedTag(null);
+    }, [file._id, selectedTag, tagInput, fetchTags]);
 
-    // Remove a tag from the file.
-    const handleRemoveTag = async (tagToRemove: Tag) => {
+    const handleRemoveTag = useCallback(async (tagToRemove: Tag) => {
         try {
             const res = await fetch("/api/documents/tags", {
                 method: "DELETE",
@@ -118,16 +124,20 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
                 console.error("Failed to remove tag");
                 return;
             }
-            const data = await res.json();
-            setTags(data.tags || []);
+            fetchTags(file._id);
         } catch (error) {
             console.error("Error removing tag:", error);
         }
-    };
+    }, [file._id, fetchTags]);
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
-    };
+    }, []);
+
+    const selectTag = useCallback((tag: Tag) => {
+        setSelectedTag(tag);
+        setTagInput(tag.name);
+    }, []);
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
@@ -171,7 +181,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
                             className="w-full p-2 border rounded-md text-black"
                         />
                     </div>
-                    <div className="add-button-container mt-2">
+                    <div className="add-button-container mt-2 flex space-x-2">
                         <button
                             onClick={handleAddTag}
                             className="bg-green-500 text-white px-4 py-2 rounded-md"
@@ -179,22 +189,30 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
                             Add
                         </button>
                         <button
-                            onClick={() => selectedTag && handleRenameTag(selectedTag._id, tagInput)}
+                            onClick={handleRenameTag}
                             disabled={!selectedTag}
                             className="bg-yellow-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
                         >
                             Rename
                         </button>
                     </div>
-                    <div className="tags-container mt-4">
+                    <div className="tags-container mt-4 flex flex-wrap">
                         {tags.map((tag) => (
                             <div
-                                key={tag._id}
-                                className="tag-box inline-block border rounded-md p-2 mr-2 mb-2 relative bg-gray-200 text-black"
+                                key={tag._id || tag.id}
+                                onClick={() => selectTag(tag)}
+                                className={`tag-box inline-block border rounded-md p-2 mr-2 mb-2 relative bg-gray-200 text-black cursor-pointer ${
+                                    selectedTag && (selectedTag._id || selectedTag.id) === (tag._id || tag.id)
+                                        ? "border-blue-500"
+                                        : ""
+                                }`}
                             >
                                 {tag.name}
                                 <button
-                                    onClick={() => handleRemoveTag(tag)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveTag(tag);
+                                    }}
                                     className="absolute top-0 right-0 p-1 text-red-500"
                                     aria-label={`Remove tag ${tag.name}`}
                                 >

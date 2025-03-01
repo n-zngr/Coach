@@ -10,6 +10,34 @@ const USER_COL = "users";
 const FILE_DB = "documents";
 const FILE_COL = "fs.files";
 
+/**
+ * Cleanup unused tags from the global tag store in the user's document.
+ * It finds all files for the user, collects the tag IDs used in file metadata,
+ * then removes any tag from the user's document whose id is not in that set.
+ */
+async function cleanupUnusedTags(userId: string) {
+    try {
+        const filesCollection = await getCollection(FILE_DB, FILE_COL);
+        const files = await filesCollection.find({ "metadata.userId": userId }).toArray();
+        const usedTagIds = new Set<string>();
+        files.forEach((file) => {
+            const fileTags = file.metadata?.tags || [];
+            fileTags.forEach((tag: any) => {
+                if (tag.id) {
+                    usedTagIds.add(tag.id);
+                }
+            });
+        });
+        const usersCollection = await getCollection(USER_DB, USER_COL);
+        await usersCollection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $pull: { tags: { id: { $nin: Array.from(usedTagIds) } } } } as any
+        );
+    } catch (error) {
+        console.error("Error cleaning up unused tags:", error);
+    }
+}
+
 export async function GET(req: Request) {
     try {
         // Expect a fileId as a query parameter.
@@ -18,6 +46,11 @@ export async function GET(req: Request) {
         if (!fileId) {
             return NextResponse.json({ error: "fileId query parameter is required" }, { status: 400 });
         }
+        const cookies = req.headers.get("cookie");
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+        if (!userId) {
+            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+        }
         const filesCollection = await getCollection(FILE_DB, FILE_COL);
         const fileDoc = await filesCollection.findOne({ _id: new ObjectId(fileId) });
         if (!fileDoc) {
@@ -25,6 +58,8 @@ export async function GET(req: Request) {
         }
         // Assume file-specific tags are stored in metadata.tags.
         const tags = fileDoc.metadata?.tags || [];
+        // Clean up unused global tags before returning.
+        await cleanupUnusedTags(userId);
         return NextResponse.json({ tags });
     } catch (error) {
         console.error("Error in GET /api/documents/tags:", error);
@@ -73,9 +108,11 @@ export async function POST(req: Request) {
         );
         if (updateResult.modifiedCount === 0) {
             const fileDoc = await filesCollection.findOne({ _id: new ObjectId(fileId) });
+            await cleanupUnusedTags(userId);
             return NextResponse.json({ tags: fileDoc?.metadata?.tags || [] });
         }
         const updatedFile = await filesCollection.findOne({ _id: new ObjectId(fileId) });
+        await cleanupUnusedTags(userId);
         return NextResponse.json({ tags: updatedFile?.metadata?.tags || [] }, { status: 201 });
     } catch (error: any) {
         console.error("Error in POST /api/documents/tags:", error);
@@ -116,6 +153,7 @@ export async function PUT(req: Request) {
             { arrayFilters: [{ "elem.id": tagId }] }
         );
 
+        await cleanupUnusedTags(userId);
         return NextResponse.json({
             message: "Tag renamed",
             userUpdateResult,
@@ -149,6 +187,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Tag not found or file not found" }, { status: 404 });
         }
         const updatedFile = await filesCollection.findOne({ _id: new ObjectId(fileId) });
+        await cleanupUnusedTags(userId);
         return NextResponse.json({ tags: updatedFile?.metadata?.tags || [] });
     } catch (error) {
         console.error("Error in DELETE /api/documents/tags:", error);

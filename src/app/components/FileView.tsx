@@ -33,6 +33,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
     const [newFilename, setNewFilename] = useState<string>(file?.filename || "");
     const [tagInput, setTagInput] = useState("");
     const [tags, setTags] = useState<Tag[]>([]);
+    const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
 
     useEffect(() => {
         setNewFilename(file?.filename || "");
@@ -83,6 +84,25 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
             console.error("Error adding tag:", error);
         }
         setTagInput("");
+    };
+
+    const handleRenameTag = async (tagId: string, newName: string) => {
+        try {
+            const res = await fetch("/api/documents/tags", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ tagId, newName }),
+            });
+            if (!res.ok) {
+                console.error("Failed to rename tag");
+                return;
+            }
+            // Re-fetch tags after renaming.
+            fetchTags(file._id);
+        } catch (error) {
+            console.error("Error renaming tag:", error);
+        }
     };
 
     // Remove a tag from the file.
@@ -157,6 +177,13 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
                             className="bg-green-500 text-white px-4 py-2 rounded-md"
                         >
                             Add
+                        </button>
+                        <button
+                            onClick={() => selectedTag && handleRenameTag(selectedTag._id, tagInput)}
+                            disabled={!selectedTag}
+                            className="bg-yellow-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
+                        >
+                            Rename
                         </button>
                     </div>
                     <div className="tags-container mt-4">

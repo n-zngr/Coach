@@ -83,6 +83,50 @@ export async function POST(req: Request) {
     }
 }
 
+export async function PUT(req: Request) {
+    try {
+        // Extract userId from cookie.
+        const cookies = req.headers.get("cookie");
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+        if (!userId) {
+            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+        }
+        // Extract tagId and newName from the request body.
+        const { tagId, newName } = await req.json();
+        if (!tagId || !newName || typeof newName !== "string" || newName.trim() === "") {
+            return NextResponse.json({ error: "Tag id and a valid newName are required" }, { status: 400 });
+        }
+        const trimmedName = newName.trim();
+
+        // Update the global tag in the user's document.
+        const usersCollection = await getCollection(USER_DB, USER_COL);
+        const userUpdateResult = await usersCollection.updateOne(
+            { _id: new ObjectId(userId), "tags.id": tagId },
+            { $set: { "tags.$.name": trimmedName } }
+        );
+        if (userUpdateResult.modifiedCount === 0) {
+            return NextResponse.json({ error: "Global tag not found or not updated" }, { status: 404 });
+        }
+
+        // Update all file documents that reference this tag.
+        const filesCollection = await getCollection(FILE_DB, FILE_COL);
+        const filesUpdateResult = await filesCollection.updateMany(
+            { "metadata.tags.id": tagId },
+            { $set: { "metadata.tags.$[elem].name": trimmedName } },
+            { arrayFilters: [{ "elem.id": tagId }] }
+        );
+
+        return NextResponse.json({
+            message: "Tag renamed",
+            userUpdateResult,
+            filesUpdateResult,
+        }, { status: 200 });
+    } catch (error: any) {
+        console.error("Error in PUT /api/documents/tags:", error);
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    }
+}
+
 export async function DELETE(req: Request) {
     try {
         const { fileId, tag } = await req.json();

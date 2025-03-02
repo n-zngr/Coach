@@ -47,32 +47,39 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                 </button>
 
                 {searchResults.length > 0 ? (
-                    <ul className="mt-4 space-y-2">
+                    <ul className="mt-4 space-y-4">
                         {searchResults.map((result, index) => (
-                            <li key={result.id || result._id || index} className="flex justify-between items-center">
+                            <li key={result.id || result._id || index} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                                    {result.metadata?.semesterName || result.semesterName || "No semester"}
+                                </h3>
+
+                                {/* Wenn es ein Subject ist (Suche nach Subjects) */}
                                 {isSubject(result) ? (
-                                    <div>
-                                        <span className="font-semibold">
-                                            {result.name} (Semester: {result.semesterName})
-                                        </span>
-                                        {Array.isArray(result.files) && result.files.length > 0 ? (
-                                            <ul className="ml-4 space-y-2">
+                                    <>
+                                        <h4 className="text-md font-semibold text-gray-800 dark:text-gray-300 mt-1">
+                                            {result.name}
+                                        </h4>
+                                        {Array.isArray(result.files) && result.files.length > 0 && (
+                                            <ul className="ml-4 space-y-2 mt-2">
                                                 {result.files.map((file: any) => (
-                                                    <li key={file.id || file._id} className="flex justify-between items-center">
-                                                        <span>
-                                                          {file.filename} (Subject: {file.metadata?.subjectName || "No subject"}, 
-                                                          Semester: {file.metadata?.semesterName || "No semester"})
-                                                        </span>
+                                                    <li key={file.id || file._id} className="text-gray-700 dark:text-gray-400">
+                                                        {file.filename}
                                                     </li>
                                                 ))}
                                             </ul>
-                                        ) : null}
-                                    </div>
+                                        )}
+                                    </>
                                 ) : (
-                                    <span>
-                                      {result.filename} (Subject: {result.metadata?.subjectName || "No subject"}, 
-                                      Semester: {result.metadata?.semesterName || "No semester"})
-                                    </span>
+                                    /* Wenn es ein einzelnes File ist (Suche nach Files) */
+                                    <>
+                                        <h4 className="text-md font-semibold text-gray-800 dark:text-gray-300 mt-1">
+                                            {result.metadata?.subjectName || "No subject"}
+                                        </h4>
+                                        <p className="text-gray-700 dark:text-gray-400 mt-1">
+                                            {result.filename}
+                                        </p>
+                                    </>
                                 )}
                             </li>
                         ))}

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import LogoutButton from "../LogOut";
-import Link from "next/link";
 import Search from "./Search";
 import Notification from "./Notification";
 import AccountInfo from "./AccountInfo";

@@ -94,16 +94,19 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         </div>
                     )}
                     {isExpanded && (
-                    <NavList isExpanded={isExpanded} />
-                )}
-                    <div className="mt-auto">
-                        <div className="flex flex-col">
-                            <Notification />
-                            <div className="mb-2">
-                                <AccountInfo />
+                        <NavList isExpanded={isExpanded} />
+                    )}
+                    {isExpanded && (
+                        <div className="mt-auto">
+                            <div className="flex flex-col">
+                                <Notification />
+                                <div className="mb-2">
+                                    <AccountInfo />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
+                    
                 </div>
 
                 

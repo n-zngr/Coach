@@ -8,7 +8,7 @@ const AccountInfo: React.FC = (isExpanded) => {
     return (
         <div>
             {isExpanded && ( 
-                <div className="">
+                <div>
                     <NavLink
                         href="/account" 
                         icon={

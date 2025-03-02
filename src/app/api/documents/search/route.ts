@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     // 🔹 Suche nach Subjects mit explizitem Typ "subject"
-    const matchingSubjects = user.semesters.flatMap((semester: any) =>
+    let matchingSubjects = user.semesters.flatMap((semester: any) =>
       semester.subjects
         .filter((subject: { name: string }) =>
           subject.name.toLowerCase().includes(query.toLowerCase())
@@ -39,7 +39,8 @@ export async function POST(req: Request) {
           id: subject.id,
           name: subject.name,
           semesterId: semester.id,
-          semesterName: semester.name
+          semesterName: semester.name,
+          files: [] // Leeres Array hinzufügen, das später befüllt wird
         }))
     );
 
@@ -114,6 +115,9 @@ export async function POST(req: Request) {
       matchingSubjects.forEach((subject: any) => {
         subject.files = updatedSubjectFiles.filter((file: any) => file.metadata.subjectId === subject.id);
       });
+
+      // Filtere die Subjects ohne Files
+      matchingSubjects = matchingSubjects.filter((subject: any) => subject.files.length > 0);
     }
 
     // 🔹 Kombiniere Subjects und Files in einer einzigen Antwort

@@ -52,6 +52,17 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                                     Documents
                                 </Link>
                             </li>
+                            <li>
+                                <Link 
+                                    href="/calendar" 
+                                    className="block p-3 rounded-md 
+                                    hover:bg-gray-200 dark:hover:bg-gray-700 
+                                    font-semibold text-gray-900 dark:text-gray-100 
+                                    transition-all"
+                                >
+                                    Calendar
+                                </Link>
+                            </li>
                         </ul>
                     )}
                 </div>

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCollection } from '@/app/utils/mongodb';
 import { ObjectId } from 'mongodb';
 
-const dbName = 'users';
-const dbCol = 'users';
+const DATABASE_NAME = 'users';
+const COLLECTION_NAME = 'users';
 
 export async function GET(req: NextRequest) {
     const cookies = req.headers.get('cookie');
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const collection = await getCollection(dbName, dbCol);
+        const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
         const user = await collection.findOne({ _id: new ObjectId(userId) });
 
         if (!user) {

@@ -22,3 +22,10 @@ export async function getCollection(dbName: string, collectionName: string) {
     const client = await connectMongoDB();
     return client.db(dbName).collection(collectionName);
 }
+
+export async function closeMongoDB() {
+    if (client) {
+        await client.close();
+        client = null;
+    }
+}

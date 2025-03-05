@@ -1,4 +1,4 @@
-"use client";
+/*"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -205,4 +205,4 @@ const DisplayFiles: React.FC = () => {
     );
 };
 
-export default DisplayFiles;
+export default DisplayFiles;*/

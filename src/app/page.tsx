@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import Navigation from '@/app/components/Navigation';
+import Navigation from '@/app/components/Navigation/Navigation';
 
 export default function Home() {
     const [isExpanded, setIsExpanded] = useState(true);

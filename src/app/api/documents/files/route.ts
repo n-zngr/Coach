@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/app/utils/mongodb";
+import { getCollection, closeMongoDB } from "@/app/utils/mongodb";
 
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
@@ -31,5 +31,7 @@ export async function GET(req: Request) {
     } catch (error) {
         console.error('Error fetching files:', error);
         return NextResponse.json({ message: 'Failed to fetch files', error }, { status: 500 });
-    }
+    }/*finally {
+        closeMongoDB();
+    }*/
 }

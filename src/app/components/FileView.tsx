@@ -254,5 +254,4 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose, onRename, onDelete, 
         </div>
     );
 };
-
 export default FileView;

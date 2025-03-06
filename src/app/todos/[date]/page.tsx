@@ -24,6 +24,8 @@ import {
     Task as LogicTask,
     TaskStatus,
 } from "@/app/api/todos/logic";
+import { format } from "date-fns";
+import { enUS } from "date-fns/locale/en-US";
 
 // Alias our Task type for convenience
 type Task = LogicTask;
@@ -49,14 +51,12 @@ export default function TodoPage() {
     const { date } = useParams();
     if (!date || Array.isArray(date)) return <div>Invalid date parameter.</div>;
 
-    const parsedDate = new Date(date);
     const options: Intl.DateTimeFormatOptions = {
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
     };
-    const formattedDate = parsedDate.toLocaleDateString(undefined, options);
 
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
@@ -147,6 +147,10 @@ export default function TodoPage() {
             setShowTaskPanel(true);
         }
     };
+
+    const parsedDate = new Date(date);
+    const formattedDate = format(parsedDate, "EEEE, MMMM d, yyyy", { locale: enUS });
+
 
     const columns: Column[] = [
         { id: "planned", label: "Planned" },

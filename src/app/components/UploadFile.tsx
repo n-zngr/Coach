@@ -118,7 +118,7 @@ const FileUpload: React.FC = () => {
 
             {showUploadCard && (
                 <div 
-                    className="absolute mt-2 bg-white shadow-lg border rounded p-4" 
+                    className="absolute mt-2 bg-white-500 shadow-lg border rounded p-4" 
                     style={{ top: uploadButtonRef.current?.offsetHeight || 0 }}
                 >
                     <h3 className="text-lg font-semibold mb-2 text-black">Select Semester, Subject, and Topic</h3>

@@ -109,17 +109,29 @@ export default function TodoPage() {
             if (overContainer === "planned") destinationStatus = "planned";
             else if (overContainer === "inProgress") destinationStatus = "in progress";
             else destinationStatus = "complete";
-
+        
             const updatedTasks = updateTaskStatus(tasks, activeId, destinationStatus);
             setTasks(updatedTasks);
+        
+            // Retrieve the task object to get its taskName.
+            const taskToUpdate = tasks.find((t) => t._id === activeId);
+        
+            // Build the payload including taskName.
+            const payload = {
+                id: activeId,
+                status: destinationStatus,
+                taskName: taskToUpdate?.taskName || "",
+            };
+        
             try {
                 const res = await fetch("/api/todos", {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: activeId, status: destinationStatus }),
+                    body: JSON.stringify(payload),
                 });
                 if (!res.ok) {
-                    console.error("Failed to update task status");
+                    const errorText = await res.text();
+                    console.error("Failed to update task status:", res.status, errorText);
                 } else {
                     console.log("Task updated successfully");
                 }

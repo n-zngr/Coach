@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
     try {
         const body = await req.json();
-        // Expect the task id, new status, and taskName in the request body
+        // Expect id, status, taskName, and optionally file in the request body.
         const { id, status, taskName, file } = body;
         if (!id || !status || !taskName) {
             return NextResponse.json(
@@ -86,11 +86,10 @@ export async function PATCH(req: Request) {
             );
         }
 
-        // Build the update payload. Include file if provided.
         const updateFields: any = {
             taskName, // update taskName as well
             status,
-            updatedAt: new Date()
+            updatedAt: new Date(),
         };
 
         if (file) {

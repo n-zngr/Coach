@@ -6,8 +6,8 @@ import { useParams, useRouter } from 'next/navigation';
 import DisplayFiles from "@/app/components/DisplayFiles";
 import RecentFiles from "@/app/components/RecentFiles";
 import UploadFile from '@/app/components/UploadFile';
-import Navigation from '@/app/components/Navigation';
 import IcsUploader from '@/app/components/IcsUploader';
+import Navigation from '@/app/components/Navigation/Navigation';
 
 type Topic = {
     id: string;
@@ -44,7 +44,7 @@ export default function SemesterPage() {
                 }
 
                 if (semesterId) {
-                    await fetchSubjects();
+                    await fetchSubjects() as any; // Hotfix to avoid error, research
                 }
             } catch (error) {
                 console.error('Error authenticating user:', error);

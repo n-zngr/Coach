@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import Navigation from '@/app/components/Navigation';
+import Navigation from '@/app/components/Navigation/Navigation';
 import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
@@ -145,7 +145,7 @@ export default function Documents() {
                 <div className="mb-4">
                     <input
                         type="text"
-                        className="border rounded text-black p-2 w-full"
+                        className="border rounded p-2 w-full"
                         placeholder="Semester Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}

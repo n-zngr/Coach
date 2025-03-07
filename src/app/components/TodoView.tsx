@@ -110,7 +110,7 @@ const TodoView: React.FC<TodoViewProps> = ({
         console.log("Payload:", payload);
 
         try {
-            const res = await fetch("/api/todos", {
+            const res = await fetch("/api/calendar", {
                 method: editTask ? "PATCH" : "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

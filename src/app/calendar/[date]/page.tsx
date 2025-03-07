@@ -23,7 +23,7 @@ import {
     reorderTasks,
     Task as LogicTask,
     TaskStatus,
-} from "@/app/api/todos/logic";
+} from "@/app/api/calendar/logic";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
 
@@ -47,16 +47,13 @@ function DroppableContainer({
     return <div ref={setNodeRef} id={id}>{children}</div>;
 }
 
-export default function TodoPage() {
+export default function CalendarPage() {
     const { date } = useParams();
     if (!date || Array.isArray(date)) return <div>Invalid date parameter.</div>;
 
-    const options: Intl.DateTimeFormatOptions = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    };
+    // Format date using a fixed locale so that server and client produce the same output
+    const parsedDate = new Date(date);
+    const formattedDate = format(parsedDate, "EEEE, MMMM d, yyyy", { locale: enUS });
 
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,14 +62,14 @@ export default function TodoPage() {
 
     async function fetchTasks() {
         try {
-            const res = await fetch("/api/todos");
+            const res = await fetch("/api/calendar");
             if (!res.ok) {
                 const errorText = await res.text();
                 console.error("Failed to fetch tasks:", res.status, errorText);
                 return;
             }
             const data: Task[] = await res.json();
-            // Filter tasks for the current date
+            // Filter tasks for the current date (ensure the stored date format is "YYYY-MM-DD")
             const filteredTasks = data.filter((task) => task.date === date);
             setTasks(filteredTasks);
         } catch (error) {
@@ -109,22 +106,21 @@ export default function TodoPage() {
             if (overContainer === "planned") destinationStatus = "planned";
             else if (overContainer === "inProgress") destinationStatus = "in progress";
             else destinationStatus = "complete";
-        
+
             const updatedTasks = updateTaskStatus(tasks, activeId, destinationStatus);
             setTasks(updatedTasks);
-        
-            // Retrieve the task object to get its taskName.
+
+            // Retrieve the taskName from the task being moved.
             const taskToUpdate = tasks.find((t) => t._id === activeId);
-        
-            // Build the payload including taskName.
+
             const payload = {
                 id: activeId,
                 status: destinationStatus,
                 taskName: taskToUpdate?.taskName || "",
             };
-        
+
             try {
-                const res = await fetch("/api/todos", {
+                const res = await fetch("/api/calendar", {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload),
@@ -160,10 +156,6 @@ export default function TodoPage() {
         }
     };
 
-    const parsedDate = new Date(date);
-    const formattedDate = format(parsedDate, "EEEE, MMMM d, yyyy", { locale: enUS });
-
-
     const columns: Column[] = [
         { id: "planned", label: "Planned" },
         { id: "inProgress", label: "In Progress" },
@@ -172,7 +164,7 @@ export default function TodoPage() {
 
     return (
         <div style={{ padding: "20px", position: "relative" }}>
-            <h1>To Do - {formattedDate}</h1>
+            <h1>Calendar - {formattedDate}</h1>
             <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
                 <button
                     onClick={() => {
@@ -242,7 +234,7 @@ export default function TodoPage() {
             )}
 
             <div style={{ marginTop: "20px" }}>
-                <Link href="/calendar">Back to Calendar</Link>
+                <Link href="/calendar">Back to Calendar Overview</Link>
             </div>
         </div>
     );

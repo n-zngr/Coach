@@ -20,7 +20,7 @@ export default function CalendarPage() {
     useEffect(() => {
         async function fetchTasks() {
             try {
-                const res = await fetch("/api/todos");
+                const res = await fetch("/api/calendar");
                 if (!res.ok) {
                     console.error("Failed to fetch tasks");
                     return;
@@ -38,8 +38,8 @@ export default function CalendarPage() {
     // When a date is clicked, redirect to the todos page for that date
     const handleDateClick = (arg: DateClickArg) => {
         const dateStr = arg.date.toISOString().split("T")[0];
-        router.push(`/todos/${dateStr}`);
-    };
+        router.push(`/calendar/${dateStr}`);
+    };    
   
     // Render day cell content with day number and colored dots.
     // Filter tasks client-side based on the cell date.

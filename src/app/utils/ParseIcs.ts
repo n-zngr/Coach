@@ -7,7 +7,7 @@ const subjectMap: Record<string, string> = {
     };
   
   // Function to parse ICS file content and return unique subjects
-  export const parseIcsFile = (icsContent: string): string[] => {
+  export const parseIcsFile = (icsContent: string): { name: string }[] => {
     try {
       const eventRegex = /BEGIN:VEVENT[\s\S]*?END:VEVENT/g;
       const summaryRegex = /SUMMARY:([^\r\n]+)/;
@@ -25,9 +25,9 @@ const subjectMap: Record<string, string> = {
         }
       });
   
-      return Array.from(uniqueSubjects).map(
-        (code) => subjectMap[code] || `Unbekannt (${code})`
-      );
+      return Array.from(uniqueSubjects).map((code) => ({
+        name: subjectMap[code] || `Unbekannt (${code})`,
+      }));
     } catch (error) {
       console.error(`Error parsing the ICS file: ${(error as Error).message}`);
       return [];

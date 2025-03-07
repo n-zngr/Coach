@@ -312,17 +312,34 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     }, []);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
+        <div className="fixed inset-0 flex justify-end">
             <div
                 className={`
-                h-full bg-white dark:bg-neutral-900 p-6 overflow-y-auto 
-                transition-transform duration-300 
-                ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
+                    h-full flex flex-col bg-white-800 dark:bg-black-200 overflow-y-auto
+                    border-l border-white-500 dark:border-black-500
+                    transition-transform duration-300 
+                    ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
                 `}
             >
-                <button className="text-red-500 mb-4" onClick={onClose}>
-                Close [X]
-                </button>
+                <header className='flex h-[64px] justify-between p-6 pb-4 border-b border-white-500 dark:border-black-500 '>
+                    <div className="flex">
+                        <div className="size-[24px]">
+                            <svg width="16.12" height="20" viewBox="0 0 19 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5.56764 7.15385H8.49766M5.56764 11.7692H12.8927M5.56764 16.3846H12.8927M17.2877 19.4615C17.2877 19.8696 17.1334 20.2609 16.8586 20.5494C16.5839 20.8379 16.2113 21 15.8227 21H2.63762C2.24907 21 1.87644 20.8379 1.6017 20.5494C1.32696 20.2609 1.17261 19.8696 1.17261 19.4615V2.53846C1.17261 2.13044 1.32696 1.73912 1.6017 1.4506C1.87644 1.16209 2.24907 1 2.63762 1H9.96267L17.2877 8.69231V19.4615Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div className="flex">
+                            <h1 className="text-xl">File Preview</h1>
+                        </div>
+                    </div>
+                    <div>
+                        <button className="w-8 h-8 flex rounded-full justify-center items-center hover:bg-white-500 dark:hover:bg-black-500" onClick={onClose}>
+                            <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
 
                 <h2 className="text-xl font-semibold mb-4">File Details</h2>
 

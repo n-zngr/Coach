@@ -105,10 +105,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         </div>
                     )}
                     
-                </div>
-
-                
-                    
+                </div>        
             </nav>
 
             {/* Search Popup */}

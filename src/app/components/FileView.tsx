@@ -46,7 +46,10 @@ interface FileViewProps {
 
 
 const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
+    // Rename file state
     const [newFilename, setNewFilename] = useState<string>(file?.filename || "");
+
+    // Tag states
     const [tagInput, setTagInput] = useState("");
     const [tags, setTags] = useState<Tag[]>([]);
     const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
@@ -114,6 +117,13 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             console.error('Error renaming file:', error);
         }
     }
+
+    const handleClose = async () => { // Additional handleClose method, to include rename on FileView closure
+        if (newFilename.trim() !== file.filename.trim()) {
+            await handleRename();
+        }
+        onClose();
+    };
 
     const handleDownload = async () => {
         try {
@@ -321,54 +331,70 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
                 `}
             >
-                <header className='flex h-[64px] justify-between p-6 pb-4 border-b border-white-500 dark:border-black-500 '>
-                    <div className="flex">
-                        <div className="size-[24px]">
-                            <svg width="16.12" height="20" viewBox="0 0 19 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5.56764 7.15385H8.49766M5.56764 11.7692H12.8927M5.56764 16.3846H12.8927M17.2877 19.4615C17.2877 19.8696 17.1334 20.2609 16.8586 20.5494C16.5839 20.8379 16.2113 21 15.8227 21H2.63762C2.24907 21 1.87644 20.8379 1.6017 20.5494C1.32696 20.2609 1.17261 19.8696 1.17261 19.4615V2.53846C1.17261 2.13044 1.32696 1.73912 1.6017 1.4506C1.87644 1.16209 2.24907 1 2.63762 1H9.96267L17.2877 8.69231V19.4615Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
+                <header className='flex flex-col p-6'>
+                    <div className="flex flex-row justify-between">
                         <div className="flex">
-                            <h1 className="text-xl">File Preview</h1>
+                            <div className="size-[24px]">
+                                <svg width="16.12" height="20" viewBox="0 0 19 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5.56764 7.15385H8.49766M5.56764 11.7692H12.8927M5.56764 16.3846H12.8927M17.2877 19.4615C17.2877 19.8696 17.1334 20.2609 16.8586 20.5494C16.5839 20.8379 16.2113 21 15.8227 21H2.63762C2.24907 21 1.87644 20.8379 1.6017 20.5494C1.32696 20.2609 1.17261 19.8696 1.17261 19.4615V2.53846C1.17261 2.13044 1.32696 1.73912 1.6017 1.4506C1.87644 1.16209 2.24907 1 2.63762 1H9.96267L17.2877 8.69231V19.4615Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+                            <div className="flex">
+                                <h1 className="text-xl">File Preview</h1>
+                            </div>
+                        </div>
+                        <div className="flex items-center">
+                            <button
+                                className="w-8 h-8 flex rounded-full justify-center items-center bg-white-500 hover:bg-white-600 dark:bg-black-500 dark:hover:bg-black-600 active:scale-95 transition-all duration-100"
+                                onClick={handleClose}
+                            >
+                                <svg width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
-                    <div>
-                        <button className="w-8 h-8 flex rounded-full justify-center items-center hover:bg-white-500 dark:hover:bg-black-500" onClick={onClose}>
-                            <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                    <div className="relative px-6 pt-4"> {/* Divider */}
+                        <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-white-500 dark:bg-black-500"></div>
                     </div>
                 </header>
 
-                <h2 className="text-xl font-semibold mb-4">File Details</h2>
-
                 {/* Filename & Rename */}
-                <div className="mb-4">
-                <label className="block text-sm font-medium">Filename</label>
-                <input
-                    type="text"
-                    value={newFilename}
-                    onChange={(e) => setNewFilename(e.target.value)}
-                    className="w-full p-2 border rounded-md text-black"
-                />
-                <button
-                    onClick={handleRename}
-                    className="bg-blue-500 text-white px-4 py-2 mt-2 rounded-md"
-                >
-                    Rename
-                </button>
+                <div className="flex flex-col gap-4 px-6 pb-6">
+                    <div className="flex justify-between items-center gap-4">
+                        <input
+                            type='text'
+                            value={newFilename}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNewFilename(e.target.value)}
+                            className='w-full bg-transparent border-b border-transparent focus:border-white-500 focus:dark:border-black-500 focus:outline-none font-medium text-lg text-black-500 dark:text-white-500'
+                        />
+                        <p className='whitespace-nowrap text-gray-500'>
+                            {(file.length / 1024).toFixed(0)} KB
+                        </p>
+                    </div>
+                    <div className="flex">
+                        <p className="text-base text-black-900 dark:text-white-100">
+                            File description will be displayed here once implemented.
+                        </p>
+                    </div>
+                    <div className="flex">
+                        (Move functionality to be implemented here.)
+                    </div>
+                    <div className="relative px-6"> {/*Divider*/}
+                        <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-white-500 dark:bg-black-500"></div>
+                    </div>
                 </div>
 
                 {/* Tag Section */}
-                <div className="mb-4">
+                <div className="flex flex-col mb-4 px-6 gap-4">
+                    <h3 className="text-lg text-black-900 dark:text-white-100">Tags</h3>
                     <div className="tag-input-container">
                         <input
-                        type="text"
-                        placeholder="Type tag name"
-                        value={tagInput}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md text-black"
+                            type="text"
+                            placeholder="Type tag name"
+                            value={tagInput}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md text-black"
                         />
                     </div>
                     <div className="add-button-container mt-2 flex space-x-2">
@@ -421,9 +447,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     </p>
                     <p>
                         <strong>Upload Date:</strong> {new Date(file.uploadDate).toLocaleString()}
-                    </p>
-                    <p>
-                        <strong>File Size:</strong> {(file.length / 1024).toFixed(2)} KB
                     </p>
                     <p>
                         <strong>File Location:</strong> {filePath || "Location not set"}

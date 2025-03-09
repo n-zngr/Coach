@@ -1,6 +1,8 @@
 "use client";
 
+import React from 'react';
 import { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
+import TagDropdown from "./Tags/TagDropdown";
 
 interface Semester {
     id: string;
@@ -33,7 +35,7 @@ interface File {
     };
 }
 
-interface Tag {
+export interface Tag {
     _id?: string;
     id?: string;
     name: string;
@@ -52,7 +54,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // Tag states
     const [tagInput, setTagInput] = useState("");
     const [tags, setTags] = useState<Tag[]>([]);
+    const [allTags, setAllTags] = useState<Tag[]>([]);
     const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+    const [showTagInput, setShowTagInput] = useState(false);
 
     // Move file states
     const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -63,16 +67,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
     // Replace file state
     const [replaceFile, setReplaceFile] = useState<globalThis.File | null>(null);
-
-    useEffect(() => { // Updates on file change, renders tags and file name
-        setNewFilename(file?.filename || "");
-        if (file) {
-            fetchTags(file._id);
-        }
-        // Clear any selected tag when file changes.
-        setSelectedTag(null);
-        setTagInput("");
-    }, [file]);
 
     useEffect(() => { // Updates on file change, builds file location and move options
         const fetchSemesters = async () => {
@@ -226,48 +220,126 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // --- Tag Logic ---
     const fetchTags = useCallback(async (fileId: string) => {
         try {
-            const res = await fetch(`/api/documents/tags?fileId=${fileId}`, { credentials: "include" });
+            const response = await fetch(`/api/documents/tags/tags?fileId=${fileId}`, { credentials: "include" });
 
-            if (!res.ok) {
+            if (!response.ok) {
                 console.error("Failed to fetch tags");
                 return;
             }
 
-            const data = await res.json();
+            const data = await response.json();
             setTags(data.tags || []);
         } catch (error) {
             console.error("Error fetching tags:", error);
         }
     }, []);
 
-    const handleAddTag = useCallback(async () => {
-        const newTag = tagInput.trim();
-        if (!newTag) return;
+    const fetchAllTags = useCallback(async () => {
         try {
-            const res = await fetch("/api/documents/tags", {
+            const response = await fetch('/api/documents/tags/allTags', { credentials: 'include' });
+
+            if (!response.ok) {
+                console.error('Failed to fetch all tags');
+                return;
+            }
+            
+            const data = await response.json();
+            setAllTags(data.tags || []);
+        } catch (error) {
+            console.error('Error fetching all tags:', error);
+        }
+    }, []);
+
+    useEffect(() => { // Updates on file change, renders tags and file name
+        setNewFilename(file?.filename || "");
+        if (file) {
+            fetchTags(file._id);
+            fetchAllTags();
+        }
+        // Clear any selected tag when file changes.
+        setSelectedTag(null);
+        setTagInput("");
+    }, [file, fetchTags, fetchAllTags]);
+
+    const handleAddTag = useCallback(async (tagName: string) => { // Add new tag logic – called when no existing tag matches the input.
+        if (!tagName.trim()) return;
+
+        try {
+            const response = await fetch("/api/documents/tags/tags", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ fileId: file._id, tag: newTag }),
+                body: JSON.stringify({ fileId: file?._id, tag: tagName.trim() }),
             });
-        if (!res.ok) {
+        if (!response.ok) {
             console.error("Failed to add tag");
             return;
         }
-            fetchTags(file._id);
+            fetchTags(file!._id);
         } catch (error) {
             console.error("Error adding tag:", error);
         }
         setTagInput("");
+        setShowTagInput(false);
         setSelectedTag(null);
     }, [file._id, tagInput, fetchTags]);
+
+    const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
+        // Optionally, you could add a relation to the file here if it isn't already associated.
+        // For now, we simply add it if it's not already present.
+        if (!tags.find(t => (t._id || t.id) === (tag._id || tag.id))) {
+            fetch('/api/documents/tags/tags', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ fileId: file?._id, tag: tag.name })
+            })
+            .then((response) => {
+                if (!response.ok) console.error('Failed to add tag');
+                else {
+                    fetchTags(file!._id);
+                }
+            })
+            .catch((error) => console.error('Error adding tags:', error));
+        }
+
+        setTagInput('');
+        setShowTagInput(false);
+    }, [file, tags, fetchTags]);
+
+    const filteredTags = allTags.filter((tag) => 
+        tag.name.toLowerCase().includes(tagInput.toLowerCase())
+    );
+    /*
+    const handleTagInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            // If no existing tag matches, create new.
+            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (!exists) {
+                handleAddTag(tagInput);
+            }
+        }
+    };*/
+
+    const handleTagInputBlur = () => { // On blur, if the tagInput is non-empty and doesn’t match an existing tag, add it.
+        setTimeout(() => { // A small timeout helps with the click selection on the dropdown
+            if (tagInput.trim()) {
+                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+                if (!exists) {
+                    handleAddTag(tagInput);
+                }
+            }
+            setShowTagInput(false);
+        }, 150);
+    };
 
     const handleRenameTag = useCallback(async () => {
         if (!selectedTag) return;
         const newName = tagInput.trim();
         if (!newName) return;
         try {
-            const res = await fetch("/api/documents/tags", {
+            const res = await fetch("/api/documents/tags/tags", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -294,7 +366,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const handleRemoveTag = useCallback(
         async (tagToRemove: Tag) => {
             try {
-                const res = await fetch("/api/documents/tags", {
+                const res = await fetch("/api/documents/tags/tags", {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
                     credentials: "include",
@@ -388,50 +460,52 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 {/* Tag Section */}
                 <div className="flex flex-col mb-4 px-6 gap-4">
                     <h3 className="text-lg text-black-900 dark:text-white-100">Tags</h3>
-                    <div className="tag-input-container">
+                    {/* Button to show/hide tag input */}
+                    <button
+                        onClick={() => setShowTagInput((prev) => !prev)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md w-fit"
+                    >
+                        New Tag
+                    </button>
+                    {showTagInput && (
+                        <div className="relative">
                         <input
                             type="text"
                             placeholder="Type tag name"
                             value={tagInput}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border rounded-md text-black"
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setTagInput(e.target.value)}
+                            /*onKeyDown={handleTagInputKeyDown}*/
+                            onBlur={handleTagInputBlur}
+                            className="w-full p-2 border rounded-md text-black focus:outline-none"
                         />
-                    </div>
-                    <div className="add-button-container mt-2 flex space-x-2">
-                        <button
-                        onClick={handleAddTag}
-                        className="bg-green-500 text-white px-4 py-2 rounded-md"
-                        >
-                        Add
-                        </button>
-                        <button
-                        onClick={handleRenameTag}
-                        disabled={!selectedTag}
-                        className="bg-yellow-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
-                        >
-                        Rename Tag
-                        </button>
-                    </div>
-                    <div className="tags-container mt-4 flex flex-wrap">
+                        <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
+                        </div>
+                    )}
+                    {/* Display current tags for this file */}
+                    <div className="tags-container mt-4 flex flex-wrap gap-2">
                         {tags.map((tag) => (
                         <div
                             key={tag._id || tag.id}
-                            onClick={() => selectTag(tag)}
-                            className={`tag-box inline-block border rounded-md p-2 mr-2 mb-2 relative bg-gray-200 text-black cursor-pointer ${
-                            selectedTag &&
-                            (selectedTag._id || selectedTag.id) === (tag._id || tag.id)
-                                ? "border-blue-500"
-                                : ""
-                            }`}
+                            className="border rounded-md px-2 py-1 bg-gray-200 text-black flex items-center relative"
                         >
                             {tag.name}
                             <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveTag(tag);
-                            }}
-                            className="absolute top-0 right-0 p-1 text-red-500"
-                            aria-label={`Remove tag ${tag.name}`}
+                                onClick={() => {
+                                    // Remove tag from file
+                                    fetch("/api/documents/tags/tags", {
+                                        method: "DELETE",
+                                        headers: { "Content-Type": "application/json" },
+                                        credentials: "include",
+                                        body: JSON.stringify({ fileId: file?._id, tag: tag.name }),
+                                    })
+                                    .then((res) => {
+                                        if (!res.ok) console.error("Failed to remove tag");
+                                        else fetchTags(file!._id);
+                                    })
+                                    .catch((error) => console.error("Error removing tag:", error));
+                                }}
+                                className="ml-1 text-red-500"
+                                aria-label={`Remove tag ${tag.name}`}
                             >
                             ×
                             </button>

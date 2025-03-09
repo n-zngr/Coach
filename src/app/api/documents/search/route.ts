@@ -120,10 +120,31 @@ export async function POST(req: Request) {
       matchingSubjects = matchingSubjects.filter((subject: any) => subject.files.length > 0);
     }
 
-    // 🔹 Kombiniere Subjects und Files in einer einzigen Antwort
-    const results = [...matchingSubjects, ...files];
+    // 🔹 Kombiniere Subjects und Files in einer einzigen Antwort, dabei aber die doppelte Anzeige vermeiden
+    let results = [...matchingSubjects, ...files];
 
-    return NextResponse.json(results, { status: 200 });
+    // 🔹 Wende die Logik an, um nur das Subject anzuzeigen, wenn sowohl ein Subject als auch ein File gefunden wurde
+    const filteredResults: any[] = []; // Explizit als Array von "any" typisieren
+    const subjectsMap = new Map<string, any>(); // Speichert die Subject-Ergebnisse
+
+    // Gehe durch alle Ergebnisse und filtere die, die sowohl ein Subject als auch ein File enthalten
+    results.forEach((result) => {
+      if (result.type === 'subject') {
+        // Wenn das Ergebnis ein Subject ist, prüfe, ob bereits ein File für dieses Subject existiert
+        if (!subjectsMap.has(result.id)) {
+          subjectsMap.set(result.id, result);
+          filteredResults.push(result); // Füge das Subject hinzu
+        }
+      } else {
+        // Wenn das Ergebnis ein File ist, prüfe, ob ein Subject vorhanden ist
+        const subject = subjectsMap.get(result.metadata?.subjectId);
+        if (!subject) {
+          filteredResults.push(result); // Füge das File hinzu, wenn kein Subject gefunden wurde
+        }
+      }
+    });
+
+    return NextResponse.json(filteredResults, { status: 200 });
   } catch (error) {
     console.error('Error searching files: ', error);
     return NextResponse.json({ message: 'Failed to search files', error }, { status: 500 });

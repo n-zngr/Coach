@@ -67,6 +67,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
     // Replace file state
     const [replaceFile, setReplaceFile] = useState<globalThis.File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => { // Updates on file change, builds file location and move options
         const fetchSemesters = async () => {
@@ -193,14 +194,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     };
     
     // Replace file handler
-    const handleReplaceFile = async () => {
-        if (!replaceFile) {
-            alert("Please select a file to replace.");
-            return;
-        }
-        
+    const handleReplaceFile = async (selectedFile: globalThis.File) => {
         const formData = new FormData();
-        formData.append('file', replaceFile, replaceFile.name);
+        formData.append("file", selectedFile, selectedFile.name);
         
         try {
             const response = await fetch(`/api/documents/replace/${file._id}`, {
@@ -211,9 +207,21 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             if (!response.ok) {
                 throw new Error('Failed to replace file');
             }
-            console.log('File replaced successfully');
+
+            console.log("File replaced successfully");
         } catch (error) {
             console.error('Error replacing file: ', error);
+        }
+    };
+
+    const handleReplaceUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            handleReplaceFile(selectedFile);
         }
     };
     
@@ -455,15 +463,23 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         </p>
                     </div>
                     <div className="flex">
-                        (Move functionality to be implemented here.)
+                        (Move, linked documents, multiple document paths functionality to be implemented here.)
                     </div>
+                    <button className='flex justify-center items-center w-fit bg-white-600 dark:bg-black-400 px-3 py-1 rounded-full gap-2'>
+                        <p>
+                            {filePath || "Location not set"}
+                        </p>
+                        <svg width="16" height="16" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.6107 9.30934V12.0773C11.6107 12.322 11.5134 12.5567 11.3404 12.7298C11.1674 12.9028 10.9327 13 10.688 13H1.92267C1.67796 13 1.44328 12.9028 1.27024 12.7298C1.09721 12.5567 1 12.322 1 12.0773V3.31201C1 3.06731 1.09721 2.83262 1.27024 2.65959C1.44328 2.48656 1.67796 2.38935 1.92267 2.38935H4.69066M7.45866 8.84801L4.69066 9.34625L5.15199 6.54134L10.4389 1.27292C10.5246 1.18644 10.6267 1.1178 10.7391 1.07096C10.8516 1.02412 10.9722 1 11.094 1C11.2158 1 11.3364 1.02412 11.4488 1.07096C11.5612 1.1178 11.6633 1.18644 11.7491 1.27292L12.7271 2.25095C12.8136 2.33672 12.8822 2.43877 12.929 2.55121C12.9759 2.66364 13 2.78424 13 2.90604C13 3.02784 12.9759 3.14844 12.929 3.26088C12.8822 3.37331 12.8136 3.47536 12.7271 3.56113L7.45866 8.84801Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </button>
                     <div className="relative px-6"> {/*Divider*/}
                         <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-white-500 dark:bg-black-500"></div>
                     </div>
                 </div>
 
                 {/* Tag Section */}
-                <div className="flex flex-col mb-4 px-6 gap-4">
+                <div className="flex flex-col gap-4 px-6 pb-6 transition-all duration-300">
                     <h3 className="text-lg text-black-900 dark:text-white-100">Tags</h3>
 
                     {/* Display current tags for this file */}
@@ -471,7 +487,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         {tags.map((tag) => (
                             <div
                                 key={tag._id || tag.id}
-                                className="relative flex items-center border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 cursor-pointer"
+                                className="relative flex items-center border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 transition-colors duration-200 cursor-pointer"
                                 onClick={() => {
                                     // Trigger inline editing for this tag.
                                     setShowTagInput(false);
@@ -521,7 +537,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         ))}
 
                         {/* New Tag element */}
-                        <div className="border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 flex items-center cursor-pointer"
+                        <div className="border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 flex items-center transition-colors duration-200 cursor-pointer"
                             onClick={() => {
                             // When clicking the "New Tag" element, show the inline input.
                                 setSelectedTag(null);
@@ -573,32 +589,62 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     <p>
                         <strong>Upload Date:</strong> {new Date(file.uploadDate).toLocaleString()}
                     </p>
-                    <p>
-                        <strong>File Location:</strong> {filePath || "Location not set"}
-                    </p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="mt-6 space-y-4">
+                <div className="grid grid-cols-3 justify-center gap-4 p-4">
                     <button
                         onClick={handleDownload}
-                        className="bg-green-500 text-white w-full py-2 rounded-md"
+                        className="
+                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
+                            border border-white-400 dark:border-black-600 rounded-lg
+                            text-black-500 dark:text-white-500
+                            transition-colors duration-200"
                     >
-                        Download
+                        <div className='flex flex-col justify-center items-center gap-4 p-4 hover:text-black-100 hover:dark:text-white-900 text-gray-500 transition-colors duration-200'>
+                            <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.25 7.4H15.75C15.9489 7.4 16.1397 7.48429 16.2803 7.63431C16.421 7.78434 16.5 7.98783 16.5 8.2V20.2C16.5 20.4122 16.421 20.6157 16.2803 20.7657C16.1397 20.9157 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.9157 1.71967 20.7657C1.57902 20.6157 1.5 20.4122 1.5 20.2V8.2C1.5 7.98783 1.57902 7.78434 1.71967 7.63431C1.86032 7.48429 2.05109 7.4 2.25 7.4H3.75M9 1V13.8M9 13.8L6 10.6M9 13.8L12 10.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <p>Download</p>
+                        </div>
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="bg-red-500 text-white w-full py-2 rounded-md"
+                        className="
+                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
+                            border border-white-400 dark:border-black-600 rounded-lg
+                            text-black-500 dark:text-white-500
+                            transition-colors duration-200"
                     >
-                        Delete
+                        <div className='flex flex-col justify-center items-center gap-4 p-4 text-gray-500 hover:text-black-100 hover:dark:text-white-900 transition-colors duration-200'>
+                            <svg width="28" height="32" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.5 5.61538H19.5M6.75 5.61538V4.84615C6.75 3.82609 7.14509 2.84781 7.84835 2.12651C8.55161 1.40522 9.50544 1 10.5 1C11.4946 1 12.4484 1.40522 13.1517 2.12651C13.8549 2.84781 14.25 3.82609 14.25 4.84615V5.61538M8.25 8.69231V17.1538M12.75 8.69231V17.1538M3.75 5.61538H17.25V19.4615C17.25 19.8696 17.092 20.2609 16.8107 20.5494C16.5294 20.8379 16.1478 21 15.75 21H5.25C4.85218 21 4.47064 20.8379 4.18934 20.5494C3.90804 20.2609 3.75 19.8696 3.75 19.4615V5.61538Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <p>Delete</p>
+                        </div>
                     </button>
                     <button
-                        onClick={toggleMoveCard}
-                        ref={moveButtonRef}
-                        className="bg-blue-500 text-white w-full py-2 rounded-md"
+                        onClick={handleReplaceUploadClick}
+                        className="
+                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
+                            border border-white-400 dark:border-black-600 rounded-lg
+                            text-black-500 dark:text-white-500
+                            transition-colors duration-200"
                     >
-                        Move File
+                        <div className="flex flex-col justify-center items-center gap-4 p-4 text-gray-500 hover:text-black-100 hover:dark:text-white-900 transition-colors duration-200">
+                            <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <p>Upload</p>
+                        </div>
                     </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                    />
+
                     {showMoveCard && (
                         <div
                             className="absolute mt-2 bg-white shadow-lg border rounded p-4"
@@ -667,7 +713,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             className="w-full p-2 border rounded-md"
                         />
                         <button
-                            onClick={handleReplaceFile}
+                            onClick={handleReplaceUploadClick}
                             className="bg-yellow-500 text-white w-full py-2 rounded-md mt-2"
                         >
                             Replace

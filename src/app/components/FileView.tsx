@@ -260,6 +260,55 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setSelectedTag(null);
         setTagInput("");
     }, [file, fetchTags, fetchAllTags]);
+    
+    const handleRenameTag = useCallback(async () => {
+        if (!selectedTag) return;
+        const newName = tagInput.trim();
+        if (!newName) return;
+        try {
+            const response = await fetch("/api/documents/tags/tags", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    fileId: file._id,
+                    tagId: selectedTag._id || selectedTag.id,
+                    newName,
+                }),
+            });
+        
+            if (!response.ok) {
+                console.error("Failed to rename tag");
+                return;
+            }
+        
+            fetchTags(file._id);
+        } catch (error) {
+            console.error("Error renaming tag:", error);
+        }
+            setTagInput("");
+            setSelectedTag(null);
+    }, [file._id, selectedTag, tagInput, fetchTags]);
+
+    const handleRemoveTag = useCallback(
+        async (tagToRemove: Tag) => {
+            try {
+                const res = await fetch("/api/documents/tags/tags", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ fileId: file._id, tag: tagToRemove.name }),
+                });
+                if (!res.ok) {
+                    console.error("Failed to remove tag");
+                    return;
+                }
+                fetchTags(file._id);
+            } catch (error) {
+                console.error("Error removing tag:", error);
+            }
+        }, [file._id, fetchTags]
+    );
 
     const handleAddTag = useCallback(async (tagName: string) => { // Add new tag logic – called when no existing tag matches the input.
         if (!tagName.trim()) return;
@@ -283,35 +332,40 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setShowTagInput(false);
         setSelectedTag(null);
     }, [file._id, tagInput, fetchTags]);
-
+    
     const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
-        // Optionally, you could add a relation to the file here if it isn't already associated.
-        // For now, we simply add it if it's not already present.
+        // When a suggestion is selected, update the input.
+        setTagInput(tag.name);
+        // For inline editing, you may want to immediately update:
+        if (selectedTag) {
+            handleRenameTag();
+        } else {
+        // For new tag addition, add the tag if it’s not already associated.
         if (!tags.find(t => (t._id || t.id) === (tag._id || tag.id))) {
-            fetch('/api/documents/tags/tags', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ fileId: file?._id, tag: tag.name })
+            fetch("/api/documents/tags/tags", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ fileId: file?._id, tag: tag.name }),
             })
             .then((response) => {
-                if (!response.ok) console.error('Failed to add tag');
+                if (!response.ok) console.error("Failed to add tag");
                 else {
                     fetchTags(file!._id);
                 }
             })
-            .catch((error) => console.error('Error adding tags:', error));
+            .catch((error) => console.error("Error adding tag:", error));
         }
-
-        setTagInput('');
+        setTagInput("");
         setShowTagInput(false);
-    }, [file, tags, fetchTags]);
+        }
+    }, [file, selectedTag, tags, fetchTags, handleRenameTag]);
 
-    const filteredTags = allTags.filter((tag) => 
+    const filteredTags = allTags.filter((tag) =>
         tag.name.toLowerCase().includes(tagInput.toLowerCase())
     );
-    /*
-    const handleTagInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    
+    const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             e.preventDefault();
             // If no existing tag matches, create new.
@@ -320,7 +374,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 handleAddTag(tagInput);
             }
         }
-    };*/
+    };
 
     const handleTagInputBlur = () => { // On blur, if the tagInput is non-empty and doesn’t match an existing tag, add it.
         setTimeout(() => { // A small timeout helps with the click selection on the dropdown
@@ -334,56 +388,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         }, 150);
     };
 
-    const handleRenameTag = useCallback(async () => {
-        if (!selectedTag) return;
-        const newName = tagInput.trim();
-        if (!newName) return;
-        try {
-            const res = await fetch("/api/documents/tags/tags", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    fileId: file._id,
-                    tagId: selectedTag._id || selectedTag.id,
-                    newName,
-                }),
-            });
-
-            if (!res.ok) {
-                console.error("Failed to rename tag");
-                return;
-            }
-
-            fetchTags(file._id);
-        } catch (error) {
-            console.error("Error renaming tag:", error);
-        }
-        setTagInput("");
-        setSelectedTag(null);
-    }, [file._id, selectedTag, tagInput, fetchTags]);
-
-    const handleRemoveTag = useCallback(
-        async (tagToRemove: Tag) => {
-            try {
-                const res = await fetch("/api/documents/tags/tags", {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ fileId: file._id, tag: tagToRemove.name }),
-                });
-                if (!res.ok) {
-                    console.error("Failed to remove tag");
-                    return;
-                }
-                fetchTags(file._id);
-            } catch (error) {
-                console.error("Error removing tag:", error);
-            }
-        }, [file._id, fetchTags]
-    );
     
-
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
     }, []);
@@ -460,65 +465,111 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 {/* Tag Section */}
                 <div className="flex flex-col mb-4 px-6 gap-4">
                     <h3 className="text-lg text-black-900 dark:text-white-100">Tags</h3>
-                    {/* Button to show/hide tag input */}
-                    <button
-                        onClick={() => setShowTagInput((prev) => !prev)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md w-fit"
-                    >
-                        New Tag
-                    </button>
-                    {showTagInput && (
-                        <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Type tag name"
-                            value={tagInput}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setTagInput(e.target.value)}
-                            /*onKeyDown={handleTagInputKeyDown}*/
-                            onBlur={handleTagInputBlur}
-                            className="w-full p-2 border rounded-md text-black focus:outline-none"
-                        />
-                        <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
-                        </div>
-                    )}
+
                     {/* Display current tags for this file */}
-                    <div className="tags-container mt-4 flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 font-medium text-gray-500">
                         {tags.map((tag) => (
-                        <div
-                            key={tag._id || tag.id}
-                            className="border rounded-md px-2 py-1 bg-gray-200 text-black flex items-center relative"
-                        >
-                            {tag.name}
-                            <button
+                            <div
+                                key={tag._id || tag.id}
+                                className="relative flex items-center border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 cursor-pointer"
                                 onClick={() => {
-                                    // Remove tag from file
-                                    fetch("/api/documents/tags/tags", {
-                                        method: "DELETE",
-                                        headers: { "Content-Type": "application/json" },
-                                        credentials: "include",
-                                        body: JSON.stringify({ fileId: file?._id, tag: tag.name }),
-                                    })
-                                    .then((res) => {
-                                        if (!res.ok) console.error("Failed to remove tag");
-                                        else fetchTags(file!._id);
-                                    })
-                                    .catch((error) => console.error("Error removing tag:", error));
+                                    // Trigger inline editing for this tag.
+                                    setShowTagInput(false);
+                                    selectTag(tag);
                                 }}
-                                className="ml-1 text-red-500"
-                                aria-label={`Remove tag ${tag.name}`}
                             >
-                            ×
-                            </button>
-                        </div>
+                                <div className='flex justify-center items-center gap-2'>
+                                    <svg width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1.6172 7.04857L4.95149 10.3829C5.07203 10.5032 5.23542 10.5709 5.40578 10.5709C5.57613 10.5709 5.73953 10.5032 5.86006 10.3829L10.6623 5.86717C10.8609 5.67839 10.9733 5.41639 10.9733 5.1424V2.02673C10.9733 1.47445 10.5256 1.02673 9.97333 1.02673L6.85777 1.02673C6.58377 1.02673 6.32177 1.13916 6.13299 1.33774L1.6172 6.14C1.49682 6.26053 1.4292 6.42393 1.4292 6.59428C1.4292 6.76464 1.49682 6.92803 1.6172 7.04857Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M7.75 3.625C7.75 3.97018 8.02982 4.25 8.375 4.25C8.72018 4.25 9 3.97018 9 3.625C9 3.27982 8.72018 3 8.375 3C8.02982 3 7.75 3.27982 7.75 3.625Z" fill="currentColor"/>
+                                    </svg>
+
+                                    {selectedTag &&
+                                    (selectedTag._id || selectedTag.id) === (tag._id || tag.id) ? (
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={tagInput}
+                                            onChange={handleInputChange}
+                                            onBlur={handleRenameTag}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                handleRenameTag();
+                                                }
+                                            }}
+                                            className="bg-transparent border-b focus:outline-none"
+                                            autoFocus
+                                        />
+                                        <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
+                                    </div>
+                                    ) : (
+                                        <span>{tag.name}</span>
+                                    )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveTag(tag);
+                                        }}
+                                        className="text-gray-500"
+                                        aria-label={`Remove tag ${tag.name}`}
+                                    >
+                                    ×
+                                    </button>
+                                </div>
+                            </div>
                         ))}
+
+                        {/* New Tag element */}
+                        <div className="border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 flex items-center cursor-pointer"
+                            onClick={() => {
+                            // When clicking the "New Tag" element, show the inline input.
+                                setSelectedTag(null);
+                                setTagInput("");
+                                setShowTagInput(true);
+                            }}>
+                            {showTagInput ? (
+                                <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="New Tag"
+                                    value={tagInput}
+                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTagInput(e.target.value)}
+                                    onBlur={handleTagInputBlur}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            // If no existing tag matches, add the new tag.
+                                            const exists = filteredTags.some(
+                                                (tag) => tag.name.toLowerCase() === tagInput.toLowerCase()
+                                            );
+                                            if (!exists) {
+                                                handleAddTag(tagInput);
+                                            }
+                                        }
+                                    }}
+                                    className="bg-transparent border-b focus:outline-none"
+                                    autoFocus
+                                />
+                                <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
+                                </div>
+                            ) : (
+                                <div className='flex justify-center items-center gap-2 text-gray-500'>
+                                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5 1V9M1 4.97538H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    <span>New Tag</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="relative px-6"> {/*Divider*/}
+                        <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-white-500 dark:bg-black-500"></div>
                     </div>
                 </div>
 
                 {/* File Information */}
                 <div className="mb-4">
-                    <p>
-                        <strong>File ID:</strong> {file._id}
-                    </p>
                     <p>
                         <strong>Upload Date:</strong> {new Date(file.uploadDate).toLocaleString()}
                     </p>

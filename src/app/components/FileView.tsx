@@ -1,7 +1,6 @@
 "use client";
 
-import React from 'react';
-import { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
+import React, { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
 import TagDropdown from "./Tags/TagDropdown";
 
 interface Semester {
@@ -21,7 +20,7 @@ interface Topic {
     name: string;
 }
 
-interface File {
+interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;
@@ -42,7 +41,7 @@ export interface Tag {
 }
 
 interface FileViewProps {
-    file: File | null;
+    file: AppFile | null;
     onClose: () => void;
 }
 
@@ -65,9 +64,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const [filePath, setFilePath] = useState<string | null>(null);
     const moveButtonRef = useRef<HTMLButtonElement | null>(null);
 
-    // Replace file state
-    const [replaceFile, setReplaceFile] = useState<globalThis.File | null>(null);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    // Replace file ref used in upload button press
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => { // Updates on file change, builds file location and move options
         const fetchSemesters = async () => {
@@ -181,50 +179,49 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             if (!response.ok) {
                 throw new Error("Failed to move file");
             }
-            
+
             console.log("File moved successfully");
             setShowMoveCard(false);
         } catch (error) {
             console.error("Error moving file:", error);
         }
     };
-    
+
     const toggleMoveCard = () => {
         setShowMoveCard((prev) => !prev);
     };
-    
-    // Replace file handler
-    const handleReplaceFile = async (selectedFile: globalThis.File) => {
+
+    const handleFileReplace = async (e: ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (!selectedFile) return;
+      
         const formData = new FormData();
-        formData.append("file", selectedFile, selectedFile.name);
-        
+        formData.append("file", selectedFile);
+        formData.append("filename", selectedFile.name);
+
         try {
             const response = await fetch(`/api/documents/replace/${file._id}`, {
-                method: 'POST',
-                body: formData
+                method: "POST",
+                body: formData,
             });
             
             if (!response.ok) {
-                throw new Error('Failed to replace file');
+                throw new Error("Failed to replace file");
             }
-
-            console.log("File replaced successfully");
+            
+            const result = await response.json();
+            console.log(result.message);
+            // Optionally, update your UI or trigger a refetch of file data here
         } catch (error) {
-            console.error('Error replacing file: ', error);
+            console.error("Error replacing file: ", error);
         }
     };
 
-    const handleReplaceUploadClick = () => {
+    // Trigger file selection when upload button is clicked
+    const triggerFileSelect = () => {
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
-            handleReplaceFile(selectedFile);
-        }
-    };
-    
     // --- Tag Logic ---
     const fetchTags = useCallback(async (fileId: string) => {
         try {
@@ -268,7 +265,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setSelectedTag(null);
         setTagInput("");
     }, [file, fetchTags, fetchAllTags]);
-    
+
     const handleRenameTag = useCallback(async () => {
         if (!selectedTag) return;
         const newName = tagInput.trim();
@@ -284,12 +281,12 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     newName,
                 }),
             });
-        
+            
             if (!response.ok) {
                 console.error("Failed to rename tag");
                 return;
             }
-        
+            
             fetchTags(file._id);
         } catch (error) {
             console.error("Error renaming tag:", error);
@@ -297,7 +294,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             setTagInput("");
             setSelectedTag(null);
     }, [file._id, selectedTag, tagInput, fetchTags]);
-
+    
     const handleRemoveTag = useCallback(
         async (tagToRemove: Tag) => {
             try {
@@ -340,7 +337,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setShowTagInput(false);
         setSelectedTag(null);
     }, [file._id, tagInput, fetchTags]);
-    
+
     const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
         // When a suggestion is selected, update the input.
         setTagInput(tag.name);
@@ -372,7 +369,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const filteredTags = allTags.filter((tag) =>
         tag.name.toLowerCase().includes(tagInput.toLowerCase())
     );
-    
+
     const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -396,11 +393,10 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         }, 150);
     };
 
-    
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
     }, []);
-    
+
     const selectTag = useCallback((tag: Tag) => {
         setSelectedTag(tag);
         setTagInput(tag.name);
@@ -624,7 +620,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         </div>
                     </button>
                     <button
-                        onClick={handleReplaceUploadClick}
+                        onClick={triggerFileSelect}
                         className="
                             bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
                             border border-white-400 dark:border-black-600 rounded-lg
@@ -635,14 +631,14 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
-                            <p>Upload</p>
+                            <p>Replace</p>
                         </div>
                     </button>
                     <input
-                        type="file"
+                        type='file'
                         ref={fileInputRef}
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
+                        onChange={handleFileReplace}
+                        style={{ display: 'none' }}
                     />
 
                     {showMoveCard && (
@@ -703,25 +699,10 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             </button>
                         </div>
                     )}
-                    <div className="mt-4">
-                        <label className="block text-sm font-medium mb-2">
-                            Replace File
-                        </label>
-                        <input
-                            type="file"
-                            onChange={(e) => setReplaceFile(e.target.files?.[0] || null)}
-                            className="w-full p-2 border rounded-md"
-                        />
-                        <button
-                            onClick={handleReplaceUploadClick}
-                            className="bg-yellow-500 text-white w-full py-2 rounded-md mt-2"
-                        >
-                            Replace
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
     );
 };
+
 export default FileView;

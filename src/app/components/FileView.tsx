@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
+import React, { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
+import TagDropdown from "./Tags/TagDropdown";
 
 interface Semester {
     id: string;
@@ -19,7 +20,7 @@ interface Topic {
     name: string;
 }
 
-interface File {
+interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;
@@ -33,23 +34,28 @@ interface File {
     };
 }
 
-interface Tag {
+export interface Tag {
     _id?: string;
     id?: string;
     name: string;
 }
 
 interface FileViewProps {
-    file: File | null;
+    file: AppFile | null;
     onClose: () => void;
 }
 
 
 const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
+    // Rename file state
     const [newFilename, setNewFilename] = useState<string>(file?.filename || "");
+
+    // Tag states
     const [tagInput, setTagInput] = useState("");
     const [tags, setTags] = useState<Tag[]>([]);
+    const [allTags, setAllTags] = useState<Tag[]>([]);
     const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+    const [showTagInput, setShowTagInput] = useState(false);
 
     // Move file states
     const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -58,18 +64,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const [filePath, setFilePath] = useState<string | null>(null);
     const moveButtonRef = useRef<HTMLButtonElement | null>(null);
 
-    // Replace file state
-    const [replaceFile, setReplaceFile] = useState<globalThis.File | null>(null);
-
-    useEffect(() => { // Updates on file change, renders tags and file name
-        setNewFilename(file?.filename || "");
-        if (file) {
-            fetchTags(file._id);
-        }
-        // Clear any selected tag when file changes.
-        setSelectedTag(null);
-        setTagInput("");
-    }, [file]);
+    // Replace file ref used in upload button press
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => { // Updates on file change, builds file location and move options
         const fetchSemesters = async () => {
@@ -111,8 +107,33 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
             console.log('File renamed successfully');
         } catch (error) {
+            console.log(newFilename);
             console.error('Error renaming file:', error);
         }
+    }
+
+    const handleRenameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setNewFilename(e.target.value);
+        console.log('handleRenameInputChange:', newFilename);
+    };
+
+    const handleRenameInputBlur = () => {
+        setTimeout(() => {
+            if (newFilename.trim() !== file.filename.trim()) {
+                handleRename();
+            }
+        }, 150);
+        console.log('InputBlur: ', newFilename);
+    };
+
+    const handleRenameInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (newFilename.trim() !== file.filename.trim()) {
+                handleRename();
+            }
+        }
+        console.log('EnterPressed: ', newFilename);
     }
 
     const handleDownload = async () => {
@@ -176,88 +197,100 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             if (!response.ok) {
                 throw new Error("Failed to move file");
             }
-            
+
             console.log("File moved successfully");
             setShowMoveCard(false);
         } catch (error) {
             console.error("Error moving file:", error);
         }
     };
-    
+
     const toggleMoveCard = () => {
         setShowMoveCard((prev) => !prev);
     };
-    
-    // Replace file handler
-    const handleReplaceFile = async () => {
-        if (!replaceFile) {
-            alert("Please select a file to replace.");
-            return;
-        }
-        
+
+    const handleFileReplace = async (e: ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (!selectedFile) return;
+      
         const formData = new FormData();
-        formData.append('file', replaceFile, replaceFile.name);
-        
+        formData.append("file", selectedFile);
+        formData.append("filename", selectedFile.name);
+
         try {
             const response = await fetch(`/api/documents/replace/${file._id}`, {
-                method: 'POST',
-                body: formData
+                method: "POST",
+                body: formData,
             });
             
             if (!response.ok) {
-                throw new Error('Failed to replace file');
+                throw new Error("Failed to replace file");
             }
-            console.log('File replaced successfully');
+            
+            const result = await response.json();
+            console.log(result.message);
+            // Optionally, update your UI or trigger a refetch of file data here
         } catch (error) {
-            console.error('Error replacing file: ', error);
+            console.error("Error replacing file: ", error);
         }
     };
-    
+
+    // Trigger file selection when upload button is clicked
+    const triggerFileSelect = () => {
+        fileInputRef.current?.click();
+    };
+
     // --- Tag Logic ---
     const fetchTags = useCallback(async (fileId: string) => {
         try {
-            const res = await fetch(`/api/documents/tags?fileId=${fileId}`, { credentials: "include" });
+            const response = await fetch(`/api/documents/tags/tags?fileId=${fileId}`, { credentials: "include" });
 
-            if (!res.ok) {
+            if (!response.ok) {
                 console.error("Failed to fetch tags");
                 return;
             }
 
-            const data = await res.json();
+            const data = await response.json();
             setTags(data.tags || []);
         } catch (error) {
             console.error("Error fetching tags:", error);
         }
     }, []);
 
-    const handleAddTag = useCallback(async () => {
-        const newTag = tagInput.trim();
-        if (!newTag) return;
+    const fetchAllTags = useCallback(async () => {
         try {
-            const res = await fetch("/api/documents/tags", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ fileId: file._id, tag: newTag }),
-            });
-        if (!res.ok) {
-            console.error("Failed to add tag");
-            return;
-        }
-            fetchTags(file._id);
+            const response = await fetch('/api/documents/tags/allTags', { credentials: 'include' });
+
+            if (!response.ok) {
+                console.error('Failed to fetch all tags');
+                return;
+            }
+            
+            const data = await response.json();
+            setAllTags(data.tags || []);
         } catch (error) {
-            console.error("Error adding tag:", error);
+            console.error('Error fetching all tags:', error);
         }
-        setTagInput("");
+    }, []);
+
+    useEffect(() => { // Updates on file change, renders tags and file name
+        setNewFilename(file?.filename || "");
+        if (file) {
+            fetchTags(file._id);
+            fetchAllTags();
+        }
+        // Clear any selected tag when file changes.
         setSelectedTag(null);
-    }, [file._id, tagInput, fetchTags]);
+        setTagInput("");
+    }, [file, fetchTags, fetchAllTags]);
+
 
     const handleRenameTag = useCallback(async () => {
         if (!selectedTag) return;
         const newName = tagInput.trim();
         if (!newName) return;
         try {
-            const res = await fetch("/api/documents/tags", {
+            const response = await fetch("/api/documents/tags/tags", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -267,24 +300,24 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     newName,
                 }),
             });
-
-            if (!res.ok) {
+            
+            if (!response.ok) {
                 console.error("Failed to rename tag");
                 return;
             }
-
+            
             fetchTags(file._id);
         } catch (error) {
             console.error("Error renaming tag:", error);
         }
-        setTagInput("");
-        setSelectedTag(null);
+            setTagInput("");
+            setSelectedTag(null);
     }, [file._id, selectedTag, tagInput, fetchTags]);
-
+    
     const handleRemoveTag = useCallback(
         async (tagToRemove: Tag) => {
             try {
-                const res = await fetch("/api/documents/tags", {
+                const res = await fetch("/api/documents/tags/tags", {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
                     credentials: "include",
@@ -300,140 +333,346 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             }
         }, [file._id, fetchTags]
     );
-    
 
-    const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const handleAddTag = useCallback(async (tagName: string) => { // Add new tag logic – called when no existing tag matches the input.
+        if (!tagName.trim()) return;
+
+        try {
+            const response = await fetch("/api/documents/tags/tags", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ fileId: file?._id, tag: tagName.trim() }),
+            });
+        if (!response.ok) {
+            console.error("Failed to add tag");
+            return;
+        }
+            fetchTags(file!._id);
+        } catch (error) {
+            console.error("Error adding tag:", error);
+        }
+        setTagInput("");
+        setShowTagInput(false);
+        setSelectedTag(null);
+    }, [file._id, tagInput, fetchTags]);
+
+    const handleNewTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
         setTagInput(e.target.value);
-    }, []);
-    
+    }
+
+    const handleNewTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (!exists) {
+                handleAddTag(tagInput);
+            }
+        }
+    }
+
+    const handleNewTagInputBlur = () => {
+        setTimeout(() => {
+            if (tagInput.trim()) {
+                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+                if (!exists) {
+                    handleAddTag(tagInput);
+                }
+            }
+            setShowTagInput(false);
+        }, 150)
+    };
+
+    const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
+        // When a suggestion is selected, update the input.
+        setTagInput(tag.name);
+        // For inline editing, you may want to immediately update:
+        if (selectedTag) {
+            handleRenameTag();
+        } else {
+        // For new tag addition, add the tag if it’s not already associated.
+        if (!tags.find(t => (t._id || t.id) === (tag._id || tag.id))) {
+            fetch("/api/documents/tags/tags", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ fileId: file?._id, tag: tag.name }),
+            })
+            .then((response) => {
+                if (!response.ok) console.error("Failed to add tag");
+                else {
+                    fetchTags(file!._id);
+                }
+            })
+            .catch((error) => console.error("Error adding tag:", error));
+        }
+        setTagInput("");
+        setShowTagInput(false);
+        }
+    }, [file, selectedTag, tags, fetchTags, handleRenameTag]);
+
+    const filteredTags = allTags.filter((tag) =>
+        tag.name.toLowerCase().includes(tagInput.toLowerCase())
+    );
+
+    /*const handleTagInputBlur = () => { // On blur, if the tagInput is non-empty and doesn’t match an existing tag, add it.
+        setTimeout(() => { // A small timeout helps with the click selection on the dropdown
+            if (tagInput.trim()) {
+                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+                if (!exists) {
+                    handleAddTag(tagInput);
+                }
+            }
+            setShowTagInput(false);
+        }, 150);
+    };*/
+
     const selectTag = useCallback((tag: Tag) => {
         setSelectedTag(tag);
         setTagInput(tag.name);
     }, []);
 
+    const handleEditTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    }
+
+    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent <HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleRenameTag();
+        }
+    }
+
+    const handleEditTagInputBlur = () => {
+        handleRenameTag();
+    }
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
+        <div className="fixed inset-0 flex justify-end">
             <div
                 className={`
-                h-full bg-white dark:bg-neutral-900 p-6 overflow-y-auto 
-                transition-transform duration-300 
-                ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
+                    h-full flex flex-col bg-white-800 dark:bg-black-200 overflow-y-auto
+                    border-l border-white-500 dark:border-black-500
+                    transition-transform duration-300 
+                    ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
                 `}
             >
-                <button className="text-red-500 mb-4" onClick={onClose}>
-                Close [X]
-                </button>
-
-                <h2 className="text-xl font-semibold mb-4">File Details</h2>
+                <header className='flex flex-col p-6'>
+                    <div className="flex flex-row justify-between">
+                        <div className="flex">
+                            <div className="size-[24px]">
+                                <svg width="16.12" height="20" viewBox="0 0 19 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5.56764 7.15385H8.49766M5.56764 11.7692H12.8927M5.56764 16.3846H12.8927M17.2877 19.4615C17.2877 19.8696 17.1334 20.2609 16.8586 20.5494C16.5839 20.8379 16.2113 21 15.8227 21H2.63762C2.24907 21 1.87644 20.8379 1.6017 20.5494C1.32696 20.2609 1.17261 19.8696 1.17261 19.4615V2.53846C1.17261 2.13044 1.32696 1.73912 1.6017 1.4506C1.87644 1.16209 2.24907 1 2.63762 1H9.96267L17.2877 8.69231V19.4615Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+                            <div className="flex">
+                                <h1 className="text-xl">File Preview</h1>
+                            </div>
+                        </div>
+                        <div className="flex items-center">
+                            <button
+                                className="w-8 h-8 flex rounded-full justify-center items-center bg-white-500 hover:bg-white-600 dark:bg-black-500 dark:hover:bg-black-600 active:scale-95 transition-all duration-100"
+                                onClick={onClose}
+                            >
+                                <svg width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div className="relative px-6 pt-4"> {/* Divider */}
+                        <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-white-500 dark:bg-black-500"></div>
+                    </div>
+                </header>
 
                 {/* Filename & Rename */}
-                <div className="mb-4">
-                <label className="block text-sm font-medium">Filename</label>
-                <input
-                    type="text"
-                    value={newFilename}
-                    onChange={(e) => setNewFilename(e.target.value)}
-                    className="w-full p-2 border rounded-md text-black"
-                />
-                <button
-                    onClick={handleRename}
-                    className="bg-blue-500 text-white px-4 py-2 mt-2 rounded-md"
-                >
-                    Rename
-                </button>
+                <div className="flex flex-col gap-4 px-6 pb-6">
+                    <div className="flex justify-between items-center gap-4">
+                        <input
+                            type='text'
+                            value={newFilename}
+                            onChange={handleRenameInputChange}
+                            onBlur={handleRenameInputBlur}
+                            onKeyDown={handleRenameInputEnterPressed}
+                            className='w-full bg-transparent border-b border-transparent focus:border-white-500 focus:dark:border-black-500 focus:outline-none font-medium text-lg text-black-500 dark:text-white-500'
+                        />
+                        <p className='whitespace-nowrap text-gray-500'>
+                            {(file.length / 1024).toFixed(0)} KB
+                        </p>
+                    </div>
+                    <div className="flex">
+                        <p className="text-base text-black-900 dark:text-white-100">
+                            File description will be displayed here once implemented.
+                        </p>
+                    </div>
+                    <div className="flex">
+                        (Move, linked documents, multiple document paths functionality to be implemented here.)
+                    </div>
+                    <button className='flex justify-center items-center w-fit bg-white-600 dark:bg-black-400 px-3 py-1 rounded-full gap-2'>
+                        <p>
+                            {filePath || "Location not set"}
+                        </p>
+                        <svg width="16" height="16" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.6107 9.30934V12.0773C11.6107 12.322 11.5134 12.5567 11.3404 12.7298C11.1674 12.9028 10.9327 13 10.688 13H1.92267C1.67796 13 1.44328 12.9028 1.27024 12.7298C1.09721 12.5567 1 12.322 1 12.0773V3.31201C1 3.06731 1.09721 2.83262 1.27024 2.65959C1.44328 2.48656 1.67796 2.38935 1.92267 2.38935H4.69066M7.45866 8.84801L4.69066 9.34625L5.15199 6.54134L10.4389 1.27292C10.5246 1.18644 10.6267 1.1178 10.7391 1.07096C10.8516 1.02412 10.9722 1 11.094 1C11.2158 1 11.3364 1.02412 11.4488 1.07096C11.5612 1.1178 11.6633 1.18644 11.7491 1.27292L12.7271 2.25095C12.8136 2.33672 12.8822 2.43877 12.929 2.55121C12.9759 2.66364 13 2.78424 13 2.90604C13 3.02784 12.9759 3.14844 12.929 3.26088C12.8822 3.37331 12.8136 3.47536 12.7271 3.56113L7.45866 8.84801Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </button>
+                    <div className="relative px-6"> {/*Divider*/}
+                        <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-white-500 dark:bg-black-500"></div>
+                    </div>
                 </div>
 
                 {/* Tag Section */}
-                <div className="mb-4">
-                    <div className="tag-input-container">
-                        <input
-                        type="text"
-                        placeholder="Type tag name"
-                        value={tagInput}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-md text-black"
-                        />
-                    </div>
-                    <div className="add-button-container mt-2 flex space-x-2">
-                        <button
-                        onClick={handleAddTag}
-                        className="bg-green-500 text-white px-4 py-2 rounded-md"
-                        >
-                        Add
-                        </button>
-                        <button
-                        onClick={handleRenameTag}
-                        disabled={!selectedTag}
-                        className="bg-yellow-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
-                        >
-                        Rename Tag
-                        </button>
-                    </div>
-                    <div className="tags-container mt-4 flex flex-wrap">
+                <div className="flex flex-col gap-4 px-6 pb-6 transition-all duration-300">
+                    <h3 className="text-lg text-black-900 dark:text-white-100">Tags</h3>
+
+                    {/* Display current tags for this file */}
+                    <div className="flex flex-wrap gap-2 font-medium text-gray-500">
                         {tags.map((tag) => (
-                        <div
-                            key={tag._id || tag.id}
-                            onClick={() => selectTag(tag)}
-                            className={`tag-box inline-block border rounded-md p-2 mr-2 mb-2 relative bg-gray-200 text-black cursor-pointer ${
-                            selectedTag &&
-                            (selectedTag._id || selectedTag.id) === (tag._id || tag.id)
-                                ? "border-blue-500"
-                                : ""
-                            }`}
-                        >
-                            {tag.name}
-                            <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveTag(tag);
-                            }}
-                            className="absolute top-0 right-0 p-1 text-red-500"
-                            aria-label={`Remove tag ${tag.name}`}
+                            <div
+                                key={tag._id || tag.id}
+                                className="relative flex items-center border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 transition-colors duration-200 cursor-pointer"
+                                onClick={() => {
+                                    // Trigger inline editing for this tag.
+                                    setShowTagInput(false);
+                                    selectTag(tag);
+                                }}
                             >
-                            ×
-                            </button>
-                        </div>
+                                <div className='flex justify-center items-center gap-2'>
+                                    <svg width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1.6172 7.04857L4.95149 10.3829C5.07203 10.5032 5.23542 10.5709 5.40578 10.5709C5.57613 10.5709 5.73953 10.5032 5.86006 10.3829L10.6623 5.86717C10.8609 5.67839 10.9733 5.41639 10.9733 5.1424V2.02673C10.9733 1.47445 10.5256 1.02673 9.97333 1.02673L6.85777 1.02673C6.58377 1.02673 6.32177 1.13916 6.13299 1.33774L1.6172 6.14C1.49682 6.26053 1.4292 6.42393 1.4292 6.59428C1.4292 6.76464 1.49682 6.92803 1.6172 7.04857Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M7.75 3.625C7.75 3.97018 8.02982 4.25 8.375 4.25C8.72018 4.25 9 3.97018 9 3.625C9 3.27982 8.72018 3 8.375 3C8.02982 3 7.75 3.27982 7.75 3.625Z" fill="currentColor"/>
+                                    </svg>
+
+                                    {selectedTag &&
+                                    (selectedTag._id || selectedTag.id) === (tag._id || tag.id) ? (
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={tagInput}
+                                            onChange={handleEditTagInputChange}
+                                            onBlur={handleEditTagInputBlur}
+                                            onKeyDown={handleEditTagInputEnterPressed}
+                                            className="bg-transparent border-b focus:outline-none"
+                                            autoFocus
+                                        />
+                                        <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
+                                    </div>
+                                    ) : (
+                                        <span>{tag.name}</span>
+                                    )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveTag(tag);
+                                        }}
+                                        className="text-gray-500"
+                                        aria-label={`Remove tag ${tag.name}`}
+                                    >
+                                    ×
+                                    </button>
+                                </div>
+                            </div>
                         ))}
+
+                        {/* New Tag element */}
+                        <div className="border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 flex items-center transition-colors duration-200 cursor-pointer"
+                            onClick={() => {
+                            // When clicking the "New Tag" element, show the inline input.
+                                setSelectedTag(null);
+                                setTagInput("");
+                                setShowTagInput(true);
+                            }}>
+                            {showTagInput ? (
+                                <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="New Tag"
+                                    value={tagInput}
+                                    onChange={handleNewTagInputChange}
+                                    onBlur={handleNewTagInputBlur}
+                                    onKeyDown={handleNewTagInputEnterPressed}
+                                    className="bg-transparent border-b focus:outline-none"
+                                    autoFocus
+                                />
+                                <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
+                                </div>
+                            ) : (
+                                <div className='flex justify-center items-center gap-2 text-gray-500'>
+                                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5 1V9M1 4.97538H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    <span>New Tag</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="relative px-6"> {/*Divider*/}
+                        <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-white-500 dark:bg-black-500"></div>
                     </div>
                 </div>
 
                 {/* File Information */}
                 <div className="mb-4">
                     <p>
-                        <strong>File ID:</strong> {file._id}
-                    </p>
-                    <p>
                         <strong>Upload Date:</strong> {new Date(file.uploadDate).toLocaleString()}
-                    </p>
-                    <p>
-                        <strong>File Size:</strong> {(file.length / 1024).toFixed(2)} KB
-                    </p>
-                    <p>
-                        <strong>File Location:</strong> {filePath || "Location not set"}
                     </p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="mt-6 space-y-4">
+                <div className="grid grid-cols-3 justify-center gap-4 p-4">
                     <button
                         onClick={handleDownload}
-                        className="bg-green-500 text-white w-full py-2 rounded-md"
+                        className="
+                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
+                            border border-white-400 dark:border-black-600 rounded-lg
+                            text-black-500 dark:text-white-500
+                            transition-colors duration-200"
                     >
-                        Download
+                        <div className='flex flex-col justify-center items-center gap-4 p-4 hover:text-black-100 hover:dark:text-white-900 text-gray-500 transition-colors duration-200'>
+                            <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.25 7.4H15.75C15.9489 7.4 16.1397 7.48429 16.2803 7.63431C16.421 7.78434 16.5 7.98783 16.5 8.2V20.2C16.5 20.4122 16.421 20.6157 16.2803 20.7657C16.1397 20.9157 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.9157 1.71967 20.7657C1.57902 20.6157 1.5 20.4122 1.5 20.2V8.2C1.5 7.98783 1.57902 7.78434 1.71967 7.63431C1.86032 7.48429 2.05109 7.4 2.25 7.4H3.75M9 1V13.8M9 13.8L6 10.6M9 13.8L12 10.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <p>Download</p>
+                        </div>
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="bg-red-500 text-white w-full py-2 rounded-md"
+                        className="
+                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
+                            border border-white-400 dark:border-black-600 rounded-lg
+                            text-black-500 dark:text-white-500
+                            transition-colors duration-200"
                     >
-                        Delete
+                        <div className='flex flex-col justify-center items-center gap-4 p-4 text-gray-500 hover:text-black-100 hover:dark:text-white-900 transition-colors duration-200'>
+                            <svg width="28" height="32" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.5 5.61538H19.5M6.75 5.61538V4.84615C6.75 3.82609 7.14509 2.84781 7.84835 2.12651C8.55161 1.40522 9.50544 1 10.5 1C11.4946 1 12.4484 1.40522 13.1517 2.12651C13.8549 2.84781 14.25 3.82609 14.25 4.84615V5.61538M8.25 8.69231V17.1538M12.75 8.69231V17.1538M3.75 5.61538H17.25V19.4615C17.25 19.8696 17.092 20.2609 16.8107 20.5494C16.5294 20.8379 16.1478 21 15.75 21H5.25C4.85218 21 4.47064 20.8379 4.18934 20.5494C3.90804 20.2609 3.75 19.8696 3.75 19.4615V5.61538Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <p>Delete</p>
+                        </div>
                     </button>
                     <button
-                        onClick={toggleMoveCard}
-                        ref={moveButtonRef}
-                        className="bg-blue-500 text-white w-full py-2 rounded-md"
+                        onClick={triggerFileSelect}
+                        className="
+                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
+                            border border-white-400 dark:border-black-600 rounded-lg
+                            text-black-500 dark:text-white-500
+                            transition-colors duration-200"
                     >
-                        Move File
+                        <div className="flex flex-col justify-center items-center gap-4 p-4 text-gray-500 hover:text-black-100 hover:dark:text-white-900 transition-colors duration-200">
+                            <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <p>Replace</p>
+                        </div>
                     </button>
+                    <input
+                        type='file'
+                        ref={fileInputRef}
+                        onChange={handleFileReplace}
+                        style={{ display: 'none' }}
+                    />
+
                     {showMoveCard && (
                         <div
                             className="absolute mt-2 bg-white shadow-lg border rounded p-4"
@@ -492,25 +731,10 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             </button>
                         </div>
                     )}
-                    <div className="mt-4">
-                        <label className="block text-sm font-medium mb-2">
-                            Replace File
-                        </label>
-                        <input
-                            type="file"
-                            onChange={(e) => setReplaceFile(e.target.files?.[0] || null)}
-                            className="w-full p-2 border rounded-md"
-                        />
-                        <button
-                            onClick={handleReplaceFile}
-                            className="bg-yellow-500 text-white w-full py-2 rounded-md mt-2"
-                        >
-                            Replace
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
     );
 };
+
 export default FileView;

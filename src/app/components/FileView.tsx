@@ -49,6 +49,7 @@ interface FileViewProps {
 const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // Rename file state
     const [newFilename, setNewFilename] = useState<string>(file?.filename || "");
+    const [originalFilename, setOriginalFilename] = useState<string>(file?.filename || "");
 
     // Tag states
     const [tagInput, setTagInput] = useState("");
@@ -67,6 +68,12 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // Replace file ref used in upload button press
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    useEffect(() => {
+        // When file prop changes, update both newFilename and originalFilename.
+        setNewFilename(file?.filename || "");
+        setOriginalFilename(file?.filename || "");
+    }, [file]);
+    
     useEffect(() => { // Updates on file change, builds file location and move options
         const fetchSemesters = async () => {
             try {
@@ -106,6 +113,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             }
 
             console.log('File renamed successfully');
+            setOriginalFilename(newFilename);
         } catch (error) {
             console.log(newFilename);
             console.error('Error renaming file:', error);
@@ -114,26 +122,25 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
     const handleRenameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setNewFilename(e.target.value);
-        console.log('handleRenameInputChange:', newFilename);
     };
 
     const handleRenameInputBlur = () => {
         setTimeout(() => {
-            if (newFilename.trim() !== file.filename.trim()) {
+            if (newFilename.trim() !== originalFilename.trim()) {
                 handleRename();
             }
+
         }, 150);
-        console.log('InputBlur: ', newFilename);
     };
 
     const handleRenameInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            if (newFilename.trim() !== file.filename.trim()) {
+            if (newFilename.trim() !== originalFilename.trim()) {
                 handleRename();
             }
+            e.currentTarget.blur();
         }
-        console.log('EnterPressed: ', newFilename);
     }
 
     const handleDownload = async () => {
@@ -284,56 +291,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setTagInput("");
     }, [file, fetchTags, fetchAllTags]);
 
-
-    const handleRenameTag = useCallback(async () => {
-        if (!selectedTag) return;
-        const newName = tagInput.trim();
-        if (!newName) return;
-        try {
-            const response = await fetch("/api/documents/tags/tags", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    fileId: file._id,
-                    tagId: selectedTag._id || selectedTag.id,
-                    newName,
-                }),
-            });
-            
-            if (!response.ok) {
-                console.error("Failed to rename tag");
-                return;
-            }
-            
-            fetchTags(file._id);
-        } catch (error) {
-            console.error("Error renaming tag:", error);
-        }
-            setTagInput("");
-            setSelectedTag(null);
-    }, [file._id, selectedTag, tagInput, fetchTags]);
-    
-    const handleRemoveTag = useCallback(
-        async (tagToRemove: Tag) => {
-            try {
-                const res = await fetch("/api/documents/tags/tags", {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ fileId: file._id, tag: tagToRemove.name }),
-                });
-                if (!res.ok) {
-                    console.error("Failed to remove tag");
-                    return;
-                }
-                fetchTags(file._id);
-            } catch (error) {
-                console.error("Error removing tag:", error);
-            }
-        }, [file._id, fetchTags]
-    );
-
     const handleAddTag = useCallback(async (tagName: string) => { // Add new tag logic – called when no existing tag matches the input.
         if (!tagName.trim()) return;
 
@@ -357,7 +314,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setSelectedTag(null);
     }, [file._id, tagInput, fetchTags]);
 
-    const handleNewTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+    const handleNewTagInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
     }
 
@@ -369,6 +326,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             if (!exists) {
                 handleAddTag(tagInput);
             }
+            
+            e.currentTarget.blur();
         }
     }
 
@@ -383,6 +342,82 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             setShowTagInput(false);
         }, 150)
     };
+
+    const handleRenameTag = useCallback(async () => {
+        if (!selectedTag) return;
+        const newName = tagInput.trim();
+
+        if (newName === (selectedTag.name || "").trim()) {
+          setTagInput("");
+          setSelectedTag(null);
+          return;
+        }
+
+        try {
+            const response = await fetch("/api/documents/tags/tags", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    fileId: file._id,
+                    tagId: selectedTag._id || selectedTag.id,
+                    newName,
+                }),
+            });
+            
+            if (!response.ok) {
+                console.error("Failed to rename tag");
+                return;
+            }
+            
+            fetchTags(file._id);
+        } catch (error) {
+            console.error("Error renaming tag:", error);
+        }
+
+        setTagInput("");
+        setSelectedTag(null);
+    }, [file._id, selectedTag, tagInput, fetchTags]);
+
+    const handleEditTagInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    }
+
+    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (!exists) {
+                handleRenameTag();
+            }
+            
+        }
+    };
+
+    const handleEditTagInputBlur = () => {
+        handleRenameTag();
+    }
+    
+    const handleRemoveTag = useCallback(
+        async (tagToRemove: Tag) => {
+            try {
+                const res = await fetch("/api/documents/tags/tags", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ fileId: file._id, tag: tagToRemove.name }),
+                });
+                if (!res.ok) {
+                    console.error("Failed to remove tag");
+                    return;
+                }
+                fetchTags(file._id);
+            } catch (error) {
+                console.error("Error removing tag:", error);
+            }
+        }, [file._id, fetchTags]
+    );
 
     const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
         // When a suggestion is selected, update the input.
@@ -432,21 +467,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setSelectedTag(tag);
         setTagInput(tag.name);
     }, []);
-
-    const handleEditTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
-        setTagInput(e.target.value);
-    }
-
-    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent <HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleRenameTag();
-        }
-    }
-
-    const handleEditTagInputBlur = () => {
-        handleRenameTag();
-    }
 
     return (
         <div className="fixed inset-0 flex justify-end">

@@ -21,9 +21,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             { $set: { filename: newFilename } }
         );
 
-        if (result.modifiedCount === 0) {
+        /*if (result.modifiedCount === 0) { // Causes error when pressing enter in FileView.tsx and changing rename input
             throw new Error('File not found or update failed');
-        }
+        }*/
 
         return NextResponse.json({ message: 'File renamed successfully' });
     } catch (error) {

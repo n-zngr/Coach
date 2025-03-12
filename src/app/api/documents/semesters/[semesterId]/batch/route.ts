@@ -26,6 +26,12 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
+        // Define the default topic
+        const defaultTopic = {
+            id: new ObjectId().toString(),
+            name: "Allgemein", // You can change this to whatever you want
+        };
+
         // Prepare the new subjects and subject types
         const newSubjects = [];
         const newSubjectTypes = [];
@@ -47,12 +53,12 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
                 newSubjectTypes.push(subjectType);
             }
 
-            // Create the new subject
+            // Create the new subject with the default topic
             const newSubject = {
                 id: new ObjectId().toString(),
                 name: name,
                 typeId: subjectType.id,
-                topics: [],
+                topics: [defaultTopic], // Add the default topic here
             };
 
             newSubjects.push(newSubject);

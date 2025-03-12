@@ -291,6 +291,57 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setTagInput("");
     }, [file, fetchTags, fetchAllTags]);
 
+    const handleAddTag = useCallback(async (tagName: string) => { // Add new tag logic – called when no existing tag matches the input.
+        if (!tagName.trim()) return;
+
+        try {
+            const response = await fetch("/api/documents/tags/tags", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ fileId: file?._id, tag: tagName.trim() }),
+            });
+        if (!response.ok) {
+            console.error("Failed to add tag");
+            return;
+        }
+            fetchTags(file!._id);
+        } catch (error) {
+            console.error("Error adding tag:", error);
+        }
+        setTagInput("");
+        setShowTagInput(false);
+        setSelectedTag(null);
+    }, [file._id, tagInput, fetchTags]);
+
+    const handleNewTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    }
+
+    const handleNewTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (!exists) {
+                handleAddTag(tagInput);
+            }
+            
+            e.currentTarget.blur();
+        }
+    }
+
+    const handleNewTagInputBlur = () => {
+        setTimeout(() => {
+            if (tagInput.trim()) {
+                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+                if (!exists) {
+                    handleAddTag(tagInput);
+                }
+            }
+            setShowTagInput(false);
+        }, 150)
+    };
 
     const handleRenameTag = useCallback(async () => {
         if (!selectedTag) return;
@@ -340,56 +391,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             }
         }, [file._id, fetchTags]
     );
-
-    const handleAddTag = useCallback(async (tagName: string) => { // Add new tag logic – called when no existing tag matches the input.
-        if (!tagName.trim()) return;
-
-        try {
-            const response = await fetch("/api/documents/tags/tags", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ fileId: file?._id, tag: tagName.trim() }),
-            });
-        if (!response.ok) {
-            console.error("Failed to add tag");
-            return;
-        }
-            fetchTags(file!._id);
-        } catch (error) {
-            console.error("Error adding tag:", error);
-        }
-        setTagInput("");
-        setShowTagInput(false);
-        setSelectedTag(null);
-    }, [file._id, tagInput, fetchTags]);
-
-    const handleNewTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
-        setTagInput(e.target.value);
-    }
-
-    const handleNewTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-
-            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
-            if (!exists) {
-                handleAddTag(tagInput);
-            }
-        }
-    }
-
-    const handleNewTagInputBlur = () => {
-        setTimeout(() => {
-            if (tagInput.trim()) {
-                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
-                if (!exists) {
-                    handleAddTag(tagInput);
-                }
-            }
-            setShowTagInput(false);
-        }, 150)
-    };
 
     const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
         // When a suggestion is selected, update the input.
@@ -447,7 +448,13 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const handleEditTagInputEnterPressed = (e: React.KeyboardEvent <HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            handleRenameTag();
+
+            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (!exists) {
+                handleRenameTag();
+            }
+
+            e.currentTarget.blur();
         }
     }
 

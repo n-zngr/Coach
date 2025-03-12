@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Semester {
     id: string;
@@ -72,6 +72,10 @@ const UploadFile: React.FC = () => {
         }
     };
 
+    const handleClearFile = () => {
+        setFile(null);
+    };
+
     const handleUpload = async () => {
         if (!file || !selectedOption) {
             setErrorMessage("Please select a file and a topic to upload.");
@@ -94,6 +98,7 @@ const UploadFile: React.FC = () => {
             const response = await fetch('/api/documents/upload', {
                 method: 'POST',
                 body: formData,
+                credentials: 'include',
             });
 
             if (!response.ok) {
@@ -148,7 +153,15 @@ const UploadFile: React.FC = () => {
                             }`}
                         >
                             {file ? (
-                                <p className="text-black">{file.name}</p>
+                                <div className="flex flex-col items-center">
+                                    <p className="text-black">{file.name}</p>
+                                    <button
+                                        onClick={handleClearFile}
+                                        className="text-red-500 mt-2 hover:text-red-700"
+                                    >
+                                        Clear File
+                                    </button>
+                                </div>
                             ) : (
                                 <p className="text-gray-500">
                                     Drag & Drop your file here or{" "}

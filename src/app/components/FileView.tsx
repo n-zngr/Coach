@@ -314,7 +314,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setSelectedTag(null);
     }, [file._id, tagInput, fetchTags]);
 
-    const handleNewTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+    const handleNewTagInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
     }
 
@@ -346,7 +346,13 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const handleRenameTag = useCallback(async () => {
         if (!selectedTag) return;
         const newName = tagInput.trim();
-        if (!newName) return;
+
+        if (newName === (selectedTag.name || "").trim()) {
+          setTagInput("");
+          setSelectedTag(null);
+          return;
+        }
+
         try {
             const response = await fetch("/api/documents/tags/tags", {
                 method: "PUT",
@@ -368,15 +374,16 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         } catch (error) {
             console.error("Error renaming tag:", error);
         }
-            setTagInput("");
-            setSelectedTag(null);
+
+        setTagInput("");
+        setSelectedTag(null);
     }, [file._id, selectedTag, tagInput, fetchTags]);
 
-    const handleEditTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+    const handleEditTagInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
     }
 
-    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent <HTMLInputElement>) => {
+    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
 
@@ -384,10 +391,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             if (!exists) {
                 handleRenameTag();
             }
-
-            e.currentTarget.blur();
+            
         }
-    }
+    };
 
     const handleEditTagInputBlur = () => {
         handleRenameTag();

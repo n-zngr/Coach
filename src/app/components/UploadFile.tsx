@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface Semester {
     id: string;
@@ -19,7 +19,7 @@ interface Topic {
     name: string;
 }
 
-const FileUpload: React.FC = () => {
+const UploadFile: React.FC = () => {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [file, setFile] = useState<File | null>(null);
@@ -27,6 +27,7 @@ const FileUpload: React.FC = () => {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showUploadCard, setShowUploadCard] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     const uploadButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -53,8 +54,22 @@ const FileUpload: React.FC = () => {
         }
     };
 
-    const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedOption(e.target.value);
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            setFile(e.dataTransfer.files[0]);
+        }
     };
 
     const handleUpload = async () => {
@@ -98,69 +113,97 @@ const FileUpload: React.FC = () => {
     };
 
     const toggleUploadCard = () => {
-        setShowUploadCard(prevState => !prevState);
+        setShowUploadCard((prev) => !prev);
     };
 
     return (
         <div className="file-upload-container relative">
-            <h2 className="text-xl font-semibold mb-4">Upload File</h2>
-
-            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-            {successMessage && <p className="text-green-500">{successMessage}</p>}
-
-            <button 
-                onClick={toggleUploadCard} 
-                ref={uploadButtonRef} 
+            <button
+                onClick={toggleUploadCard}
+                ref={uploadButtonRef}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
                 Upload File
             </button>
 
             {showUploadCard && (
-                <div 
-                    className="absolute mt-2 bg-white-500 shadow-lg border rounded p-4" 
-                    style={{ top: uploadButtonRef.current?.offsetHeight || 0 }}
-                >
-                    <h3 className="text-lg font-semibold mb-2 text-black">Select Semester, Subject, and Topic</h3>
-                    <select 
-                        onChange={handleDropdownChange} 
-                        value={selectedOption || ""}
-                        className="w-full border border-gray-300 rounded text-black p-2 mb-4"
-                    >
-                        <option value="" disabled>
-                            Select Semester / Subject / Topic
-                        </option>
-                        {semesters.map(semester => 
-                            semester.subjects.map(subject => 
-                                subject.topics.map(topic => (
-                                    <option 
-                                        key={`${semester.id}/${subject.id}/${topic.id}`} 
-                                        value={`${semester.id}/${subject.id}/${topic.id}`}
-                                    >
-                                        {semester.name} / {subject.name} / {topic.name}
-                                    </option>
-                                ))
-                            )
-                        )}
-                    </select>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end">
+                    <div className="h-full bg-white dark:bg-neutral-900 p-6 overflow-y-auto transition-transform duration-300 w-96">
+                        <button className="text-red-500 mb-4" onClick={toggleUploadCard}>
+                            Close [X]
+                        </button>
 
-                    <input 
-                        type="file" 
-                        onChange={handleFileChange} 
-                        className="w-full mb-4 text-black" 
-                    />
+                        <h2 className="text-xl font-semibold mb-4">Upload File</h2>
 
-                    <button 
-                        onClick={handleUpload} 
-                        disabled={loading} 
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    >
-                        {loading ? "Uploading..." : "Upload File"}
-                    </button>
+                        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+                        {successMessage && <p className="text-green-500">{successMessage}</p>}
+
+                        {/* Drag-and-Drop Area */}
+                        <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            className={`border-2 border-dashed p-6 text-center ${
+                                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+                            }`}
+                        >
+                            {file ? (
+                                <p className="text-black">{file.name}</p>
+                            ) : (
+                                <p className="text-gray-500">
+                                    Drag & Drop your file here or{" "}
+                                    <label htmlFor="file-upload" className="text-blue-500 cursor-pointer">
+                                        browse
+                                    </label>
+                                </p>
+                            )}
+                            <input
+                                id="file-upload"
+                                type="file"
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                        </div>
+
+                        {/* Semester/Subject/Topic Selection */}
+                        <div className="mt-4">
+                            <h3 className="text-lg font-semibold mb-2 text-black">Select Semester, Subject, and Topic</h3>
+                            <select
+                                onChange={(e) => setSelectedOption(e.target.value)}
+                                value={selectedOption || ""}
+                                className="w-full border border-gray-300 rounded text-black p-2 mb-4"
+                            >
+                                <option value="" disabled>
+                                    Select Semester / Subject / Topic
+                                </option>
+                                {semesters.map((semester) =>
+                                    semester.subjects.map((subject) =>
+                                        subject.topics.map((topic) => (
+                                            <option
+                                                key={`${semester.id}/${subject.id}/${topic.id}`}
+                                                value={`${semester.id}/${subject.id}/${topic.id}`}
+                                            >
+                                                {semester.name} / {subject.name} / {topic.name}
+                                            </option>
+                                        ))
+                                    )
+                                )}
+                            </select>
+                        </div>
+
+                        {/* Upload Button */}
+                        <button
+                            onClick={handleUpload}
+                            disabled={loading || !file || !selectedOption}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
+                        >
+                            {loading ? "Uploading..." : "Upload File"}
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
     );
 };
 
-export default FileUpload;
+export default UploadFile;

@@ -49,6 +49,7 @@ interface FileViewProps {
 const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // Rename file state
     const [newFilename, setNewFilename] = useState<string>(file?.filename || "");
+    const [originalFilename, setOriginalFilename] = useState<string>(file?.filename || "");
 
     // Tag states
     const [tagInput, setTagInput] = useState("");
@@ -67,6 +68,12 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // Replace file ref used in upload button press
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    useEffect(() => {
+        // When file prop changes, update both newFilename and originalFilename.
+        setNewFilename(file?.filename || "");
+        setOriginalFilename(file?.filename || "");
+    }, [file]);
+    
     useEffect(() => { // Updates on file change, builds file location and move options
         const fetchSemesters = async () => {
             try {
@@ -106,6 +113,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             }
 
             console.log('File renamed successfully');
+            setOriginalFilename(newFilename);
         } catch (error) {
             console.log(newFilename);
             console.error('Error renaming file:', error);
@@ -114,33 +122,25 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
     const handleRenameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setNewFilename(e.target.value);
-        console.log('handleRenameInputChange newFilename:', newFilename, setNewFilename);
     };
 
     const handleRenameInputBlur = () => {
         setTimeout(() => {
-            if (newFilename.trim() !== file.filename.trim()) {
-                console.log(`${newFilename.trim()} is not equal to ${file.filename.trim()}`)
+            if (newFilename.trim() !== originalFilename.trim()) {
                 handleRename();
-            } else {
-                console.log(`${newFilename.trim()} is equal to ${file.filename.trim()}`)
             }
 
         }, 150);
-        console.log('InputBlur newFilename: ', newFilename, setNewFilename);
     };
 
     const handleRenameInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            if (newFilename.trim() !== file.filename.trim()) {
-                console.log(`${newFilename.trim()} is not equal to ${file.filename.trim()}`)
+            if (newFilename.trim() !== originalFilename.trim()) {
                 handleRename();
-            } else {
-                console.log(`${newFilename.trim()} is equal to ${file.filename.trim()}`)
             }
+            e.currentTarget.blur();
         }
-        console.log('EnterPressed newFilename: ', newFilename, setNewFilename);
     }
 
     const handleDownload = async () => {

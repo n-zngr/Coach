@@ -20,10 +20,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             { _id: new ObjectId(fileId) },
             { $set: { filename: newFilename } }
         );
-
+/*
         if (result.modifiedCount === 0) {
             throw new Error('File not found or update failed');
-        }
+        }*/
 
         return NextResponse.json({ message: 'File renamed successfully' });
     } catch (error) {

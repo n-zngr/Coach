@@ -107,16 +107,34 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
             console.log('File renamed successfully');
         } catch (error) {
+            console.log(newFilename);
             console.error('Error renaming file:', error);
         }
     }
 
-    const handleClose = async () => { // Additional handleClose method, to include rename on FileView closure
-        if (newFilename.trim() !== file.filename.trim()) {
-            await handleRename();
-        }
-        onClose();
+    const handleRenameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setNewFilename(e.target.value);
+        console.log('handleRenameInputChange:', newFilename);
     };
+
+    const handleRenameInputBlur = () => {
+        setTimeout(() => {
+            if (newFilename.trim() !== file.filename.trim()) {
+                handleRename();
+            }
+        }, 150);
+        console.log('InputBlur: ', newFilename);
+    };
+
+    const handleRenameInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (newFilename.trim() !== file.filename.trim()) {
+                handleRename();
+            }
+        }
+        console.log('EnterPressed: ', newFilename);
+    }
 
     const handleDownload = async () => {
         try {
@@ -266,6 +284,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setTagInput("");
     }, [file, fetchTags, fetchAllTags]);
 
+
     const handleRenameTag = useCallback(async () => {
         if (!selectedTag) return;
         const newName = tagInput.trim();
@@ -338,6 +357,33 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setSelectedTag(null);
     }, [file._id, tagInput, fetchTags]);
 
+    const handleNewTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    }
+
+    const handleNewTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (!exists) {
+                handleAddTag(tagInput);
+            }
+        }
+    }
+
+    const handleNewTagInputBlur = () => {
+        setTimeout(() => {
+            if (tagInput.trim()) {
+                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+                if (!exists) {
+                    handleAddTag(tagInput);
+                }
+            }
+            setShowTagInput(false);
+        }, 150)
+    };
+
     const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
         // When a suggestion is selected, update the input.
         setTagInput(tag.name);
@@ -370,18 +416,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         tag.name.toLowerCase().includes(tagInput.toLowerCase())
     );
 
-    const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            // If no existing tag matches, create new.
-            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
-            if (!exists) {
-                handleAddTag(tagInput);
-            }
-        }
-    };
-
-    const handleTagInputBlur = () => { // On blur, if the tagInput is non-empty and doesn’t match an existing tag, add it.
+    /*const handleTagInputBlur = () => { // On blur, if the tagInput is non-empty and doesn’t match an existing tag, add it.
         setTimeout(() => { // A small timeout helps with the click selection on the dropdown
             if (tagInput.trim()) {
                 const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
@@ -391,16 +426,27 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             }
             setShowTagInput(false);
         }, 150);
-    };
-
-    const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setTagInput(e.target.value);
-    }, []);
+    };*/
 
     const selectTag = useCallback((tag: Tag) => {
         setSelectedTag(tag);
         setTagInput(tag.name);
     }, []);
+
+    const handleEditTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    }
+
+    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent <HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleRenameTag();
+        }
+    }
+
+    const handleEditTagInputBlur = () => {
+        handleRenameTag();
+    }
 
     return (
         <div className="fixed inset-0 flex justify-end">
@@ -427,7 +473,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         <div className="flex items-center">
                             <button
                                 className="w-8 h-8 flex rounded-full justify-center items-center bg-white-500 hover:bg-white-600 dark:bg-black-500 dark:hover:bg-black-600 active:scale-95 transition-all duration-100"
-                                onClick={handleClose}
+                                onClick={onClose}
                             >
                                 <svg width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -446,7 +492,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         <input
                             type='text'
                             value={newFilename}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNewFilename(e.target.value)}
+                            onChange={handleRenameInputChange}
+                            onBlur={handleRenameInputBlur}
+                            onKeyDown={handleRenameInputEnterPressed}
                             className='w-full bg-transparent border-b border-transparent focus:border-white-500 focus:dark:border-black-500 focus:outline-none font-medium text-lg text-black-500 dark:text-white-500'
                         />
                         <p className='whitespace-nowrap text-gray-500'>
@@ -502,14 +550,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                                         <input
                                             type="text"
                                             value={tagInput}
-                                            onChange={handleInputChange}
-                                            onBlur={handleRenameTag}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter") {
-                                                e.preventDefault();
-                                                handleRenameTag();
-                                                }
-                                            }}
+                                            onChange={handleEditTagInputChange}
+                                            onBlur={handleEditTagInputBlur}
+                                            onKeyDown={handleEditTagInputEnterPressed}
                                             className="bg-transparent border-b focus:outline-none"
                                             autoFocus
                                         />
@@ -546,20 +589,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                                     type="text"
                                     placeholder="New Tag"
                                     value={tagInput}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTagInput(e.target.value)}
-                                    onBlur={handleTagInputBlur}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            e.preventDefault();
-                                            // If no existing tag matches, add the new tag.
-                                            const exists = filteredTags.some(
-                                                (tag) => tag.name.toLowerCase() === tagInput.toLowerCase()
-                                            );
-                                            if (!exists) {
-                                                handleAddTag(tagInput);
-                                            }
-                                        }
-                                    }}
+                                    onChange={handleNewTagInputChange}
+                                    onBlur={handleNewTagInputBlur}
+                                    onKeyDown={handleNewTagInputEnterPressed}
                                     className="bg-transparent border-b focus:outline-none"
                                     autoFocus
                                 />

@@ -371,6 +371,27 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             setTagInput("");
             setSelectedTag(null);
     }, [file._id, selectedTag, tagInput, fetchTags]);
+
+    const handleEditTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    }
+
+    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent <HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (!exists) {
+                handleRenameTag();
+            }
+
+            e.currentTarget.blur();
+        }
+    }
+
+    const handleEditTagInputBlur = () => {
+        handleRenameTag();
+    }
     
     const handleRemoveTag = useCallback(
         async (tagToRemove: Tag) => {
@@ -440,27 +461,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setSelectedTag(tag);
         setTagInput(tag.name);
     }, []);
-
-    const handleEditTagInputChange = (e: ChangeEvent <HTMLInputElement>) => {
-        setTagInput(e.target.value);
-    }
-
-    const handleEditTagInputEnterPressed = (e: React.KeyboardEvent <HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-
-            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
-            if (!exists) {
-                handleRenameTag();
-            }
-
-            e.currentTarget.blur();
-        }
-    }
-
-    const handleEditTagInputBlur = () => {
-        handleRenameTag();
-    }
 
     return (
         <div className="fixed inset-0 flex justify-end">

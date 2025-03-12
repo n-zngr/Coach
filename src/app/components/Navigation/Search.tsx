@@ -35,7 +35,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
           className="mt-4 p-2 w-full rounded border border-gray-300 dark:border-gray-600"
           value={query}
           onChange={handleSearchChange}
-          placeholder="Search documents or subjects..."
+          placeholder="Search documents, subjects, or tags..."
           autoFocus
         />
 
@@ -79,6 +79,17 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                     <p className="text-gray-700 dark:text-gray-400 mt-1">
                       {result.filename}
                     </p>
+                    {/* Zeige Tags an, falls vorhanden */}
+                    {result.metadata?.tags && result.metadata.tags.length > 0 && (
+                      <div className="mt-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Tags: </span>
+                        {result.metadata.tags.map((tag: any) => (
+                          <span key={tag.id} className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded mr-2">
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </>
                 )}
               </li>

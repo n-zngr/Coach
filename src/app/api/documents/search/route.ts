@@ -53,7 +53,8 @@ export async function POST(req: Request) {
         { 'filename': { $regex: query, $options: 'i' } },
         { 'metadata.folderName': { $regex: query, $options: 'i' } },
         { 'metadata.subjectName': { $regex: query, $options: 'i' } },
-        { 'metadata.semesterName': { $regex: query, $options: 'i' } }
+        { 'metadata.semesterName': { $regex: query, $options: 'i' } },
+        { 'metadata.tags.name': { $regex: query, $options: 'i' } } // Neue Zeile für die Tags-Suche
       ]
     };
 

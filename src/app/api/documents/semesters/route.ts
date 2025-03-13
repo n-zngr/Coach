@@ -62,3 +62,56 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+export async function DELETE(req: Request) {
+    try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+        const { semesterId } = await req.json();
+
+        if (!userId || !semesterId) {
+            return NextResponse.json({ error: "UserId and semesterId are required" }, { status: 400 });
+        }
+
+        const usersCollection = await getCollection(dbName, dbCol);
+        const updateResult = await usersCollection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $pull: { semesters: { id: semesterId } } }
+        );
+
+        if (updateResult.modifiedCount === 0) {
+            return NextResponse.json({ error: "Failed to delete semester" }, { status: 400 });
+        }
+
+        return NextResponse.json({ message: "Semester deleted successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error in DELETE /documents/semesters:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function PUT(req: Request) {
+    try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+        const { semesterId, name } = await req.json();
+
+        if (!userId || !semesterId || !name) {
+            return NextResponse.json({ error: "UserId, semesterId, and name are required" }, { status: 400 });
+        }
+
+        const usersCollection = await getCollection(dbName, dbCol);
+        const updateResult = await usersCollection.updateOne(
+            { _id: new ObjectId(userId), "semesters.id": semesterId },
+            { $set: { "semesters.$.name": name } }
+        );
+
+        if (updateResult.modifiedCount === 0) {
+            return NextResponse.json({ error: "Failed to update semester" }, { status: 400 });
+        }
+
+        return NextResponse.json({ message: "Semester updated successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error in PUT /documents/semesters:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}

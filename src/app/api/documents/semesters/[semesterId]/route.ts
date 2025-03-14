@@ -86,3 +86,60 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+export async function DELETE(req: Request, { params }: { params: { semesterId: string } }) {
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+    const { semesterId } = params;
+    const { subjectId } = await req.json();
+
+    if (!userId || !semesterId || !subjectId) {
+        return NextResponse.json({ error: "UserId, SemesterId, and SubjectId are required" }, { status: 400 });
+    }
+
+    try {
+        const usersCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
+        const updateResult = await usersCollection.updateOne(
+            { _id: new ObjectId(userId), "semesters.id": semesterId },
+            { $pull: { "semesters.$.subjects": { id: subjectId } } }
+        );
+
+        if (updateResult.modifiedCount === 0) {
+            return NextResponse.json({ error: "Failed to delete subject" }, { status: 400 });
+        }
+
+        return NextResponse.json({ message: "Subject deleted successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error in DELETE /documents/semesters/[semesterId]:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function PUT(req: Request, { params }: { params: { semesterId: string } }) {
+    const cookies = req.headers.get('cookie');
+    const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+    const { semesterId } = params;
+    const { subjectId, name } = await req.json();
+
+    if (!userId || !semesterId || !subjectId || !name) {
+        return NextResponse.json({ error: "UserId, SemesterId, SubjectId, and Name are required" }, { status: 400 });
+    }
+
+    try {
+        const usersCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
+        const updateResult = await usersCollection.updateOne(
+            { _id: new ObjectId(userId), "semesters.id": semesterId, "semesters.subjects.id": subjectId },
+            { $set: { "semesters.$[semester].subjects.$[subject].name": name } },
+            { arrayFilters: [{ "semester.id": semesterId }, { "subject.id": subjectId }] }
+        );
+
+        if (updateResult.modifiedCount === 0) {
+            return NextResponse.json({ error: "Failed to update subject" }, { status: 400 });
+        }
+
+        return NextResponse.json({ message: "Subject updated successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error in PUT /documents/semesters/[semesterId]:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}

@@ -3,6 +3,7 @@ import { MongoClient } from 'mongodb';
 
 const MONGODB_URI = process.env.MONGODB_URI! as string;
 
+// POST-Route (vorhanden)
 export async function POST(req: Request) {
     const client = new MongoClient(MONGODB_URI);
 
@@ -41,6 +42,28 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error('Error during link upload:', error);
         return NextResponse.json({ message: 'Failed to upload link', error }, { status: 500 });
+    } finally {
+        await client.close();
+    }
+}
+
+// GET-Route (unverändert)
+export async function GET() {
+    const client = new MongoClient(MONGODB_URI);
+
+    try {
+        await client.connect();
+        const db = client.db('documents');
+        const linksCollection = db.collection('links');
+
+        // Alle Links abrufen (ohne Projektion)
+        const links = await linksCollection.find().toArray();
+
+        console.log(links);
+        return NextResponse.json(links);
+    } catch (error) {
+        console.error('Error fetching links:', error);
+        return NextResponse.json({ message: 'Failed to fetch links', error }, { status: 500 });
     } finally {
         await client.close();
     }

@@ -37,8 +37,8 @@ function LoginPage() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-white-900 dark:bg-black-100">
-            <div className="flex flex-col gap-8 m-auto w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <div className="flex h-screen w-full bg-gradient-to-br from-white-900 to-white-700 dark:bg-gradient-to-br dark:from-black-300 dark:to-black-100">
+            <div className="flex flex-col gap-8 m-auto w-full max-w-md">
                 <header className="text-left border-b border-gray-500 pb-8">
                     <h2 className="text-2xl font-semibold text-black-100 dark:text-white-900">Welcome back</h2>
                     <p className="text-gray-500">Good to see you - Log in to continue</p>

@@ -451,18 +451,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         tag.name.toLowerCase().includes(tagInput.toLowerCase())
     );
 
-    /*const handleTagInputBlur = () => { // On blur, if the tagInput is non-empty and doesn’t match an existing tag, add it.
-        setTimeout(() => { // A small timeout helps with the click selection on the dropdown
-            if (tagInput.trim()) {
-                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
-                if (!exists) {
-                    handleAddTag(tagInput);
-                }
-            }
-            setShowTagInput(false);
-        }, 150);
-    };*/
-
     const selectTag = useCallback((tag: Tag) => {
         setSelectedTag(tag);
         setTagInput(tag.name);

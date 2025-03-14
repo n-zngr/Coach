@@ -47,17 +47,33 @@ export async function POST(req: Request) {
     }
 }
 
-// GET-Route (unverändert)
-export async function GET() {
+// GET-Route (angepasst)
+export async function GET(req: Request) {
     const client = new MongoClient(MONGODB_URI);
 
     try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+
+        if (!userId) {
+            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+        }
+
+        const semesterId = req.headers.get('semesterId');
+        const subjectId = req.headers.get('subjectId');
+        const topicId = req.headers.get('topicId');
+
         await client.connect();
         const db = client.db('documents');
         const linksCollection = db.collection('links');
 
-        // Alle Links abrufen (ohne Projektion)
-        const links = await linksCollection.find().toArray();
+        const query: any = { 'metadata.userId': userId };
+
+        if (semesterId) query['metadata.semesterId'] = semesterId;
+        if (subjectId) query['metadata.subjectId'] = subjectId;
+        if (topicId) query['metadata.topicId'] = topicId;
+
+        const links = await linksCollection.find(query).toArray();
 
         console.log(links);
         return NextResponse.json(links);

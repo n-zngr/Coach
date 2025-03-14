@@ -1,0 +1,47 @@
+import { NextResponse } from 'next/server';
+import { MongoClient } from 'mongodb';
+
+const MONGODB_URI = process.env.MONGODB_URI! as string;
+
+export async function POST(req: Request) {
+    const client = new MongoClient(MONGODB_URI);
+
+    try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+
+        if (!userId) {
+            return NextResponse.json({ message: 'UserId is required' }, { status: 400 });
+        }
+
+        const linkData = await req.json();
+        const { name, url, metadata } = linkData;
+        const { semesterId, subjectId, topicId } = metadata;
+
+        if (!name || !url || !semesterId || !subjectId || !topicId) {
+            return NextResponse.json({ message: 'Missing required data for link upload' }, { status: 400 });
+        }
+
+        await client.connect();
+        const db = client.db('documents');
+        const linksCollection = db.collection('links');
+
+        await linksCollection.insertOne({
+            name,
+            url,
+            metadata: {
+                userId,
+                semesterId,
+                subjectId,
+                topicId,
+            },
+        });
+
+        return NextResponse.json({ message: 'Link uploaded successfully' });
+    } catch (error) {
+        console.error('Error during link upload:', error);
+        return NextResponse.json({ message: 'Failed to upload link', error }, { status: 500 });
+    } finally {
+        await client.close();
+    }
+}

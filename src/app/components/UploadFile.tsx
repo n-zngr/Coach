@@ -23,11 +23,14 @@ const UploadFile: React.FC = () => {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [file, setFile] = useState<File | null>(null);
+    const [linkName, setLinkName] = useState<string>("");
+    const [linkUrl, setLinkUrl] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showUploadCard, setShowUploadCard] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [uploadType, setUploadType] = useState<"file" | "link">("file");
 
     const uploadButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -77,41 +80,74 @@ const UploadFile: React.FC = () => {
     };
 
     const handleUpload = async () => {
-        if (!file || !selectedOption) {
-            setErrorMessage("Please select a file and a topic to upload.");
+        if (!selectedOption) {
+            setErrorMessage("Please select a topic.");
             return;
         }
 
         const [semesterId, subjectId, topicId] = selectedOption.split("/");
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('semesterId', semesterId);
-        formData.append('subjectId', subjectId);
-        formData.append('topicId', topicId);
 
         setLoading(true);
         setErrorMessage(null);
         setSuccessMessage(null);
 
         try {
-            const response = await fetch('/api/documents/upload', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-            });
+            if (uploadType === "file" && file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('semesterId', semesterId);
+                formData.append('subjectId', subjectId);
+                formData.append('topicId', topicId);
 
-            if (!response.ok) {
-                throw new Error("Failed to upload file");
+                const response = await fetch('/api/documents/upload', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to upload file");
+                }
+
+                setSuccessMessage("File uploaded successfully!");
+                setFile(null);
+            } else if (uploadType === "link" && linkName && linkUrl) {
+                const linkData = {
+                    name: linkName,
+                    url: linkUrl,
+                    metadata: {
+                        semesterId,
+                        subjectId,
+                        topicId,
+                    },
+                };
+
+                const response = await fetch('/api/documents/links/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(linkData),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to upload link");
+                }
+
+                setSuccessMessage("Link uploaded successfully!");
+                setLinkName("");
+                setLinkUrl("");
+            } else {
+                setErrorMessage("Please fill out all required fields.");
+                return;
             }
 
-            setSuccessMessage("File uploaded successfully!");
-            setFile(null);
             setSelectedOption(null);
             setShowUploadCard(false);
         } catch (error) {
-            console.error("Error during file upload: ", error);
-            setErrorMessage("File upload failed.");
+            console.error("Error during upload: ", error);
+            setErrorMessage(uploadType === "file" ? "File upload failed." : "Link upload failed.");
         } finally {
             setLoading(false);
         }
@@ -138,79 +174,125 @@ const UploadFile: React.FC = () => {
                             Close [X]
                         </button>
 
-                        <h2 className="text-xl font-semibold mb-4">Upload File</h2>
+                        <h2 className="text-xl font-semibold mb-4">Upload {uploadType === "file" ? "File" : "Link"}</h2>
+
+                        {/* Toggle between File and Link Upload */}
+                        <div className="mb-4 flex space-x-2">
+                            <button
+                                onClick={() => setUploadType("file")}
+                                className={`px-4 py-2 rounded ${
+                                    uploadType === "file" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+                                }`}
+                            >
+                                Upload File
+                            </button>
+                            <button
+                                onClick={() => setUploadType("link")}
+                                className={`px-4 py-2 rounded ${
+                                    uploadType === "link" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+                                }`}
+                            >
+                                Upload Link
+                            </button>
+                        </div>
 
                         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
                         {successMessage && <p className="text-green-500">{successMessage}</p>}
 
-                        {/* Drag-and-Drop Area */}
-                        <div
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            className={`border-2 border-dashed p-6 text-center ${
-                                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
-                            }`}
-                        >
-                            {file ? (
-                                <div className="flex flex-col items-center">
-                                    <p className="text-black">{file.name}</p>
-                                    <button
-                                        onClick={handleClearFile}
-                                        className="text-red-500 mt-2 hover:text-red-700"
-                                    >
-                                        Clear File
-                                    </button>
-                                </div>
-                            ) : (
-                                <p className="text-gray-500">
-                                    Drag & Drop your file here or{" "}
-                                    <label htmlFor="file-upload" className="text-blue-500 cursor-pointer">
-                                        browse
-                                    </label>
-                                </p>
-                            )}
-                            <input
-                                id="file-upload"
-                                type="file"
-                                onChange={handleFileChange}
-                                className="hidden"
-                            />
-                        </div>
-
-                        {/* Semester/Subject/Topic Selection */}
-                        <div className="mt-4">
-                            <h3 className="text-lg font-semibold mb-2 text-black">Select Semester, Subject, and Topic</h3>
-                            <select
-                                onChange={(e) => setSelectedOption(e.target.value)}
-                                value={selectedOption || ""}
-                                className="w-full border border-gray-300 rounded text-black p-2 mb-4"
-                            >
-                                <option value="" disabled>
-                                    Select Semester / Subject / Topic
-                                </option>
-                                {semesters.map((semester) =>
-                                    semester.subjects.map((subject) =>
-                                        subject.topics.map((topic) => (
-                                            <option
-                                                key={`${semester.id}/${subject.id}/${topic.id}`}
-                                                value={`${semester.id}/${subject.id}/${topic.id}`}
+                        {/* File Upload Section */}
+                        {uploadType === "file" && (
+                            <>
+                                {/* Drag-and-Drop Area */}
+                                <div
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                    className={`border-2 border-dashed p-6 text-center ${
+                                        isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+                                    }`}
+                                >
+                                    {file ? (
+                                        <div className="flex flex-col items-center">
+                                            <p className="text-black">{file.name}</p>
+                                            <button
+                                                onClick={handleClearFile}
+                                                className="text-red-500 mt-2 hover:text-red-700"
                                             >
-                                                {semester.name} / {subject.name} / {topic.name}
-                                            </option>
-                                        ))
-                                    )
-                                )}
-                            </select>
-                        </div>
+                                                Clear File
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500">
+                                            Drag & Drop your file here or{" "}
+                                            <label htmlFor="file-upload" className="text-blue-500 cursor-pointer">
+                                                browse
+                                            </label>
+                                        </p>
+                                    )}
+                                    <input
+                                        id="file-upload"
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {uploadType === "link" && (
+                            <>
+                                {/* Link Name Input */}
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700">Link Name</label>
+                                    <input
+                                        type="text"
+                                        value={linkName}
+                                        onChange={(e) => setLinkName(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                </div>
+
+                                {/* Link URL Input */}
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700">Link URL</label>
+                                    <input
+                                        type="url"
+                                        value={linkUrl}
+                                        onChange={(e) => setLinkUrl(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                </div>
+
+                                {/* Semester, Subject, Topic Selection */}
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700">Select Topic</label>
+                                    <select
+                                        value={selectedOption || ""}
+                                        onChange={(e) => setSelectedOption(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option value="" disabled>Select a topic</option>
+                                        {semesters.map((semester) => (
+                                            semester.subjects.map((subject) => (
+                                                subject.topics.map((topic) => (
+                                                    <option key={`${semester.id}/${subject.id}/${topic.id}`} value={`${semester.id}/${subject.id}/${topic.id}`}>
+                                                        {semester.name} - {subject.name} - {topic.name}
+                                                    </option>
+                                                ))
+                                            ))
+                                        ))}
+                                    </select>
+                                </div>
+                            </>
+                        )}
 
                         {/* Upload Button */}
                         <button
                             onClick={handleUpload}
-                            disabled={loading || !file || !selectedOption}
+                            disabled={loading || !selectedOption || (uploadType === "file" && !file) || (uploadType === "link" && (!linkName || !linkUrl))}
                             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
                         >
-                            {loading ? "Uploading..." : "Upload File"}
+                            {loading ? "Uploading..." : `Upload ${uploadType === "file" ? "File" : "Link"}`}
                         </button>
                     </div>
                 </div>

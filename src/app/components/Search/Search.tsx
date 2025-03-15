@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import SearchFileItem from "./SearchFileItem";
+import { toTitleCase } from "@/app/utils/stringUtils";
 
 interface SearchProps {
     onClose: () => void;
@@ -110,7 +111,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                             {searchResults.map((result, index) => (
                             <div key={result.id || result._id || index} className="flex flex-col gap-4">
                                 <h2 className="text-2xl pt-4">
-                                    {result.metadata?.semesterName || result.semesterName || "No semester"}
+                                    {toTitleCase(result.metadata?.semesterName) || toTitleCase(result.semesterName) || "No semester"}
                                 </h2>
                                 {isSubject(result) ? (
                                     <>

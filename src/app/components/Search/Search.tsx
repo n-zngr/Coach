@@ -45,6 +45,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
             if (query.trim() !== '') {
                 onSearch(query);
             }
+            console.log(searchResults)
         }
     }
 
@@ -75,7 +76,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
 
     return (
         <div className="fixed inset-0 bg-black-500 dark:bg-white-500 bg-opacity-10 dark:bg-opacity-10 backdrop-blur-[2px] flex justify-center items-center z-10 transition-all duration-200">
-            <div ref={searchRef} className="bg-white-900 dark:bg-black-100 rounded-3xl w-full max-w-md">
+            <div ref={searchRef} className="bg-white-900 dark:bg-black-100 rounded-3xl w-full max-w-md shadow-md shadow-black-100">
                 <div className="flex items-center border-b border-gray-500">
                     <div className="pl-4">
                         <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

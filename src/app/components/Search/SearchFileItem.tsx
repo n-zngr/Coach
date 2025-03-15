@@ -17,6 +17,9 @@ interface FileItemProps {
         if (file.metadata?.subjectName) {
             path += file.metadata.subjectName + "/";
         }
+        if (file.metadata?.topicName) {
+            path += file.metadata.topicName + "/";
+        }
         return path;
     };
 

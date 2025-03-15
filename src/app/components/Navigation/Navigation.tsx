@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Search from "./Search";
+import Search from "../Search/Search";
 import Notification from "./Notification";
 import AccountInfo from "./AccountInfo";
 import NavList from "./NavList";
@@ -48,8 +48,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
 
     return (
         <>
-            <nav 
-                className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}
+            <nav className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}
                 flex flex-col
                 border-r transition-width duration-300 
                 bg-white-800 dark:bg-black-200
@@ -65,9 +64,9 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         }
                         <button 
                             className="w-8 h-8 p-2 ml-auto
-                            rounded-full
-                            hover:bg-black-200 dark:hover:bg-black-700 
-                            flex justify-center items-center transition-all"
+                                rounded-full
+                                hover:bg-black-200 dark:hover:bg-black-700 
+                                flex justify-center items-center transition-all"
                             onClick={toggleNavigation}
                         >
                             <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">

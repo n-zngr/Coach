@@ -104,37 +104,35 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                         </button>
                     </div>
                 </div>
-                <div className="flex flex-col p-4">                    
-                    <div className="flex flex-col">
-                        {searchResults.length > 0 ? (
-                            <ul>
-                                {searchResults.map((result, index) => (
-                                <li key={result.id || result._id || index} className="flex flex-col gap-4">
-                                    <h2 className="text-2xl">
-                                        {result.metadata?.semesterName || result.semesterName || "No semester"}
-                                    </h2>
-                                    {isSubject(result) ? (
-                                        <>
-                                            {Array.isArray(result.files) && result.files.length > 0 && (
-                                            <div className="flex flex-col gap-4">
-                                                {result.files.map((file: any) => (
-                                                <SearchFileItem key={file.id || file._id} file={file} /> // Use FileItem component
-                                                ))}
-                                            </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <SearchFileItem file={result} /> {/* Use FileItem component for single file */}
-                                        </>
-                                    )}
-                                </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="pb-4 text-gray-500">No results found.</p>
-                        )}
-                    </div>
+                <div className="flex flex-col p-4 gap-4">
+                    {searchResults.length > 0 ? (
+                        <>
+                            {searchResults.map((result, index) => (
+                            <div key={result.id || result._id || index} className="flex flex-col gap-4">
+                                <h2 className="text-2xl pt-4">
+                                    {result.metadata?.semesterName || result.semesterName || "No semester"}
+                                </h2>
+                                {isSubject(result) ? (
+                                    <>
+                                        {Array.isArray(result.files) && result.files.length > 0 && (
+                                        <div className="flex flex-col gap-4">
+                                            {result.files.map((file: any) => (
+                                            <SearchFileItem key={file.id || file._id} file={file} />
+                                            ))}
+                                        </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <SearchFileItem file={result} />
+                                    </>
+                                )}
+                            </div>
+                            ))}
+                        </>
+                    ) : (
+                        <p className="pb-4 text-gray-500">No results found.</p>
+                    )}
                 </div>
             </div>
         </div>

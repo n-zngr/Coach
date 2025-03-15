@@ -41,7 +41,9 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
             if (searchTimeout.current) {
                 clearTimeout(searchTimeout.current);
             }
-            onSearch(query);
+            if (query.trim() !== '') {
+                onSearch(query);
+            }
         }
     }
 

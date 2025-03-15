@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation'
 import Navigation from '@/app/components/Navigation/Navigation';
 
 export default function Home() {
     const [isExpanded, setIsExpanded] = useState(true);
+    const router = useRouter();
 
     const toggleNavigation = () => {
         setIsExpanded(!isExpanded);
     };
+
+    useEffect(() => {
+        router.push('/documents');
+    }, [router])
 
     return (
         <div className="flex h-screen">
@@ -16,8 +22,7 @@ export default function Home() {
             <div className={`flex-1 p-16 transition-all duration-300 ${
                     isExpanded ? "ml-64" : "ml-12"
                 }`}>
-                <h1 className="text-3xl font-bold">Coach Proof of Concept</h1>
-                <p className="mt-4 text-lg">Use the navigation bar to access different sections of the application.</p>
+                <h1 className="text-3xl font-bold">Redirecting to documents...</h1>
             </div>
         </div>
     );

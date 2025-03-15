@@ -46,7 +46,7 @@ const ResetPasswordPage = () => {
 
     return (
         <div className="flex h-screen w-full bg-gradient-to-br from-white-900 to-white-700 dark:bg-gradient-to-br dark:from-black-300 dark:to-black-100">
-            <div className="flex flex-col gap-8 m-auto w-full max-w-md ">
+            <div className="flex flex-col gap-8 m-auto w-full max-w-md">
                 <header className="text-left border-b border-gray-500 pb-8">
                     <h2 className="text-2xl font-semibold text-black-100 dark:text-white-900">Reset Password</h2>
                     <p className="text-gray-500">Forgot your password? That's okay.</p>
@@ -123,12 +123,17 @@ const ResetPasswordPage = () => {
                         </div>
                     </div>
                     {message && <p className="text-red-500 text-sm mt-2">{message}</p>}
+                    
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-2 px-4 rounded-full bg-white-700 dark:bg-black-300 hover:bg-white-500 dark:hover:bg-black-500 focus:outline-none focus:ring-1 focus:ring-white-900 text-sm font-medium text-black-100 dark:text-white-900"
+                        className="w-full py-4 mt-12 px-4 rounded-full 
+                        bg-white-700 dark:bg-black-300 hover:bg-white-500 dark:hover:bg-black-500
+                        border border-gray-500 focus:outline-none focus:ring-1 focus:ring-white-900
+                        text-sm font-medium text-black-100 dark:text-white-900
+                        transition-colors duration-200"
                     >
-                        {loading ? "Resetting..." : "Reset Password"}
+                        {loading ? "Resetting Password..." : "Reset Password"}
                     </button>
                 </form>
             </div>

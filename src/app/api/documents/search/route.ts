@@ -19,7 +19,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'UserId is required' }, { status: 401 });
         }
 
-        const usersCollection = await getCollection('users', 'users');
+        const usersCollection = await getCollection(USERS_DATABASE_NAME, USERS_COLLECTION_NAME);
         const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
 
         if (!user) {

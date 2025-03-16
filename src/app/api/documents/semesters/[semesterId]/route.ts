@@ -90,7 +90,7 @@ export async function POST(req: Request, { params }: { params: { semesterId: str
 export async function DELETE(req: Request, { params }: { params: { semesterId: string } }) {
     const cookies = req.headers.get('cookie');
     const userId = cookies?.match(/userId=([^;]*)/)?.[1];
-    const { semesterId } = params;
+    const { semesterId } = await params;
     const { subjectId } = await req.json();
 
     if (!userId || !semesterId || !subjectId) {
@@ -101,7 +101,7 @@ export async function DELETE(req: Request, { params }: { params: { semesterId: s
         const usersCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
         const updateResult = await usersCollection.updateOne(
             { _id: new ObjectId(userId), "semesters.id": semesterId },
-            { $pull: { "semesters.$.subjects": { id: subjectId } } }
+            { $set: { "semesters.$.subjects": { id: subjectId } } }
         );
 
         if (updateResult.modifiedCount === 0) {
@@ -118,7 +118,7 @@ export async function DELETE(req: Request, { params }: { params: { semesterId: s
 export async function PUT(req: Request, { params }: { params: { semesterId: string } }) {
     const cookies = req.headers.get('cookie');
     const userId = cookies?.match(/userId=([^;]*)/)?.[1];
-    const { semesterId } = params;
+    const { semesterId } = await params;
     const { subjectId, name } = await req.json();
 
     if (!userId || !semesterId || !subjectId || !name) {

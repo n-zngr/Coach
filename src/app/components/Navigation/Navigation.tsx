@@ -31,7 +31,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                 },
                 body: JSON.stringify({
                     query,
-                    subjectTypeId: null, // Du kannst hier bei Bedarf auch das `subjectTypeId` setzen
+                    subjectTypeId: null, // optionally subjectTypeId can be set here
                 }),
             });
 
@@ -65,8 +65,9 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         <button 
                             className="w-8 h-8 p-2 ml-auto
                                 rounded-full
-                                hover:bg-black-200 dark:hover:bg-black-700 
-                                flex justify-center items-center transition-all"
+                                hover:bg-black-200 dark:hover:bg-black-700
+                                flex justify-center items-center
+                                active:scale-95 transition-all duration-200"
                             onClick={toggleNavigation}
                         >
                             <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">

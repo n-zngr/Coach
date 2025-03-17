@@ -13,8 +13,8 @@ interface NavigationProps {
 
 export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
     const [isSearchVisible, setIsSearchVisible] = useState(false); 
-    const [searchQuery, setSearchQuery] = useState<string>(""); // Zustand für die Eingabe
-    const [searchResults, setSearchResults] = useState<any[]>([]); // Zustand für Suchergebnisse
+    const [searchQuery, setSearchQuery] = useState<string>(""); // Search-Input
+    const [searchResults, setSearchResults] = useState<any[]>([]); // Search-Output
 
     const toggleSearch = () => {
         setIsSearchVisible(true);

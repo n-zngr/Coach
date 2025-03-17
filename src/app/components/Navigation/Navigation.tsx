@@ -40,7 +40,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
             }
 
             const data = await response.json();
-            setSearchResults(data); // Ergebnisse setzen
+            setSearchResults(data);
         } catch (error) {
             console.error("Search error:", error);
         }
@@ -58,7 +58,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                 <div className="flex flex-col h-full">
                     <div className="flex m-2">
                         {isExpanded &&
-                            <div className="h-8 w-8 rounded-md border border-white-500 dark:border-black-500">
+                            <div className="h-8 w-8 rounded-md border border-white-500 dark:border-black-500 active:scale-95 cursor-pointer transition-transform duration-200">
                                 <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M16 20L20 16H8V20H16Z" fill="white"/>
                                     <path d="M8 8H16L20 4H8L4 8V20L8 16V8Z" fill="white"/>

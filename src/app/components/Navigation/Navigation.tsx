@@ -80,7 +80,7 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                     </div>
                     {isExpanded && (
                         <div className="flex">
-                            <button className="flex flex-1 m-2 p-2 rounded-full bg-white-400 hover:bg-white-400 dark:bg-black-300 dark:hover:bg-black-400 transition-colors duartion-500" onClick={toggleSearch}>
+                            <button className="flex flex-1 m-2 p-2 rounded-full bg-white-700 hover:bg-white-600 dark:bg-black-300 dark:hover:bg-black-400 border border-white-500 dark:border-black-500 transition-colors duartion-500" onClick={toggleSearch}>
                                 <div className="flex gap-2">
                                     <div className="flex justify-center items-center pl-1">
                                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

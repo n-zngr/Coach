@@ -75,7 +75,7 @@ export async function DELETE(req: Request) {
         const usersCollection = await getCollection(dbName, dbCol);
         const updateResult = await usersCollection.updateOne(
             { _id: new ObjectId(userId) },
-            { $pull: { semesters: { id: semesterId } } }
+            { $pull: { semesters: { id: semesterId } } } as any // Reduces type-safety in TypeScript
         );
 
         if (updateResult.modifiedCount === 0) {

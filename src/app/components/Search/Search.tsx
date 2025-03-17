@@ -16,7 +16,6 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
     const searchRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const searchTimeout = useRef<NodeJS.Timeout | null>(null);
-    const closeButtonClicked = useRef<boolean>(false);
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newQuery = event.target.value;
@@ -75,8 +74,8 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
     }, [onClose])
 
     return (
-        <div className="fixed inset-0 bg-black-500 dark:bg-white-500 bg-opacity-10 dark:bg-opacity-10 backdrop-blur-[2px] flex justify-center items-center z-10 transition-all duration-200">
-            <div ref={searchRef} className="bg-white-900 dark:bg-black-100 rounded-3xl w-full max-w-md shadow-md shadow-black-100">
+        <div className="fixed min-w-full inset-0 bg-black-500 dark:bg-white-500 bg-opacity-10 dark:bg-opacity-10 backdrop-blur-[2px] flex justify-center items-center z-10 transition-all duration-1000">
+            <div ref={searchRef} className="bg-white-900 dark:bg-black-100 rounded-3xl min-w-fit w-2/5 shadow-md shadow-black-100">
                 <div className="flex items-center border-b border-gray-500">
                     <div className="pl-4">
                         <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -97,7 +96,6 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                     <div className="flex items-center pr-4">
                         <button
                             className="w-8 h-8 flex rounded-full justify-center items-center bg-white-500 hover:bg-white-600 dark:bg-black-500 dark:hover:bg-black-600 active:scale-95 transition-all duration-200"
-                            
                             onClick={onClose}
                         >
                             <svg width="10" height="10" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

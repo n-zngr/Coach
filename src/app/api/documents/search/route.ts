@@ -81,6 +81,22 @@ export async function POST(req: Request) {
                 file.metadata.semesterName = foundSemester.name;
             }
 
+            if (file.metadata && file.metadata.topicId) {
+                let topicName = null;
+                user.semesters.forEach((semester: any) => {
+                    semester.subjects.forEach((subject: any) => {
+                        subject.topics.forEach((topic: any) => {
+                            if (topic.id === file.metadata.topicId) {
+                                topicName = topic.name;
+                            }
+                        });
+                    });
+                });
+                if (topicName) {
+                    file.metadata.topicName = topicName;
+                }
+            }
+
             return file;
         });
 

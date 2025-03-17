@@ -31,7 +31,7 @@ async function cleanupUnusedTags(userId: string) {
         const usersCollection = await getCollection(USER_DB, USER_COL);
         await usersCollection.updateOne(
             { _id: new ObjectId(userId) },
-            { $pull: { tags: { id: { $nin: Array.from(usedTagIds) } } } } as any
+            { $pull: { tags: { id: { $nin: Array.from(usedTagIds) } } } } as any // Reduces type-safety in TypeScript
         );
     } catch (error) {
         console.error("Error cleaning up unused tags:", error);
@@ -181,7 +181,7 @@ export async function DELETE(req: Request) {
         const filesCollection = await getCollection(FILE_DB, FILE_COL);
         const updateResult = await filesCollection.updateOne(
             { _id: new ObjectId(fileId) },
-            { $pull: { "metadata.tags": { name: tag } } } as any
+            { $pull: { "metadata.tags": { name: tag } } } as any // Reduces type-safety in TypeScript
         );
         if (updateResult.modifiedCount === 0) {
             return NextResponse.json({ error: "Tag not found or file not found" }, { status: 404 });

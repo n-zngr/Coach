@@ -72,7 +72,7 @@ function LoginPage() {
                                 <input
                                     type={showPassword ? "text" : "password"} // Toggle input type
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder="p@ssw0rd"
                                     value={formData.password}
                                     onChange={handleChange}
                                     className="w-full block bg-white-700 dark:bg-black-300 rounded-full border border-gray-500 pl-4 py-2 mt-1"

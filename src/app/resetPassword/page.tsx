@@ -46,6 +46,12 @@ const ResetPasswordPage = () => {
 
     return (
         <div className="flex h-screen w-full bg-gradient-to-br from-white-900 to-white-700 dark:bg-gradient-to-br dark:from-black-300 dark:to-black-100">
+            <div className="w-16 h-16 fixed top-8 left-8 rounded-lg border border-white-500 dark:border-black-500 text-black-900 dark:text-white-900">
+                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 20L20 16H8V20H16Z" fill="currentColor"/>
+                    <path d="M8 8H16L20 4H8L4 8V20L8 16V8Z" fill="currentColor"/>
+                </svg>
+            </div>
             <div className="flex flex-col gap-8 m-auto w-full max-w-md">
                 <header className="text-left border-b border-gray-500 pb-8">
                     <h2 className="text-2xl font-semibold text-black-100 dark:text-white-900">Reset Password</h2>

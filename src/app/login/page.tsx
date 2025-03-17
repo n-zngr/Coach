@@ -38,6 +38,12 @@ function LoginPage() {
 
     return (
         <div className="flex h-screen w-full bg-gradient-to-br from-white-900 to-white-700 dark:bg-gradient-to-br dark:from-black-300 dark:to-black-100">
+            <div className="fixed rounded-lg border border-black-500 top-8 left-8 w-16 h-16">
+                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 20L20 16H8V20H16Z" fill="white"/>
+                    <path d="M8 8H16L20 4H8L4 8V20L8 16V8Z" fill="white"/>
+                </svg>
+            </div>
             <div className="flex flex-col gap-8 m-auto w-full max-w-md">
                 <header className="text-left border-b border-gray-500 pb-8">
                     <h2 className="text-2xl font-semibold text-black-100 dark:text-white-900">Welcome back</h2>
@@ -103,7 +109,6 @@ function LoginPage() {
                     </button>
                 </form>
             </div>
-            <div></div>
         </div>
     );
 }

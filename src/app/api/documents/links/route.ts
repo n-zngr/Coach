@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
         const linkData = await req.json();
         const { name, url, metadata } = linkData;
-        const { semesterId, subjectId, topicId } = metadata;
+        const { semesterId, subjectId, topicId, tags } = metadata;
 
         if (!name || !url || !semesterId || !subjectId || !topicId) {
             return NextResponse.json({ message: 'Missing required data for link upload' }, { status: 400 });
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
                 semesterId,
                 subjectId,
                 topicId,
+                tags: tags || [],
             },
         });
 
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
     }
 }
 
-// GET-Route (angepasst)
+
 export async function GET(req: Request) {
     const client = new MongoClient(MONGODB_URI);
 

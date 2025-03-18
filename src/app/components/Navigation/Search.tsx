@@ -71,45 +71,54 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                                             </ul>
                                         )}
                                     </>
+                                ) : isLink(result) ? (
+                                    <>
+                                        {/* Fach als mittlere Überschrift */}
+                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 mt-1">
+                                            {result.subjectName || "Unbekanntes Fach"}
+                                        </h3>
+                                        {/* Thema als kleinere Überschrift */}
+                                        <h4 className="text-md font-semibold text-gray-700 dark:text-gray-400 mt-1">
+                                            {result.topicName || "Unbekanntes Thema"}
+                                        </h4>
+                                        {/* Link-Name und URL anzeigen */}
+                                        <p className="text-gray-700 dark:text-gray-400 mt-1">
+                                            <a href={result.url} target="_blank" rel="noopener noreferrer">
+                                                {result.name} - {result.url}
+                                            </a>
+                                        </p>
+                                        {/* Tags anzeigen, falls vorhanden */}
+                                        {result.metadata?.tags && result.metadata.tags.length > 0 && (
+                                            <div className="mt-2">
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">Tags: </span>
+                                                {result.metadata.tags.map((tag: any) => (
+                                                    <span key={tag.id} className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded mr-2">
+                                                        {tag.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
-                                    isLink(result) ? (
-                                        <>
-                                            {/* Fach als mittlere Überschrift */}
-                                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 mt-1">
-                                                {result.subjectName || "Unbekanntes Fach"}
-                                            </h3>
-                                            {/* Thema als kleinere Überschrift */}
-                                            <h4 className="text-md font-semibold text-gray-700 dark:text-gray-400 mt-1">
-                                                {result.topicName || "Unbekanntes Thema"}
-                                            </h4>
-                                            {/* Link-Name und URL anzeigen */}
-                                            <p className="text-gray-700 dark:text-gray-400 mt-1">
-                                                <a href={result.url} target="_blank" rel="noopener noreferrer">
-                                                    {result.name} - {result.url}
-                                                </a>
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            {/* Fach als mittlere Überschrift */}
-                                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 mt-1">
-                                                {result.metadata?.subjectName || "No subject"}
-                                            </h3>
-                                            <p className="text-gray-700 dark:text-gray-400 mt-1">
-                                                {result.filename}
-                                            </p>
-                                            {result.metadata?.tags && result.metadata.tags.length > 0 && (
-                                                <div className="mt-2">
-                                                    <span className="text-sm text-gray-600 dark:text-gray-400">Tags: </span>
-                                                    {result.metadata.tags.map((tag: any) => (
-                                                        <span key={tag.id} className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded mr-2">
-                                                            {tag.name}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </>
-                                    )
+                                    <>
+                                        {/* Fach als mittlere Überschrift */}
+                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 mt-1">
+                                            {result.metadata?.subjectName || "No subject"}
+                                        </h3>
+                                        <p className="text-gray-700 dark:text-gray-400 mt-1">
+                                            {result.filename}
+                                        </p>
+                                        {result.metadata?.tags && result.metadata.tags.length > 0 && (
+                                            <div className="mt-2">
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">Tags: </span>
+                                                {result.metadata.tags.map((tag: any) => (
+                                                    <span key={tag.id} className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded mr-2">
+                                                        {tag.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </li>
                         ))}

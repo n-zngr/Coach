@@ -6,6 +6,7 @@ const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 const LINKS_COLLECTION_NAME = 'links';
 
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No search parameters provided' }, { status: 400 });
         }
 
-        // Suche nach Subjects (unverändert)
+        // Suche nach Subjects
         let matchingSubjects = user.semesters.flatMap((semester: any) =>
             semester.subjects
                 .filter((subject: { name: string }) =>
@@ -44,10 +45,11 @@ export async function POST(req: Request) {
                     files: []
                 }))
         );
+        
 
         const filesCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
 
-        // Standard-Dateisuche (unverändert)
+        // Standard-Dateisuche
         const searchQuery: any = {
             'metadata.userId': userId,
             $or: [
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
 
         let files = await filesCollection.find(searchQuery).limit(6).toArray();
 
-        // Verbinde jedes File mit dem entsprechenden Subject und Semester (unverändert)
+        // Verbinde jedes File mit dem entsprechenden Subject und Semester
         files = files.map((file: any) => {
             let foundSubject: any = null;
             for (const semester of user.semesters) {
@@ -81,7 +83,7 @@ export async function POST(req: Request) {
             return file;
         });
 
-        // Für alle gefundenen Subjects: Hole zusätzlich alle Files, die zum Subject gehören und hänge sie an (unverändert)
+        // Für alle gefundenen Subjects: Hole zusätzlich alle Files, die zum Subject gehören und hänge sie an
         if (matchingSubjects.length > 0) {
             const subjectIds = matchingSubjects.map((subject: any) => subject.id);
             const subjectFiles = await filesCollection.find({
@@ -115,19 +117,20 @@ export async function POST(req: Request) {
             matchingSubjects = matchingSubjects.filter((subject: any) => subject.files.length > 0);
         }
 
-        // Link-Suche hinzufügen (angepasst)
+        // Link-Suche hinzufügen
         const linksCollection = await getCollection(DATABASE_NAME, LINKS_COLLECTION_NAME);
         const linkSearchQuery: any = {
             'metadata.userId': userId,
             $or: [
                 { 'name': { $regex: query, $options: 'i' } },
-                { 'url': { $regex: query, $options: 'i' } }
+                { 'url': { $regex: query, $options: 'i' } },
+                { 'metadata.tags.name': { $regex: query, $options: 'i' } } // Tags hinzufügen
             ]
         };
 
         let links = await linksCollection.find(linkSearchQuery).limit(6).toArray();
 
-        // Füge Kontextinformationen zu jedem Link hinzu (angepasst)
+        // Füge Kontextinformationen zu jedem Link hinzu
         links = links.map((link: any) => {
             let foundSemester: any = null;
             let foundSubject: any = null;
@@ -160,10 +163,10 @@ export async function POST(req: Request) {
             };
         });
 
-        // Kombiniere Subjects, Files und Links in einer einzigen Antwort (unverändert)
+        // Kombiniere Subjects, Files und Links in einer einzigen Antwort
         let results = [...matchingSubjects, ...files, ...links];
 
-        // Logik, um doppelte Einträge zu vermeiden (unverändert)
+        // Logik, um doppelte Einträge zu vermeiden
         const filteredResults: any[] = [];
         const subjectsMap = new Map<string, any>();
 

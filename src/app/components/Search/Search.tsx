@@ -103,8 +103,8 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                                 w-8 h-8
                                 flex justify-center items-center
                                 bg-transparent hover:bg-black-100 dark:hover:bg-white-900
-                                border border-black-100 dark:border-white-900 rounded-full
-                                text-black-500 dark:text-white-500 hover:text-white-500 hover:dark:text-black-500
+                                rounded-full
+                                text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
                                 active:scale-95 transition-all duration-300
                             "
                             onClick={onClose}

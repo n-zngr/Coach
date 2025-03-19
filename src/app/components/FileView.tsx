@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
 import TagDropdown from "./Tags/TagDropdown";
+import CloseButton from "./Buttons/CloseButton";
 
 interface Semester {
     id: string;
@@ -460,7 +461,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         <div className="fixed inset-0 flex justify-end">
             <div
                 className={`
-                    h-full flex flex-col bg-white-800 dark:bg-black-200 overflow-y-auto
+                    h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto
                     border-l border-white-500 dark:border-black-500
                     transition-transform duration-300 
                     ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
@@ -479,14 +480,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             </div>
                         </div>
                         <div className="flex items-center">
-                            <button
-                                className="w-8 h-8 flex rounded-full justify-center items-center bg-white-500 hover:bg-white-600 dark:bg-black-500 dark:hover:bg-black-600 active:scale-95 transition-all duration-200"
-                                onClick={onClose}
-                            >
-                                <svg width="10" height="10" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </button>
+                            <CloseButton onClick={onClose} />
                         </div>
                     </div>
                     <div className="relative px-6 pt-4"> {/* Divider */}
@@ -539,9 +533,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         {tags.map((tag) => (
                             <div
                                 key={tag._id || tag.id}
-                                className="relative flex items-center border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 transition-colors duration-200 cursor-pointer"
+                                className="relative flex items-center border border-black-100 dark:border-white-900 bg-none hover:bg-black-100 hover:dark:bg-white-900 rounded-full px-3 py-1 transition-colors duration-200 cursor-pointer"
                                 onClick={() => {
-                                    // Trigger inline editing for this tag.
                                     setShowTagInput(false);
                                     selectTag(tag);
                                 }}
@@ -574,7 +567,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                                             e.stopPropagation();
                                             handleRemoveTag(tag);
                                         }}
-                                        className="text-gray-500"
                                         aria-label={`Remove tag ${tag.name}`}
                                     >
                                     ×

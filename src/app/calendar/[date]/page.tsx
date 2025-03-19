@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import TodoView from "@/app/components/TodoView";
+import ExamView from "@/app/components/ExamView";
 import {
     DndContext,
     DragEndEvent,
@@ -13,12 +14,9 @@ import {
 import {
     SortableContext,
     verticalListSortingStrategy,
-    arrayMove,
 } from "@dnd-kit/sortable";
 import SortableItem from "@/app/components/SortableItem";
 import {
-    getSourceColumn,
-    getDestinationColumn,
     updateTaskStatus,
     reorderTasks,
     Task as LogicTask,
@@ -51,14 +49,16 @@ export default function CalendarPage() {
     const { date } = useParams();
     if (!date || Array.isArray(date)) return <div>Invalid date parameter.</div>;
 
-    // Format date using a fixed locale so that server and client produce the same output
     const parsedDate = new Date(date);
     const formattedDate = format(parsedDate, "EEEE, MMMM d, yyyy", { locale: enUS });
 
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [examTasks, setExamTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [showTaskPanel, setShowTaskPanel] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [showExamPanel, setShowExamPanel] = useState(false);
+    const [editingExam, setEditingExam] = useState<Task | null>(null);
 
     async function fetchTasks() {
         try {
@@ -69,7 +69,7 @@ export default function CalendarPage() {
                 return;
             }
             const data: Task[] = await res.json();
-            // Filter tasks for the current date (ensure the stored date format is "YYYY-MM-DD")
+            // Filter tasks for the current date
             const filteredTasks = data.filter((task) => task.date === date);
             setTasks(filteredTasks);
         } catch (error) {
@@ -79,8 +79,26 @@ export default function CalendarPage() {
         }
     }
 
+    async function fetchExamTasks() {
+        try {
+            const res = await fetch("/api/exam");
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Failed to fetch exams:", res.status, errorText);
+                return;
+            }
+            const data: Task[] = await res.json();
+            // Filter exams for the current date
+            const filteredExams = data.filter((exam) => exam.date === date);
+            setExamTasks(filteredExams);
+        } catch (error) {
+            console.error("Error fetching exams:", error);
+        }
+    }
+
     useEffect(() => {
         fetchTasks();
+        fetchExamTasks();
     }, [date]);
 
     // Separate tasks by status
@@ -110,9 +128,8 @@ export default function CalendarPage() {
             const updatedTasks = updateTaskStatus(tasks, activeId, destinationStatus);
             setTasks(updatedTasks);
 
-            // Retrieve the taskName from the task being moved.
+            // Retrieve taskName from the task being moved.
             const taskToUpdate = tasks.find((t) => t._id === activeId);
-
             const payload = {
                 id: activeId,
                 status: destinationStatus,
@@ -147,13 +164,19 @@ export default function CalendarPage() {
         }
     };
 
-    // Handler for clicking a task to edit it
+    // Handler for clicking a task to edit it (for regular tasks)
     const handleTaskClick = (taskId: string) => {
         const task = tasks.find((t) => t._id === taskId);
         if (task) {
             setEditingTask(task);
             setShowTaskPanel(true);
         }
+    };
+
+    // Handler for clicking an exam (text) to edit it
+    const handleExamClick = (exam: Task) => {
+        setEditingExam(exam);
+        setShowExamPanel(true);
     };
 
     const columns: Column[] = [
@@ -174,7 +197,12 @@ export default function CalendarPage() {
                 >
                     Add New Task
                 </button>
-                <button onClick={() => alert("Remove Task clicked")}>Remove Task</button>
+                <button onClick={() => {
+                    setEditingExam(null);
+                    setShowExamPanel(true);
+                }}>
+                    Add Exam
+                </button>
             </div>
 
             <TodoView
@@ -184,7 +212,10 @@ export default function CalendarPage() {
                     setEditingTask(null);
                 }}
                 date={date}
-                onTaskAdded={fetchTasks}
+                onTaskAdded={async () => {
+                    await fetchTasks();
+                    await fetchExamTasks();
+                }}
                 editTask={editingTask}
             />
 
@@ -233,9 +264,48 @@ export default function CalendarPage() {
                 </DndContext>
             )}
 
+            {/* Exam Section: Render only if there is at least one exam */}
+            {examTasks.length > 0 && (
+                <div style={{ marginTop: "20px" }}>
+                    <h2>Exams</h2>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {examTasks.map((exam) => (
+                            <p
+                                key={exam._id}
+                                style={{
+                                    cursor: "pointer",
+                                    color: "blue",
+                                    textDecoration: "underline",
+                                    margin: 0,
+                                }}
+                                onClick={() => handleExamClick(exam)}
+                            >
+                                {exam.examName}  {/* Make sure exam.examName is used */}
+                            </p>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div style={{ marginTop: "20px" }}>
                 <Link href="/calendar">Back to Calendar Overview</Link>
             </div>
+
+            {/* ExamView: Used for both adding a new exam and editing an existing exam */}
+            <ExamView
+                isVisible={showExamPanel}
+                onClose={() => {
+                    setShowExamPanel(false);
+                    setEditingExam(null);
+                }}
+                onExamSaved={async () => {
+                    await fetchTasks();
+                    await fetchExamTasks();
+                }}
+                examDate={date}
+                examId={editingExam ? editingExam._id : ""}
+                examName={editingExam ? editingExam.examName : ""}
+            />
         </div>
     );
 }

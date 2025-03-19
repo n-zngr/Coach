@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import SearchFileItem from "./SearchFileItem";
 import { toTitleCase } from "@/app/utils/stringUtils";
+import CloseButton from "../Buttons/CloseButton";
 
 interface SearchProps {
     onClose: () => void;
@@ -97,21 +98,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                     />
 
                     <div className="flex items-center pr-4">
-                        <button
-                            className="
-                                w-8 h-8
-                                flex justify-center items-center
-                                bg-transparent hover:bg-black-100 dark:hover:bg-white-900
-                                rounded-full
-                                text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
-                                active:scale-95 transition-all duration-300
-                            "
-                            onClick={onClose}
-                        >
-                            <svg width="10" height="10" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                        </button>
+                        <CloseButton onClick={onClose} />
                     </div>
                 </div>
                 <div className="flex flex-col p-8 gap-4">

@@ -120,6 +120,24 @@ const UploadFile: React.FC = () => {
 
                 setSuccessMessage("File uploaded successfully!");
                 setFile(null);
+
+                // Tags upload does not exist and should be implemented here. 
+
+                /*
+                // Tag creation for files
+                if (tags && tags.length > 0) {
+                    for (const tag of tags) {
+                        await fetch('/api/documents/tags', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ fileId: file._id, tag: tag.name }),
+                            credentials: 'include',
+                        });
+                    }
+                }
+                */
             } else if (uploadType === "link" && linkName && linkUrl && selectedOption) {
                 const linkData = {
                     name: linkName,
@@ -128,11 +146,11 @@ const UploadFile: React.FC = () => {
                         semesterId,
                         subjectId,
                         topicId,
-                        tags: tags.map(tag => ({ name: tag.name }))
+                        tags: tags.map(tag => tag.name) // Send only names to create tags on the server
                     },
                 };
 
-                const response = await fetch('/api/documents/links/', {
+                const linkResponse = await fetch('/api/documents/links/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -140,15 +158,15 @@ const UploadFile: React.FC = () => {
                     credentials: 'include',
                     body: JSON.stringify(linkData),
                 });
-
-                if (!response.ok) {
+    
+                if (!linkResponse.ok) {
                     throw new Error("Failed to upload link");
                 }
 
                 setSuccessMessage("Link uploaded successfully!");
                 setLinkName("");
                 setLinkUrl("");
-                setTags([]); // Clear tags after successful link upload
+                setTags([]);
             } else {
                 setErrorMessage("Please fill out all required fields.");
                 return;
@@ -175,8 +193,21 @@ const UploadFile: React.FC = () => {
     const handleAddTag = useCallback(async () => {
         const newTag = tagInput.trim();
         if (!newTag) return;
-        setTags([...tags, { name: newTag }]);
-        setTagInput("");
+        const response = await fetch('/api/documents/link-tags', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: newTag }),
+            credentials: 'include'
+        });
+        if (response.ok) {
+            const newTagData = await response.json();
+            setTags([...tags, { name: newTagData.name, id: newTagData._id }]);
+            setTagInput("");
+        } else {
+            console.error("Error creating tag");
+        }
     }, [tags, tagInput]);
 
     const handleRenameTag = useCallback(async () => {
@@ -285,6 +316,7 @@ const UploadFile: React.FC = () => {
                                 </div>
 
                                 {/* Tag Section */}
+                                {/*}
                                 <div className="mb-4">
                                     <div className="tag-input-container">
                                         <input
@@ -331,36 +363,12 @@ const UploadFile: React.FC = () => {
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                </div>*/}
                             </>
                         )}
 
                         {/* Topic Selection */}
-                        {uploadType === "file" && (
-                            <>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">Select Topic</label>
-                                    <select
-                                        value={selectedOption || ""}
-                                        onChange={(e) => setSelectedOption(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    >
-                                        <option value="" disabled>Select a topic</option>
-                                        {semesters.map((semester) => (
-                                            semester.subjects.map((subject) => (
-                                                subject.topics.map((topic) => (
-                                                    <option key={`${semester.id}/${subject.id}/${topic.id}`} value={`${semester.id}/${subject.id}/${topic.id}`}>
-                                                        {semester.name} - {subject.name} - {topic.name}
-                                                    </option>
-                                                ))
-                                            ))
-                                        ))}
-                                    </select>
-                                </div>
-                            </>
-                        )}
-
-                        {uploadType === "link" && (
+                        {(uploadType === "file" || uploadType === "link") && (
                             <>
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700">Select Topic</label>

@@ -89,7 +89,7 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                     <input
                         ref={inputRef}
                         type="text"
-                        className="pl-4 py-4 bg-white-900 dark:bg-black-100 w-full rounded-t-2xl outline-none text-xl font-light dark:text-white-900 placeholder:text-white-900"
+                        className="pl-4 py-4 bg-white-900 dark:bg-black-100 w-full rounded-t-2xl outline-none text-xl font-light text-black-100 dark:text-white-900 placeholder:text-black-100 placeholder:dark:text-white-900"
                         value={query}
                         onChange={handleSearchChange}
                         onKeyDown={handleEnterPressed}

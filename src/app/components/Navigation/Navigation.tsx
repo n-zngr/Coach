@@ -51,9 +51,9 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
             <nav className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}
                 flex flex-col
                 border-r transition-width duration-300 
-                bg-white-800 dark:bg-black-200
-                border-r-white-300 dark:border-r-black-700
-                text-black-900 dark:text-white-100`}
+                bg-white-900 dark:bg-black-100
+                border-r-black-900 dark:border-r-white-100
+                text-black-100 dark:text-white-900`}
             >
                 <div className="flex flex-col h-full">
                     <div className="flex m-2">
@@ -66,10 +66,12 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                             </div>
                         }
                         <button 
-                            className="w-8 h-8 p-2 ml-auto
-                                rounded-full
-                                hover:bg-black-200 dark:hover:bg-black-700
+                            className="w-8 h-8
                                 flex justify-center items-center
+                                rounded-full
+                                hover:bg-black-100 dark:hover:bg-white-900
+                                p-2 ml-auto
+                                hover:text-white-900 dark:hover:text-black-100
                                 active:scale-95 transition-all duration-200"
                             onClick={toggleNavigation}
                         >
@@ -79,15 +81,22 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         </button>
                     </div>
                     {isExpanded && (
-                        <div className="flex">
-                            <button className="flex flex-1 m-2 p-2 rounded-full bg-white-700 hover:bg-white-600 dark:bg-black-300 dark:hover:bg-black-400 border border-white-500 dark:border-black-500 transition-colors duartion-500" onClick={toggleSearch}>
+                        <div className="flex border-b border-black-900 dark:border-white-100 pb-4">
+                            <button className="
+                                flex flex-1
+                                bg-transparent hover:bg-black-100 dark:hover:bg-white-900
+                                border border-black-500 dark:border-white-500 rounded-full
+                                p-2 m-2
+                                text-black-500 dark:text-white-500 hover:text-white-900 hover:dark:text-black-100
+                                transition-colors duration-300"
+                                onClick={toggleSearch}>
                                 <div className="flex gap-2">
                                     <div className="flex justify-center items-center pl-1">
                                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M17 17L12.3846 12.3846M14.3415 7.67077C14.3415 11.3549 11.3549 14.3415 7.67077 14.3415C3.98661 14.3415 1 11.3549 1 7.67077C1 3.9866 3.98661 0.999999 7.67077 0.999999C11.3549 0.999999 14.3415 3.9866 14.3415 7.67077Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                         </svg>
                                     </div>
-                                    <div className="font-metropolis font-medium text-black-900 dark:text-white-100">
+                                    <div>
                                         <p>Search</p>
                                     </div>
                                 </div>
@@ -95,7 +104,9 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         </div>
                     )}
                     {isExpanded && (
-                        <NavList isExpanded={isExpanded} />
+                        <div className="pt-4">
+                            <NavList isExpanded={isExpanded} />
+                        </div>
                     )}
                     {isExpanded && (
                         <div className="mt-auto">

@@ -77,7 +77,7 @@ interface FileItemProps {
                                     flex items-center bg-none
                                     border hover:bg-black-100 hover:dark:bg-white-900 rounded-full
                                     px-3 py-1
-                                    hover:text-white-500 hover:dark:text-black-900
+                                    hover:text-white-900 hover:dark:text-black-100
                                     transition-colors duration-300 cursor-pointer
                                 '
                             >
@@ -100,7 +100,7 @@ interface FileItemProps {
                         bg-transparent hover:bg-black-100 hover:dark:bg-white-900 
                         border border-black-100 dark:border-white-900 rounded-full
                         px-4 py-2 font-light text-black-500 dark:text-white-500 text-nowrap
-                        hover:text-white-500 hover:dark:text-black-500
+                        hover:text-white-900 hover:dark:text-black-100
                         transition-colors duration-300'
                     >
                         View File

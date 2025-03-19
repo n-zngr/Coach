@@ -78,7 +78,6 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
             <div ref={searchRef} className="
                 w-2/5 min-w-fit bg-white-900 dark:bg-black-100 rounded-3xl shadow-sm shadow-black-100 m-8
                 border border-black-900 dark:border-white-100
-                transition-transform duration-300
             ">
                 <div className="flex items-center border-b border-white-100">
                     <div className="pl-4">

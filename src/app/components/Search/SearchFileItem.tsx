@@ -97,10 +97,10 @@ interface FileItemProps {
                     flex items-center ml-auto
                 '>
                     <p className='flex items-center justify-center
-                        bg-transparent hover:bg-black-100 hover:dark:bg-white-900 
-                        border border-black-100 dark:border-white-900 rounded-full
-                        px-4 py-2 font-light text-black-500 dark:text-white-500 text-nowrap
-                        hover:text-white-900 hover:dark:text-black-100
+                        bg-black-100 dark:bg-white-900 hover:bg-transparent hover:dark:bg-transparent 
+                        border hover:border-black-800 hover:dark:border-white-800 rounded-full
+                        px-4 py-2 font-light text-white-900 dark:text-black-100 text-nowrap
+                        hover:text-black-100 hover:dark:text-white-900
                         transition-colors duration-300'
                     >
                         View File

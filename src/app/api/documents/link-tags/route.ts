@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+/*import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getCollection } from "@/app/utils/mongodb";
 
@@ -72,4 +72,4 @@ export async function POST(req: Request) {
         console.error("Error in POST /api/documents/link-tags:", error);
         return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
-}
+}*/

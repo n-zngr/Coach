@@ -316,6 +316,7 @@ const UploadFile: React.FC = () => {
                                 </div>
 
                                 {/* Tag Section */}
+                                {/*}
                                 <div className="mb-4">
                                     <div className="tag-input-container">
                                         <input
@@ -362,7 +363,7 @@ const UploadFile: React.FC = () => {
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                </div>*/}
                             </>
                         )}
 

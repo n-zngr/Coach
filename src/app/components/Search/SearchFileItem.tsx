@@ -33,31 +33,53 @@ interface FileItemProps {
 
     return (
         <div>
-            <div className='w-full flex bg-white-700 dark:bg-black-300 border border-white-500 dark:border-black-500 rounded-xl gap-4 p-4 text-black-100 dark:text-white-900 cursor-pointer' onClick={handleFileClick}>
+            <div className='
+                w-full flex
+                bg-transparent hover:white-800 hover:dark:bg-black-200
+                border border-white-500 dark:border-white-500 rounded-xl
+                gap-4 p-4
+                text-black-100 dark:text-white-900
+                transition-colors duration-300 cursor-pointer'
+            onClick={handleFileClick}>
                 <div className='flex justify-center items-center'>
-                    <div className="min-w-12 min-h-12 flex rounded-md justify-center items-center bg-white-900 dark:bg-black-100 p-2">
+                    <div className="
+                        min-w-12 min-h-12
+                        flex justify-center items-center
+                        bg-white-800 dark:bg-black-200
+                        border border-black-900 dark:border-white-900 rounded-md
+                        text-black-500 dark:text-white-500 
+                        p-2">
                         <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8.63636 1H2.27273C1.93518 1 1.61146 1.12967 1.37277 1.36048C1.13409 1.5913 1 1.90435 1 2.23077V15.7692C1 16.0957 1.13409 16.4087 1.37277 16.6395C1.61146 16.8703 1.93518 17 2.27273 17H13.7273C14.0648 17 14.3885 16.8703 14.6272 16.6395C14.8659 16.4087 15 16.0957 15 15.7692V7.15385M8.63636 1L15 7.15385M8.63636 1V7.15385H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                     </div>
                 </div>
-
-                <div className="flex flex-col">
-                    <h4 className="text-left text-md font-semibold text-gray-800 dark:text-gray-300 mt-1">
+                <div className="flex flex-col justify-center">
+                    <h4 className="text-left text-lg text-medium text-black-100 dark:text-white-900">
                         {file.filename}
                     </h4>
-                    <p className="text-left text-gray-700 dark:text-gray-400 mt-1">
+                    <p className="text-left text-black-900 dark:text-white-100 text-nowrap">
                         {getFilePath() || "No subject"}
                     </p>
                 </div>
-
+                
                 {/* Tags Section */}
                 {file.metadata?.tags && file.metadata.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 font-medium text-gray-500">
+                    <div className="
+                    flex flex-wrap gap-2
+                    font-light text-black-500 dark:text-white-500 border-black-100 dark:border-white-900
+                    ">
                         {file.metadata.tags.map((tag: any, index: number) => (
                             <div
                                 key={tag._id || tag.id}
-                                className='h-fit w-fit flex items-center bg-none border border-white-500 dark:border-black-500 hover:bg-white-400 hover:dark:bg-black-400 rounded-full px-3 py-1 transition-colors duration-200 cursor-pointer'
+                                className='
+                                    h-fit w-fit
+                                    flex items-center bg-none
+                                    border hover:bg-black-100 hover:dark:bg-white-900 rounded-full
+                                    px-3 py-1
+                                    hover:text-white-500 hover:dark:text-black-900
+                                    transition-colors duration-300 cursor-pointer
+                                '
                             >
                                 <div className='flex justify-center items-center gap-2'>
                                     <svg width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,11 +93,18 @@ interface FileItemProps {
                     </div>
                 )}
 
-                <div className='flex items-center ml-auto'>
-                    <div className="h-min flex items-center justify-center bg-white-500 dark:bg-black-500 hover:bg-white-300 dark:hover:bg-black-700 rounded-lg px-4 py-2 font-bold text-black-500 dark:text-white-500 transition-colors duration-200"
+                <div className='
+                    flex items-center ml-auto
+                '>
+                    <p className='flex items-center justify-center
+                        bg-transparent hover:bg-black-100 hover:dark:bg-white-900 
+                        border border-black-100 dark:border-white-900 rounded-full
+                        px-4 py-2 font-light text-black-500 dark:text-white-500 text-nowrap
+                        hover:text-white-500 hover:dark:text-black-500
+                        transition-colors duration-300'
                     >
                         View File
-                    </div>
+                    </p>
                 </div>
             </div>
             {selectedFile && (

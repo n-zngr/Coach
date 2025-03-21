@@ -1,4 +1,4 @@
-"use client";
+/*"use client";
 
 import React, { useState, useEffect } from 'react';
 
@@ -99,4 +99,4 @@ const SearchFiles: React.FC = () => {
     );
 };
 
-export default SearchFiles;
+export default SearchFiles;*/

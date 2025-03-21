@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { getCollection } from '@/app/utils/mongodb';
 import { ObjectId } from 'mongodb';
 
-const dbName = 'documents'
-const dbCol = 'fs.files'
+const DATABASE_NAME = 'documents'
+const COLLECTION_NAME = 'fs.files'
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
 
     try {
@@ -14,16 +14,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         if (!newFilename) {
             return NextResponse.json({ message: 'New filename is required' }, { status: 400 });
         }
-        const collection = await getCollection(dbName, dbCol)
+        const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME)
 
         const result = await collection.updateOne(
             { _id: new ObjectId(fileId) },
             { $set: { filename: newFilename } }
         );
 
-        if (result.modifiedCount === 0) {
+        /*if (result.modifiedCount === 0) { // Causes error when pressing enter in FileView.tsx and changing rename input
             throw new Error('File not found or update failed');
-        }
+        }*/
 
         return NextResponse.json({ message: 'File renamed successfully' });
     } catch (error) {

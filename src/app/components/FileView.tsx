@@ -44,10 +44,11 @@ export interface Tag {
 interface FileViewProps {
     file: AppFile | null;
     onClose: () => void;
+    onNotification: (title: string, description: string, isVisible: boolean) => void;
 }
 
 
-const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
+const FileView: React.FC<FileViewProps> = ({ file, onClose, onNotification }) => {
     // Rename file state
     const [newFilename, setNewFilename] = useState<string>(file?.filename || "");
     const [originalFilename, setOriginalFilename] = useState<string>(file?.filename || "");
@@ -68,6 +69,10 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
     // Replace file ref used in upload button press
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Notification
+    const [notification, setNotification] = useState<{ title: string; description: string; isVisible: boolean; }>({ title: '', description: '', isVisible: false })
+
 
     useEffect(() => {
         // When file prop changes, update both newFilename and originalFilename.
@@ -115,9 +120,11 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
             console.log('File renamed successfully');
             setOriginalFilename(newFilename);
+            onNotification("Success", "File renamed successfully.", true);
         } catch (error) {
             console.log(newFilename);
             console.error('Error renaming file:', error);
+            onNotification("Error", "Failed to rename file.", true);
         }
     }
 

@@ -78,9 +78,9 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
     return (
         <div className="fixed min-w-full inset-0 bg-black-500 dark:bg-white-500 bg-opacity-10 dark:bg-opacity-5 backdrop-blur-[2px] flex justify-center items-center z-10">
             <div ref={searchRef} className="
-                w-2/5 min-w-fit bg-white-900 dark:bg-black-100 rounded-3xl shadow-sm shadow-black-100 m-8
-                border border-black-900 dark:border-white-100
-            ">
+                w-2/5 min-w-fit bg-white-900 dark:bg-black-100 rounded-3xl shadow-sm shadow-black-100
+                border border-black-900 dark:border-white-100 m-8"
+            >
                 <div className="flex items-center border-b border-white-100">
                     <div className="pl-4">
                         <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -55,8 +55,8 @@ function SignupPage() {
             } else {
                 setError(data.message || "Failed to register user.");
             }
-        } catch (error) {
-            setError("An unexpected error occurred.");
+        } catch (err: any) {
+            setError(`An unexpected error occurred: ${err.message || err}`);
         } finally {
             setIsSubmitting(false);
         }

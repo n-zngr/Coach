@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
 import TagDropdown from "./Tags/TagDropdown";
+import CloseButton from "./Buttons/CloseButton";
 
 interface Semester {
     id: string;
@@ -179,7 +180,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         }
     }
     
-    // Move file handler
     const handleMoveFile = async () => {
         if (!selectedOption) {
             alert("Please select a new location for the file.");
@@ -200,13 +200,14 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ semesterId, subjectId, topicId }),
             });
-            
+
             if (!response.ok) {
                 throw new Error("Failed to move file");
             }
 
             console.log("File moved successfully");
             setShowMoveCard(false);
+            onClose();
         } catch (error) {
             console.error("Error moving file:", error);
         }
@@ -451,18 +452,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         tag.name.toLowerCase().includes(tagInput.toLowerCase())
     );
 
-    /*const handleTagInputBlur = () => { // On blur, if the tagInput is non-empty and doesn’t match an existing tag, add it.
-        setTimeout(() => { // A small timeout helps with the click selection on the dropdown
-            if (tagInput.trim()) {
-                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
-                if (!exists) {
-                    handleAddTag(tagInput);
-                }
-            }
-            setShowTagInput(false);
-        }, 150);
-    };*/
-
     const selectTag = useCallback((tag: Tag) => {
         setSelectedTag(tag);
         setTagInput(tag.name);
@@ -472,7 +461,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         <div className="fixed inset-0 flex justify-end">
             <div
                 className={`
-                    h-full flex flex-col bg-white-800 dark:bg-black-200 overflow-y-auto
+                    h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto
                     border-l border-white-500 dark:border-black-500
                     transition-transform duration-300 
                     ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
@@ -491,14 +480,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             </div>
                         </div>
                         <div className="flex items-center">
-                            <button
-                                className="w-8 h-8 flex rounded-full justify-center items-center bg-white-500 hover:bg-white-600 dark:bg-black-500 dark:hover:bg-black-600 active:scale-95 transition-all duration-100"
-                                onClick={onClose}
-                            >
-                                <svg width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17 1L1 17M1 1L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </button>
+                            <CloseButton onClick={onClose} />
                         </div>
                     </div>
                     <div className="relative px-6 pt-4"> {/* Divider */}
@@ -526,12 +508,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                             File description will be displayed here once implemented.
                         </p>
                     </div>
-                    <div className="flex">
-                        (Move, linked documents, multiple document paths functionality to be implemented here.)
-                    </div>
-                    <button className='flex justify-center items-center w-fit bg-white-600 dark:bg-black-400 px-3 py-1 rounded-full gap-2'>
+                    <button ref={moveButtonRef} onClick={toggleMoveCard} className='flex justify-center items-center w-fit bg-white-600 dark:bg-black-400 px-3 py-1 rounded-full gap-2'>
                         <p>
-                            {filePath || "Location not set"}
+                            {filePath || "Location not set"} {/* File move functionality to be implemented here, the filepath should be dispalyed.*/}
                         </p>
                         <svg width="16" height="16" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M11.6107 9.30934V12.0773C11.6107 12.322 11.5134 12.5567 11.3404 12.7298C11.1674 12.9028 10.9327 13 10.688 13H1.92267C1.67796 13 1.44328 12.9028 1.27024 12.7298C1.09721 12.5567 1 12.322 1 12.0773V3.31201C1 3.06731 1.09721 2.83262 1.27024 2.65959C1.44328 2.48656 1.67796 2.38935 1.92267 2.38935H4.69066M7.45866 8.84801L4.69066 9.34625L5.15199 6.54134L10.4389 1.27292C10.5246 1.18644 10.6267 1.1178 10.7391 1.07096C10.8516 1.02412 10.9722 1 11.094 1C11.2158 1 11.3364 1.02412 11.4488 1.07096C11.5612 1.1178 11.6633 1.18644 11.7491 1.27292L12.7271 2.25095C12.8136 2.33672 12.8822 2.43877 12.929 2.55121C12.9759 2.66364 13 2.78424 13 2.90604C13 3.02784 12.9759 3.14844 12.929 3.26088C12.8822 3.37331 12.8136 3.47536 12.7271 3.56113L7.45866 8.84801Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
@@ -551,9 +530,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         {tags.map((tag) => (
                             <div
                                 key={tag._id || tag.id}
-                                className="relative flex items-center border border-white-500 dark:border-black-500 bg-none hover:bg-black-300 rounded-full px-3 py-1 transition-colors duration-200 cursor-pointer"
+                                className="relative flex items-center border border-black-100 dark:border-white-900 bg-none hover:bg-black-100 hover:dark:bg-white-900 rounded-full px-3 py-1 transition-colors duration-200 cursor-pointer"
                                 onClick={() => {
-                                    // Trigger inline editing for this tag.
                                     setShowTagInput(false);
                                     selectTag(tag);
                                 }}
@@ -586,7 +564,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                                             e.stopPropagation();
                                             handleRemoveTag(tag);
                                         }}
-                                        className="text-gray-500"
                                         aria-label={`Remove tag ${tag.name}`}
                                     >
                                     ×

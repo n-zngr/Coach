@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getCollection } from '@/app/utils/mongodb';
 
-const DATABASE_NAME = 'documents';
-const COLLECTION_NAME = 'fs.files';
-const LINKS_COLLECTION_NAME = 'links';
-
+const DOCUMENTS_DATABASE_NAME = 'documents';
+const DOCUMENTS_COLLECTION_NAME = 'fs.files';
+const USERS_DATABASE_NAME = 'users'; // Add users database name
+const USERS_COLLECTION_NAME = 'users'; // Add users collection name
 
 export async function POST(req: Request) {
     try {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'UserId is required' }, { status: 401 });
         }
 
-        const usersCollection = await getCollection('users', 'users');
+        const usersCollection = await getCollection(USERS_DATABASE_NAME, USERS_COLLECTION_NAME);
         const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
 
         if (!user) {
@@ -30,26 +30,23 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No search parameters provided' }, { status: 400 });
         }
 
-        // Suche nach Subjects
         let matchingSubjects = user.semesters.flatMap((semester: any) =>
             semester.subjects
-                .filter((subject: { name: string }) =>
-                    subject.name.toLowerCase().includes(query.toLowerCase())
-                )
-                .map((subject: { id: string; name: string }) => ({
-                    type: 'subject',
-                    id: subject.id,
-                    name: subject.name,
-                    semesterId: semester.id,
-                    semesterName: semester.name,
-                    files: []
-                }))
+            .filter((subject: { name: string }) =>
+                subject.name.toLowerCase().includes(query.toLowerCase())
+            )
+            .map((subject: { id: string; name: string }) => ({
+                type: 'subject',
+                id: subject.id,
+                name: subject.name,
+                semesterId: semester.id,
+                semesterName: semester.name,
+                files: [] // Leeres Array hinzufügen, das später befüllt wird
+            }))
         );
-        
 
-        const filesCollection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
+        const filesCollection = await getCollection(DOCUMENTS_DATABASE_NAME, DOCUMENTS_COLLECTION_NAME);
 
-        // Standard-Dateisuche
         const searchQuery: any = {
             'metadata.userId': userId,
             $or: [
@@ -63,15 +60,63 @@ export async function POST(req: Request) {
 
         let files = await filesCollection.find(searchQuery).limit(6).toArray();
 
-        // Verbinde jedes File mit dem entsprechenden Subject und Semester
+        // 🔹 Verbinde jedes File mit dem entsprechenden Subject und Semester
         files = files.map((file: any) => {
+            let foundSubject: any = null;
+            // Suche das Subject, dessen ID mit file.metadata.subjectId übereinstimmt
+            for (const semester of user.semesters) {
+                const subject = semester.subjects.find((subject: any) => subject.id === file.metadata.subjectId);
+                if (subject) {
+                foundSubject = subject;
+                break;
+                }
+            }
+            // Finde das Semester anhand der semesterId
+            const foundSemester = user.semesters.find((semester: any) => semester.id === file.metadata.semesterId);
+
+            if (foundSubject) {
+                file.metadata.subjectName = foundSubject.name;
+            }
+            if (foundSemester) {
+                file.metadata.semesterName = foundSemester.name;
+            }
+
+            if (file.metadata && file.metadata.topicId) {
+                let topicName = null;
+                user.semesters.forEach((semester: any) => {
+                    semester.subjects.forEach((subject: any) => {
+                        subject.topics.forEach((topic: any) => {
+                            if (topic.id === file.metadata.topicId) {
+                                topicName = topic.name;
+                            }
+                        });
+                    });
+                });
+                if (topicName) {
+                    file.metadata.topicName = topicName;
+                }
+            }
+
+            return file;
+        });
+
+        // 🔹 Für alle gefundenen Subjects: Hole zusätzlich alle Files, die zum Subject gehören und hänge sie an
+        if (matchingSubjects.length > 0) {
+            const subjectIds = matchingSubjects.map((subject: any) => subject.id);
+            const subjectFiles = await filesCollection.find({
+                'metadata.userId': userId,
+                'metadata.subjectId': { $in: subjectIds }
+            }).toArray();
+
+        // Auch hier sicherstellen, dass subjectName und semesterName gesetzt werden
+        const updatedSubjectFiles = subjectFiles.map((file: any) => {
             let foundSubject: any = null;
             for (const semester of user.semesters) {
                 const subject = semester.subjects.find((subject: any) => subject.id === file.metadata.subjectId);
                 if (subject) {
                     foundSubject = subject;
                     break;
-                }
+                }   
             }
             const foundSemester = user.semesters.find((semester: any) => semester.id === file.metadata.semesterId);
             if (foundSubject) {
@@ -83,103 +128,35 @@ export async function POST(req: Request) {
             return file;
         });
 
-        // Für alle gefundenen Subjects: Hole zusätzlich alle Files, die zum Subject gehören und hänge sie an
-        if (matchingSubjects.length > 0) {
-            const subjectIds = matchingSubjects.map((subject: any) => subject.id);
-            const subjectFiles = await filesCollection.find({
-                'metadata.userId': userId,
-                'metadata.subjectId': { $in: subjectIds }
-            }).toArray();
-
-            const updatedSubjectFiles = subjectFiles.map((file: any) => {
-                let foundSubject: any = null;
-                for (const semester of user.semesters) {
-                    const subject = semester.subjects.find((subject: any) => subject.id === file.metadata.subjectId);
-                    if (subject) {
-                        foundSubject = subject;
-                        break;
-                    }
-                }
-                const foundSemester = user.semesters.find((semester: any) => semester.id === file.metadata.semesterId);
-                if (foundSubject) {
-                    file.metadata.subjectName = foundSubject.name;
-                }
-                if (foundSemester) {
-                    file.metadata.semesterName = foundSemester.name;
-                }
-                return file;
-            });
-
+        // Hänge zu jedem Subject die zugehörigen Files an
             matchingSubjects.forEach((subject: any) => {
                 subject.files = updatedSubjectFiles.filter((file: any) => file.metadata.subjectId === subject.id);
             });
 
+        // Filtere die Subjects ohne Files
             matchingSubjects = matchingSubjects.filter((subject: any) => subject.files.length > 0);
         }
 
-        // Link-Suche hinzufügen
-        const linksCollection = await getCollection(DATABASE_NAME, LINKS_COLLECTION_NAME);
-        const linkSearchQuery: any = {
-            'metadata.userId': userId,
-            $or: [
-                { 'name': { $regex: query, $options: 'i' } },
-                { 'url': { $regex: query, $options: 'i' } },
-                { 'metadata.tags.name': { $regex: query, $options: 'i' } } // Tags hinzufügen
-            ]
-        };
+        // 🔹 Kombiniere Subjects und Files in einer einzigen Antwort, dabei aber die doppelte Anzeige vermeiden
+        let results = [...matchingSubjects, ...files];
 
-        let links = await linksCollection.find(linkSearchQuery).limit(6).toArray();
+        // 🔹 Wende die Logik an, um nur das Subject anzuzeigen, wenn sowohl ein Subject als auch ein File gefunden wurde
+        const filteredResults: any[] = []; // Explizit als Array von "any" typisieren
+        const subjectsMap = new Map<string, any>(); // Speichert die Subject-Ergebnisse
 
-        // Füge Kontextinformationen zu jedem Link hinzu
-        links = links.map((link: any) => {
-            let foundSemester: any = null;
-            let foundSubject: any = null;
-            let foundTopic: any = null;
-
-            for (const semester of user.semesters) {
-                if (semester.id === link.metadata.semesterId) {
-                    foundSemester = semester;
-                    for (const subject of semester.subjects) {
-                        if (subject.id === link.metadata.subjectId) {
-                            foundSubject = subject;
-                            for (const topic of subject.topics) {
-                                if (topic.id === link.metadata.topicId) {
-                                    foundTopic = topic;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            return {
-                ...link,
-                semesterName: foundSemester?.name || "Unbekanntes Semester",
-                subjectName: foundSubject?.name || "Unbekanntes Fach",
-                topicName: foundTopic?.name || "Unbekanntes Thema",
-            };
-        });
-
-        // Kombiniere Subjects, Files und Links in einer einzigen Antwort
-        let results = [...matchingSubjects, ...files, ...links];
-
-        // Logik, um doppelte Einträge zu vermeiden
-        const filteredResults: any[] = [];
-        const subjectsMap = new Map<string, any>();
-
+        // Gehe durch alle Ergebnisse und filtere die, die sowohl ein Subject als auch ein File enthalten
         results.forEach((result) => {
             if (result.type === 'subject') {
+            // Wenn das Ergebnis ein Subject ist, prüfe, ob bereits ein File für dieses Subject existiert
                 if (!subjectsMap.has(result.id)) {
-                    subjectsMap.set(result.id, result);
-                    filteredResults.push(result);
+                subjectsMap.set(result.id, result);
+                filteredResults.push(result); // Füge das Subject hinzu
                 }
             } else {
+                // Wenn das Ergebnis ein File ist, prüfe, ob ein Subject vorhanden ist
                 const subject = subjectsMap.get(result.metadata?.subjectId);
                 if (!subject) {
-                    filteredResults.push(result);
+                filteredResults.push(result); // Füge das File hinzu, wenn kein Subject gefunden wurde
                 }
             }
         });

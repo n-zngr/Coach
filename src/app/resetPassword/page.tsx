@@ -55,7 +55,7 @@ const ResetPasswordPage = () => {
             <div className="flex flex-col gap-8 m-auto w-full max-w-md">
                 <header className="text-left border-b border-gray-500 pb-8">
                     <h2 className="text-2xl font-semibold text-black-100 dark:text-white-900">Reset Password</h2>
-                    <p className="text-gray-500">Forgot your password? That's okay.</p>
+                    <p className="text-gray-500">Forgot your password? That&apos;s okay.</p>
                     <p className="pt-2 text-gray-500">Enter your current email to update your password.</p>
                 </header>
                 <form onSubmit={handleResetPassword} className="flex flex-col gap-4">

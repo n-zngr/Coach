@@ -7,8 +7,9 @@ interface FileItemProps {
     file: any;
 }
   
-  const SearchFileItem: React.FC<FileItemProps> = ({ file }) => {
+const SearchFileItem: React.FC<FileItemProps> = ({ file }) => {
     const [selectedFile, setSelectedFile] = useState(null);
+
     const getFilePath = () => {
         let path = "";
         if (file.metadata?.semesterName) {
@@ -72,14 +73,12 @@ interface FileItemProps {
                         {file.metadata.tags.map((tag: any, index: number) => (
                             <div
                                 key={tag._id || tag.id}
-                                className='
-                                    h-fit w-fit
-                                    flex items-center bg-none
-                                    border hover:bg-black-100 hover:dark:bg-white-900 rounded-full
-                                    px-3 py-1
-                                    hover:text-white-900 hover:dark:text-black-100
-                                    transition-colors duration-300 cursor-pointer
-                                '
+                                className='h-fit w-fit
+                                flex items-center bg-none
+                                border hover:bg-black-100 hover:dark:bg-white-900 rounded-full
+                                px-3 py-1
+                                hover:text-white-900 hover:dark:text-black-100
+                                transition-colors duration-300 cursor-pointer'
                             >
                                 <div className='flex justify-center items-center gap-2'>
                                     <svg width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">

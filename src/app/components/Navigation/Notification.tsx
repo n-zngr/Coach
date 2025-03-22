@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 interface NotificationProps {
     notificationTitle?: string;
     notificationDescription?: string;
 }
 
 const Notification: React.FC<NotificationProps> = () => {
-    const [animate, setAnimate] = useState(false);
+    const [animate, ] = useState(false); // add setAnimate when implementing
 
     return (
         <div

@@ -508,8 +508,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         </p>
                     </div>
                     <div className="flex">
-                        <p className="text-base text-black-900 dark:text-white-100">
-                            File description will be displayed here once implemented.
+                        <p className="text-base text-gray-500">
+                            {new Date(file.uploadDate).toLocaleString()}
                         </p>
                     </div>
                     <button ref={moveButtonRef} onClick={toggleMoveCard} className='flex justify-center items-center w-fit bg-white-600 dark:bg-black-400 px-3 py-1 rounded-full gap-2'>
@@ -613,13 +613,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     </div>
                 </div>
 
-                {/* File Information */}
-                <div className="mb-4">
-                    <p>
-                        <strong>Upload Date:</strong> {new Date(file.uploadDate).toLocaleString()}
-                    </p>
-                </div>
-
                 {/* Action Buttons */}
                 <div className="grid grid-cols-3 justify-center gap-4 p-4">
                     <button
@@ -674,6 +667,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         style={{ display: 'none' }}
                     />
 
+                    {/* Move Card */}
                     {showMoveCard && (
                         <div
                             className="absolute mt-2 bg-white shadow-lg border rounded p-4"

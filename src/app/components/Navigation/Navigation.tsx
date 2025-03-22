@@ -49,11 +49,11 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
     return (
         <>
             <nav className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}
-                flex flex-col
-                border-r transition-width duration-300 
+                flex flex-col 
                 bg-white-900 dark:bg-black-100
-                border-r-black-900 dark:border-r-white-100
-                text-black-100 dark:text-white-900`}
+                border-r border-black-900 dark:border-white-100
+                text-black-100 dark:text-white-900
+                transition-width duration-300`}
             >
                 <div className="flex flex-col h-full">
                     <div className="flex m-2">

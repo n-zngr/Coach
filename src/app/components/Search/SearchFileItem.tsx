@@ -9,6 +9,7 @@ interface FileItemProps {
   
   const SearchFileItem: React.FC<FileItemProps> = ({ file }) => {
     const [selectedFile, setSelectedFile] = useState(null);
+    
     const getFilePath = () => {
         let path = "";
         if (file.metadata?.semesterName) {

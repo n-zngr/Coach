@@ -15,8 +15,6 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [notification, setNotification] = useState<{ title: string; description: string; isVisible: boolean; }>({ title: "", description: "", isVisible: false });
-
 
     const toggleSearch = () => {
         setIsSearchVisible(true);
@@ -47,23 +45,6 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
             console.error("Search error:", error);
         }
     };
-
-    const showNotification = (title: string, description: string) => {
-        setNotification({ title, description, isVisible: true });
-    };
-
-    const dismissNotification = () => {
-        setNotification({ ...notification, isVisible: false });
-    };
-
-    useEffect(() => {
-        if (notification.isVisible) {
-            const timer = setTimeout(() => {
-                setNotification({ ...notification, isVisible: false });
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [notification]);
 
     return (
         <>
@@ -131,10 +112,6 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                         <div className="mt-auto">
                             <div className="flex flex-col">
                                 <Notification
-                                    notificationTitle={notification.title}
-                                    notificationDescription={notification.description}
-                                    isVisible={notification.isVisible}
-                                    onDismiss={dismissNotification}
                                 />
                                 <div className="mb-2">
                                     <AccountInfo />

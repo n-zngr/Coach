@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import SearchFileItem from "./SearchFileItem";
 import { toTitleCase } from "@/app/utils/stringUtils";
 import CloseButton from "../Buttons/CloseButton";
+import SearchLinkItem from "./SearchLinkItem";
 
 interface SearchProps {
     onClose: () => void;
@@ -114,22 +115,27 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                                     </h2>
                                     {isSubject(result) ? (
                                         <div className="pb-8">
-                                        {Array.isArray(result.files) && result.files.length > 0 && (
-                                            <div className="flex flex-col gap-4 px-4">
-                                            {result.files.map((file: any) => (
-                                                <SearchFileItem key={file.id || file._id} file={file} />
-                                            ))}
-                                            </div>
-                                        )}
+                                            {Array.isArray(result.files) && result.files.length > 0 && (
+                                                <div className="flex flex-col gap-4 px-4">
+                                                    {result.files.map((file: any) => (
+                                                        <SearchFileItem key={file.id || file._id} file={file} />
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     ) : isLink(result) ? (
-                                        <>
+                                        <SearchLinkItem link={result} />
+
+                                        /* <> {/*}
                                             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 mt-1">
                                                 {result.subjectName || "Unbekanntes Fach"}
                                             </h3>
                                             <h4 className="text-md font-semibold text-gray-700 dark:text-gray-400 mt-1">
                                                 {result.topicName || "Unbekanntes Thema"}
-                                            </h4>
+                                            </h4> */
+
+
+                                            /*}
                                             <p className="text-gray-700 dark:text-gray-400 mt-1">
                                                 <a href={result.url} target="_blank" rel="noopener noreferrer">
                                                 {result.name} - {result.url}
@@ -145,13 +151,13 @@ const Search: React.FC<SearchProps> = ({ onClose, onSearch, searchQuery, searchR
                                                     </span>
                                                 ))}
                                                 </div>
-                                            )}
-                                        </>
+                                            )} */
+                                        /* </>*/
                                     ) : (
                                         <div className="pb-4">
-                                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 mt-1">
+                                            {/*<h3 className="text-lg font-semibold text-gray-800 dark:text-gray-300 mt-1">
                                                 {result.metadata?.subjectName || "No subject"}
-                                            </h3>
+                                            </h3>*/}
                                             <SearchFileItem file={result} />
                                             
                                             {/*{result.metadata?.tags && result.metadata.tags.length > 0 && (

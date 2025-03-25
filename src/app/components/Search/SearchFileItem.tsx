@@ -70,7 +70,7 @@ const SearchFileItem: React.FC<FileItemProps> = ({ file }) => {
                     flex flex-wrap gap-2
                     font-light text-black-500 dark:text-white-500 border-black-100 dark:border-white-900
                     ">
-                        {file.metadata.tags.map((tag: any, index: number) => (
+                        {file.metadata.tags.map((tag: any) => (
                             <div
                                 key={tag._id || tag.id}
                                 className='h-fit w-fit

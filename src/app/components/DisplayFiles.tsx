@@ -25,7 +25,7 @@ interface DisplayFilesProps {
 const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    // const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [query, setQuery] = useState<string>("");
     const [searchActive, setSearchActive] = useState<boolean>(false);
     const [subjectTypes, setSubjectTypes] = useState<{ id: string; name: string }[]>([]);

@@ -69,8 +69,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // Replace file ref used in upload button press
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Notification
-    const [notification, setNotification] = useState<{ title: string; description: string; isVisible: boolean; }>({ title: '', description: '', isVisible: false })
+    // Notification - Currently Unused
+    // const [notification, setNotification] = useState<{ title: string; description: string; isVisible: boolean; }>({ title: '', description: '', isVisible: false })
 
 
     useEffect(() => {

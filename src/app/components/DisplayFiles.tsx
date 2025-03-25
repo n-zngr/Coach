@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-import FileView from "@/app/components/FileView";
+// import FileView from "@/app/components/FileView";
 
 interface File {
     _id: string;

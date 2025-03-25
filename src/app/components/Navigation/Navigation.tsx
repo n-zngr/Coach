@@ -12,9 +12,9 @@ interface NavigationProps {
 }
 
 export default function Navigation({ isExpanded, toggleNavigation }: NavigationProps) {
-    const [isSearchVisible, setIsSearchVisible] = useState(false); 
-    const [searchQuery, setSearchQuery] = useState<string>(""); // Search-Input
-    const [searchResults, setSearchResults] = useState<any[]>([]); // Search-Output
+    const [isSearchVisible, setIsSearchVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [searchResults, setSearchResults] = useState<any[]>([]);
 
     const toggleSearch = () => {
         setIsSearchVisible(true);
@@ -49,19 +49,19 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
     return (
         <>
             <nav className={`fixed top-0 left-0 h-screen ${isExpanded ? "w-64" : "w-12"}
-                flex flex-col
-                border-r transition-width duration-300 
+                flex flex-col 
                 bg-white-900 dark:bg-black-100
-                border-r-black-900 dark:border-r-white-100
-                text-black-100 dark:text-white-900`}
+                border-r border-black-900 dark:border-white-100
+                text-black-100 dark:text-white-900
+                transition-width duration-300`}
             >
                 <div className="flex flex-col h-full">
                     <div className="flex m-2">
                         {isExpanded &&
-                            <div className="h-8 w-8 rounded-md border border-white-500 dark:border-black-500 active:scale-95 cursor-pointer transition-transform duration-200">
+                            <div className="h-8 w-8 rounded-md border border-white-500 dark:border-black-500 text-black-100 dark:text-white-900 active:scale-95 cursor-pointer transition-transform duration-200">
                                 <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M16 20L20 16H8V20H16Z" fill="white"/>
-                                    <path d="M8 8H16L20 4H8L4 8V20L8 16V8Z" fill="white"/>
+                                    <path d="M16 20L20 16H8V20H16Z" fill="currentColor"/>
+                                    <path d="M8 8H16L20 4H8L4 8V20L8 16V8Z" fill="currentColor"/>
                                 </svg>
                             </div>
                         }
@@ -111,15 +111,15 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                     {isExpanded && (
                         <div className="mt-auto">
                             <div className="flex flex-col">
-                                <Notification />
+                                <Notification
+                                />
                                 <div className="mb-2">
                                     <AccountInfo />
                                 </div>
                             </div>
                         </div>
                     )}
-                    
-                </div>        
+                </div>     
             </nav>
 
             {/* Search Popup */}

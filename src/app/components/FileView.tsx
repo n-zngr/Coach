@@ -21,7 +21,7 @@ interface Topic {
     name: string;
 }
 
-interface AppFile {
+export interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;

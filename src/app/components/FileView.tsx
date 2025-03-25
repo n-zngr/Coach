@@ -21,7 +21,7 @@ interface Topic {
     name: string;
 }
 
-interface AppFile {
+export interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;
@@ -462,7 +462,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     }, []);
 
     return (
-        <div className="fixed inset-0 flex justify-end text-black-100 dark:text-white-900">
+        <div className="fixed top-0 right-0 h-screen flex justify-end text-black-100 dark:text-white-900">
             <div
                 className={`
                     h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto

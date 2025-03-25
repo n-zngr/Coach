@@ -462,7 +462,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     }, []);
 
     return (
-        <div className="fixed inset-0 flex justify-end">
+        <div className="fixed inset-0 flex justify-end text-black-100 dark:text-white-900">
             <div
                 className={`
                     h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto
@@ -480,7 +480,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                                 </svg>
                             </div>
                             <div className="flex">
-                                <h1 className="text-xl">File Preview</h1>
+                                <h1 className="text-xl font-light">File Preview</h1>
                             </div>
                         </div>
                         <div className="flex items-center">
@@ -639,16 +639,16 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-3 justify-center gap-4 p-4">
+                <div className="grid grid-cols-3 justify-center gap-2 px-6">
                     <button
                         onClick={handleDownload}
                         className="
-                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
-                            border border-white-400 dark:border-black-600 rounded-lg
-                            text-black-500 dark:text-white-500
-                            transition-colors duration-200"
+                            bg-none hover:bg-black-100 hover:dark:bg-white-900
+                            border border-black-100 dark:border-white-900 rounded-lg
+                            font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
+                            transition-colors duration-200 cursor-pointer"
                     >
-                        <div className='flex flex-col justify-center items-center gap-4 p-4 hover:text-black-100 hover:dark:text-white-900 text-gray-500 transition-colors duration-200'>
+                        <div className='flex flex-col justify-center items-center gap-4 p-4'>
                             <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M14.25 7.4H15.75C15.9489 7.4 16.1397 7.48429 16.2803 7.63431C16.421 7.78434 16.5 7.98783 16.5 8.2V20.2C16.5 20.4122 16.421 20.6157 16.2803 20.7657C16.1397 20.9157 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.9157 1.71967 20.7657C1.57902 20.6157 1.5 20.4122 1.5 20.2V8.2C1.5 7.98783 1.57902 7.78434 1.71967 7.63431C1.86032 7.48429 2.05109 7.4 2.25 7.4H3.75M9 1V13.8M9 13.8L6 10.6M9 13.8L12 10.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
@@ -658,12 +658,12 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     <button
                         onClick={handleDelete}
                         className="
-                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
-                            border border-white-400 dark:border-black-600 rounded-lg
-                            text-black-500 dark:text-white-500
-                            transition-colors duration-200"
+                            bg-none hover:bg-black-100 hover:dark:bg-white-900
+                            border border-black-100 dark:border-white-900 rounded-lg
+                            font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
+                            transition-colors duration-200 cursor-pointer"
                     >
-                        <div className='flex flex-col justify-center items-center gap-4 p-4 text-gray-500 hover:text-black-100 hover:dark:text-white-900 transition-colors duration-200'>
+                        <div className='flex flex-col justify-center items-center gap-4 p-4'>
                             <svg width="28" height="32" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M1.5 5.61538H19.5M6.75 5.61538V4.84615C6.75 3.82609 7.14509 2.84781 7.84835 2.12651C8.55161 1.40522 9.50544 1 10.5 1C11.4946 1 12.4484 1.40522 13.1517 2.12651C13.8549 2.84781 14.25 3.82609 14.25 4.84615V5.61538M8.25 8.69231V17.1538M12.75 8.69231V17.1538M3.75 5.61538H17.25V19.4615C17.25 19.8696 17.092 20.2609 16.8107 20.5494C16.5294 20.8379 16.1478 21 15.75 21H5.25C4.85218 21 4.47064 20.8379 4.18934 20.5494C3.90804 20.2609 3.75 19.8696 3.75 19.4615V5.61538Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
@@ -673,12 +673,12 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     <button
                         onClick={triggerFileSelect}
                         className="
-                            bg-white-600 dark:bg-black-400 hover:bg-white-500 hover:dark:bg-black-500
-                            border border-white-400 dark:border-black-600 rounded-lg
-                            text-black-500 dark:text-white-500
-                            transition-colors duration-200"
+                            bg-none hover:bg-black-100 hover:dark:bg-white-900
+                            border border-black-100 dark:border-white-900 rounded-lg
+                            font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
+                            transition-colors duration-200 cursor-pointer"
                     >
-                        <div className="flex flex-col justify-center items-center gap-4 p-4 text-gray-500 hover:text-black-100 hover:dark:text-white-900 transition-colors duration-200">
+                        <div className="flex flex-col justify-center items-center gap-4 p-4">
                             <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>

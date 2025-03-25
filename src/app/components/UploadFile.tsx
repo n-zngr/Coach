@@ -186,11 +186,11 @@ const UploadFile: React.FC = () => {
         setShowUploadCard((prev) => !prev);
     };
 
-    const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    /*const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
-    }, []);
+    }, []); <= only used in commented out section, nigga what??????*/
 
-    const handleAddTag = useCallback(async () => {
+    /*const handleAddTag = useCallback(async () => {
         const newTag = tagInput.trim();
         if (!newTag) return;
         const response = await fetch('/api/documents/link-tags', {
@@ -208,9 +208,9 @@ const UploadFile: React.FC = () => {
         } else {
             console.error("Error creating tag");
         }
-    }, [tags, tagInput]);
+    }, [tags, tagInput]); only used in commented out section wow*/
 
-    const handleRenameTag = useCallback(async () => {
+    /*const handleRenameTag = useCallback(async () => {
         if (!selectedTag) return;
         const newName = tagInput.trim();
         if (!newName) return;
@@ -222,12 +222,12 @@ const UploadFile: React.FC = () => {
     const handleRemoveTag = useCallback((tagToRemove: Tag) => {
         setTags(tags.filter(tag => tag !== tagToRemove));
         setSelectedTag(null);
-    }, [tags]);
+    }, [tags]); only used in commented out section*/
 
-    const selectTag = useCallback((tag: Tag) => {
+    /*const selectTag = useCallback((tag: Tag) => {
         setSelectedTag(tag);
         setTagInput(tag.name);
-    }, []);
+    }, []); only used in commented out section :^)*/
 
     return (
         <div className="file-upload-container relative">

@@ -59,7 +59,7 @@ export default function Documents() {
         }
 
         authenticateUser();
-    }, []);
+    }, [router]);
     
     const fetchSemesters = async () => {
         try {

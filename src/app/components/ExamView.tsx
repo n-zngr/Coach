@@ -63,6 +63,25 @@ const ExamView: React.FC<ExamViewProps> = ({
         }
     };
 
+    const handleRemoveExam = async (examId: string) => {
+        try {
+          const res = await fetch(`/api/exams/${examId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          });
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error("Failed to remove exam:", res.status, errorText);
+          } else {
+            console.log("Exam removed successfully");
+            // Optionally refresh exam list or close modal here.
+          }
+        } catch (error) {
+          console.error("Error removing exam:", error);
+        }
+      };
+
     if (!isVisible) return null;
 
     return (
@@ -115,6 +134,9 @@ const ExamView: React.FC<ExamViewProps> = ({
                     </div>
                     <button type="submit" style={{ padding: "10px 15px" }}>
                         Save Exam
+                    </button>
+                    <button onClick={() => examId && handleRemoveExam(examId)} style={{ padding: "10px 15px", marginLeft: "10px" }}>
+                        Remove Exam
                     </button>
                 </form>
             </div>

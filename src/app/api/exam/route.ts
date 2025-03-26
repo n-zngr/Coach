@@ -93,3 +93,22 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Failed to update exam" }, { status: 500 });
     }
 }
+
+export async function DELETE(req: Request, { params }: { params: { examId: string } }) {
+    try {
+      const { examId } = params;
+      if (!examId) {
+        return NextResponse.json({ error: "Missing examId" }, { status: 400 });
+      }
+      const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
+      const result = await collection.deleteOne({ _id: new ObjectId(examId) });
+      if (result.deletedCount === 1) {
+        return NextResponse.json({ message: "Exam deleted successfully" }, { status: 200 });
+      } else {
+        return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+      }
+    } catch (error) {
+      console.error("Error deleting exam:", error);
+      return NextResponse.json({ error: "Failed to delete exam" }, { status: 500 });
+    }
+  }

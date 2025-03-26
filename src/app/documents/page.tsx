@@ -9,6 +9,7 @@ import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import FileView from '@/app/components/FileView';
 import { AppFile } from '@/app/components/FileView';
+import Topbar from '../components/Documents/Topbar';
 
 type Topic = {
     id: string;
@@ -201,11 +202,12 @@ export default function Documents() {
             {selectedFile && (
                 <FileView file={selectedFile} onClose={handleCloseFileView} />
             )}
-            <div className={`flex-1 p-16 transition-all duration-300
-                    ${isExpanded ? "ml-64" : "ml-12"}
-                    ${selectedFile ? "mr-96" : ""}
+            <div className={`flex-1 p-16 transition-all duration-200
+                    ${isExpanded ? "pl-64" : "pl-12"}
+                    ${selectedFile ? "pr-96" : ""}
                 `}
             >
+                <Topbar />
                 <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                 <div className="mb-4">
                     <input

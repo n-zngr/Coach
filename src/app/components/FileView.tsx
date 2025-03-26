@@ -98,9 +98,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 setSemesters(data);
 
                 if (file?.metadata.semesterId && file?.metadata.subjectId && file?.metadata.topicId) {
-                    const semester = data.find((s: Semester) => s.id === file.metadata.semesterId);
+                    const semester = data.find((sem: Semester) => sem.id === file.metadata.semesterId);
                     const subject = semester?.subjects.find((sub: Subject) => sub.id === file.metadata.subjectId);
-                    const topic = subject?.topics.find((t: Topic) => t.id === file.metadata.topicId);
+                    const topic = subject?.topics.find((top: Topic) => top.id === file.metadata.topicId);
                     setFilePath(`${semester?.name || ""} / ${subject?.name || ""} / ${topic?.name || ""}`);
                 }
             } catch (error) {
@@ -408,13 +408,13 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const handleRemoveTag = useCallback(async (tagToRemove: Tag) => {
         if (!file) return;
         try {
-            const res = await fetch("/api/documents/tags/tags", {
+            const response = await fetch("/api/documents/tags/tags", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({ fileId: file._id, tag: tagToRemove.name }),
             });
-            if (!res.ok) {
+            if (!response.ok) {
                 console.error("Failed to remove tag");
                 return;
             }

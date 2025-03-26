@@ -205,7 +205,7 @@ export default function Documents() {
                     ${isExpanded ? "ml-64" : "ml-12"}
                     ${selectedFile ? "mr-96" : ""}
                 `}
-                >
+            >
                 <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                 <div className="mb-4">
                     <input

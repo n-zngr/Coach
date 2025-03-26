@@ -111,3 +111,36 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
     }
 }
+
+export async function DELETE(req: Request) {
+    try {
+      const body = await req.json();
+      const { id } = body;
+      if (!id) {
+        return NextResponse.json(
+          { error: "Missing id" },
+          { status: 400 }
+        );
+      }
+  
+      const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
+      const result = await collection.deleteOne({ _id: new ObjectId(id) });
+      if (result.deletedCount === 1) {
+        return NextResponse.json(
+          { message: "Task deleted successfully" },
+          { status: 200 }
+        );
+      } else {
+        return NextResponse.json(
+          { error: "Task not found" },
+          { status: 404 }
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      return NextResponse.json(
+        { error: "Failed to delete task" },
+        { status: 500 }
+      );
+    }
+  }

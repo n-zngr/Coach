@@ -3,21 +3,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import FileDisplay from '@/app/components/DisplayFiles';
+import DisplayFiles from '@/app/components/DisplayFiles';
 import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from "@/app/components/Navigation/Navigation";
+import FileView, { AppFile } from "@/app/components/FileView";
 
 type Topic = {
     id: string;
     name: string;
 };
 
-type Subject = {
+/*type Subject = {
     id: string;
     name: string;
     topics: Topic[];
-};
+};*/
 
 const SubjectPage = () => {
     const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
@@ -26,6 +27,7 @@ const SubjectPage = () => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
     const [editingTopicName, setEditingTopicName] = useState("");
+    const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId as string;
@@ -159,6 +161,14 @@ const SubjectPage = () => {
         setIsExpanded(!isExpanded);
     }
 
+    const handleFileClick = (file: AppFile) => {
+        setSelectedFile(file);
+    };
+
+    const handleCloseFileView = () => {
+        setSelectedFile(null);
+    };
+
     if (isLoading) {
         return (
             <div className="container mx-auto p-4">
@@ -170,9 +180,13 @@ const SubjectPage = () => {
     return (
         <div>
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-            <div className={`flex-1 p-16 transition-all duration-300 ${
-                    isExpanded ? "ml-64" : "ml-12"
-                }`}
+            {selectedFile && (
+                <FileView file={selectedFile} onClose={handleCloseFileView} />
+            )}
+            <div className={`flex-1 p-16 transition-all duration-300
+                    ${isExpanded ? "ml-64" : "ml-12"} 
+                    ${selectedFile ? "mr-96" : ""}
+                `}
                 >
                 <h1 className="text-2xl font-bold mb-4">Manage Topics</h1>
                 <div className="mb-4">
@@ -263,7 +277,7 @@ const SubjectPage = () => {
                 <UploadFile />
                 <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                 <RecentFiles />
-                <FileDisplay />
+                <DisplayFiles onFileClick={handleFileClick} />
             </div>
         </div>
     );

@@ -470,7 +470,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
                 `}
             >
-                <header className='flex flex-col p-6'>
+                <header className='flex flex-col p-6 pb-4 border-b border-black-900 dark:border-white-100 mb-6'>
                     <div className="flex flex-row justify-between">
                         <div className="flex">
                             <div className="size-[24px]">
@@ -485,9 +485,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         <div className="flex items-center">
                             <CloseButton onClick={onClose} />
                         </div>
-                    </div>
-                    <div className="relative px-6 pt-4"> {/* Divider */}
-                        <div className="absolute bottom-0 left-0 h-[1px] w-[100%] bg-black-900 dark:bg-white-100"></div>
                     </div>
                 </header>
 

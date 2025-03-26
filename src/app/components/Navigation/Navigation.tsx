@@ -53,7 +53,8 @@ export default function Navigation({ isExpanded, toggleNavigation }: NavigationP
                 bg-white-900 dark:bg-black-100
                 border-r border-black-900 dark:border-white-100
                 text-black-100 dark:text-white-900
-                transition-width duration-300`}
+                transition-width duration-300
+                z-10`}
             >
                 <div className="flex flex-col h-full">
                     <div className="flex m-2">

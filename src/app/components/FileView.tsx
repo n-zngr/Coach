@@ -461,7 +461,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     if (!file) return null;
 
     return (
-        <div className="fixed top-0 right-0 h-screen flex justify-end text-black-100 dark:text-white-900">
+        <div className="fixed top-0 right-0 h-screen flex justify-end text-black-100 dark:text-white-900 z-10">
             <div
                 className={`
                     h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto

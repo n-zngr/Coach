@@ -8,6 +8,7 @@ import RecentFiles from "@/app/components/RecentFiles";
 import UploadFile from '@/app/components/UploadFile';
 import IcsUploader from '@/app/components/IcsUploader';
 import Navigation from '@/app/components/Navigation/Navigation';
+import FileView, { AppFile } from "@/app/components/FileView";
 
 type Topic = {
     id: string;
@@ -27,6 +28,7 @@ export default function SemesterPage() {
     const [isExpanded, setIsExpanded] = useState(true);
     const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
     const [editingSubjectName, setEditingSubjectName] = useState('');
+    const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId;
@@ -163,6 +165,14 @@ export default function SemesterPage() {
         setIsExpanded(!isExpanded);
     };
 
+    const handleFileClick = (file: AppFile) => {
+        setSelectedFile(file);
+    };
+
+    const handleCloseFileView = () => {
+        setSelectedFile(null);
+    };
+
     if (isLoading) {
         return (
             <div className="container mx-auto p-4">
@@ -174,9 +184,13 @@ export default function SemesterPage() {
     return (
         <div>
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-            <div className={`flex-1 p-16 transition-all duration-300 ${
-                    isExpanded ? "ml-64" : "ml-12"
-                }`}
+            {selectedFile && (
+                <FileView file={selectedFile} onClose={handleCloseFileView} />
+            )}
+            <div className={`flex-1 p-16 transition-all duration-300
+                    ${isExpanded ? "ml-64" : "ml-12"} 
+                    ${selectedFile ? "mr-96" : ""}
+                `}
                 >
                 <h1 className="text-2xl font-bold mb-4">Manage Subjects</h1>
 
@@ -267,7 +281,7 @@ export default function SemesterPage() {
                 <UploadFile />
                 <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                 <RecentFiles />
-                <DisplayFiles />
+                <DisplayFiles onFileClick={handleFileClick} />
             </div>
         </div>
     );

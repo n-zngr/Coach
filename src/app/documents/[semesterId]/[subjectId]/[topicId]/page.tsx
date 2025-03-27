@@ -8,6 +8,7 @@ import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from "@/app/components/Navigation/Navigation";
 import FileView, { AppFile } from "@/app/components/FileView";
+import Topbar from "@/app/components/Documents/Topbar";
 
 type Topic = {
     id: string;
@@ -104,13 +105,16 @@ const TopicPage = () => {
                     ${selectedFile ? "mr-96" : ""}
                 `}
             >
-                <h1 className="text-2xl font-bold mb-4">{topic ? topic.name : "Unknown Topic"}</h1>
-                
-                <UploadFile />
-                
-                <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-                <RecentFiles />
-                <DisplayFiles onFileClick={handleFileClick} />
+                <Topbar />
+                <div>
+                    <h1 className="text-2xl font-bold mb-4">{topic ? topic.name : "Unknown Topic"}</h1>
+                    
+                    <UploadFile />
+                    
+                    <h1 className='text-2xl font-semibold my-4'>Documents</h1>
+                    <RecentFiles />
+                    <DisplayFiles onFileClick={handleFileClick} />
+                </div>
             </div>
         </div>
     );

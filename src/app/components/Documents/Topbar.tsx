@@ -27,7 +27,7 @@ const Topbar: React.FC<TopbarProps> = ({ path }) => {
                         href={href}
                         className='capitalize bg-none
                         border border-white-900 hover:border-black-100 dark:border-black-100 dark:hover:border-white-900 rounded-full
-                        text-lg font-light text-black-500 dark:text-white-500
+                        text-lg font-light text-black-500 hover:text-black-100 dark:text-white-500 dark:hover:text-white-900
                         px-2 transition-colors duration-300'
                     >
                         {getBreadcrumbLabel(segment)}

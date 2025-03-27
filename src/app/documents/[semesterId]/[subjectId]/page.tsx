@@ -15,11 +15,13 @@ type Topic = {
     name: string;
 };
 
-/*type Subject = {
+/*
+type Subject = {
     id: string;
     name: string;
     topics: Topic[];
-};*/
+};
+*/
 
 const SubjectPage = () => {
     const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
@@ -35,32 +37,6 @@ const SubjectPage = () => {
     const router = useRouter();
     const semesterId = params?.semesterId as string;
     const subjectId = params?.subjectId as string;
-
-    useEffect(() => {
-        const authenticateUser = async () => {
-            try {
-                const response = await fetch('/api/auth', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    console.warn('User not authenticated, redirecting to /login');
-                    router.push('/login');
-                    return;
-                }
-
-                if (semesterId && subjectId) {
-                    fetchTopics();
-                }
-            } catch (error) {
-                console.error('Error authenticating user:', error);
-                router.push('/login');
-            }
-        }
-
-        authenticateUser();
-    }, [semesterId, subjectId]);
 
     const fetchTopics = async () => {
         try {
@@ -105,6 +81,33 @@ const SubjectPage = () => {
             setIsLoading(false);
         }
     };
+
+
+    useEffect(() => {
+        const authenticateUser = async () => {
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    console.warn('User not authenticated, redirecting to /login');
+                    router.push('/login');
+                    return;
+                }
+
+                if (semesterId && subjectId) {
+                    fetchTopics();
+                }
+            } catch (error) {
+                console.error('Error authenticating user:', error);
+                router.push('/login');
+            }
+        }
+
+        authenticateUser();
+    }, [semesterId, subjectId, fetchTopics, router]);
 
     const handleSubmit = async () => {
         if (!name) return;

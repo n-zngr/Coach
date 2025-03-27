@@ -41,7 +41,8 @@ export async function GET(req: Request, { params }: { params: { semesterId: stri
             return NextResponse.json({ error: "Topic not found" }, { status: 404 });
         }
 
-        return NextResponse.json(topic);
+        console.log(topic);
+        return NextResponse.json({ semesterName: semester.name, subjectName: subject.name, topic: topic });
     } catch (error) {
         console.error('Error in GET /documents/semesters/[semesterId]/[subjectId]/[topicId]:', error);
         return NextResponse.json({ error: 'Internal Server Error'}, { status: 500 });

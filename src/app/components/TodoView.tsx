@@ -91,7 +91,14 @@ const TodoView: React.FC<TodoViewProps> = ({
         credentials: "include",
         body: JSON.stringify({ id: taskId }),
       });
-      // ... handle response
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Failed to remove task:", res.status, errorText);
+      } else {
+        console.log("Task removed successfully");
+        onClose();       // close the TodoView modal
+        onTaskAdded();   // refresh the task list in the parent component
+      }
     } catch (error) {
       console.error("Error removing task:", error);
     }

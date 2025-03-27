@@ -94,14 +94,16 @@ export async function PATCH(req: Request) {
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { examId: string } }) {
+export async function DELETE(req: Request) {
     try {
-      const { examId } = params;
-      if (!examId) {
-        return NextResponse.json({ error: "Missing examId" }, { status: 400 });
+      const body = await req.json();
+      const { id } = body;
+      if (!id) {
+        return NextResponse.json({ error: "Missing exam id" }, { status: 400 });
       }
+  
       const collection = await getCollection(DATABASE_NAME, COLLECTION_NAME);
-      const result = await collection.deleteOne({ _id: new ObjectId(examId) });
+      const result = await collection.deleteOne({ _id: new ObjectId(id) });
       if (result.deletedCount === 1) {
         return NextResponse.json({ message: "Exam deleted successfully" }, { status: 200 });
       } else {

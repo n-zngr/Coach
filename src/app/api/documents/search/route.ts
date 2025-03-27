@@ -181,7 +181,7 @@ export async function POST(req: Request) {
             };
         });
 
-        let results = [...matchingSubjects, ...files, ...links]; // Combines subjects, files, links in results answer
+        const results = [...matchingSubjects, ...files, ...links]; // Combines subjects, files, links in results answer
 
         // Logic avoiding duplicate entries
         const filteredResults: any[] = [];

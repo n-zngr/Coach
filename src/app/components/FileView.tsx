@@ -21,7 +21,7 @@ interface Topic {
     name: string;
 }
 
-interface AppFile {
+export interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;
@@ -69,17 +69,25 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     // Replace file ref used in upload button press
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Notification
-    const [notification, setNotification] = useState<{ title: string; description: string; isVisible: boolean; }>({ title: '', description: '', isVisible: false })
+    // Notification - Currently Unused
+    // const [notification, setNotification] = useState<{ title: string; description: string; isVisible: boolean; }>({ title: '', description: '', isVisible: false })
 
 
-    useEffect(() => {
-        // When file prop changes, update both newFilename and originalFilename.
-        setNewFilename(file?.filename || "");
-        setOriginalFilename(file?.filename || "");
-    }, [file]);
+    // --- Helper Functions ---
+    const updateFilenameState = useCallback((filename: string) => {
+        setNewFilename(filename);
+        setOriginalFilename(filename);
+    }, []);
     
-    useEffect(() => { // Updates on file change, builds file location and move options
+    // --- Effects ---
+
+    useEffect(() => { // Initialize filename state
+        if (file) {
+          updateFilenameState(file.filename);
+        }
+    }, [file, updateFilenameState]);
+    
+    useEffect(() => { // Fetch semesters and build file path
         const fetchSemesters = async () => {
             try {
                 const response = await fetch('/api/documents/semesters', {
@@ -90,26 +98,25 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 setSemesters(data);
 
                 if (file?.metadata.semesterId && file?.metadata.subjectId && file?.metadata.topicId) {
-                    const semester = data.find((semester: Semester) => semester.id === file.metadata.semesterId);
-                    const subject = semester?.subjects.find((subject: Subject) => subject.id === file.metadata.subjectId);
-                    const topic = subject?.topics.find((topic: Topic) => topic.id === file.metadata.topicId);
+                    const semester = data.find((sem: Semester) => sem.id === file.metadata.semesterId);
+                    const subject = semester?.subjects.find((sub: Subject) => sub.id === file.metadata.subjectId);
+                    const topic = subject?.topics.find((top: Topic) => top.id === file.metadata.topicId);
                     setFilePath(`${semester?.name || ""} / ${subject?.name || ""} / ${topic?.name || ""}`);
                 }
             } catch (error) {
                 console.error('Error fetching semesters: ', error);
             }
         };
+
         fetchSemesters();
     }, [file]);
 
-    if (!file) return null;
-
-    // --- File Actions Logic ---
-    const handleRename = async () => {
+    // --- File Actions ---
+    const handleRename = useCallback(async () => {
         try {
-            const response = await fetch(`/api/documents/rename/${file._id}`, {
+            const response = await fetch(`/api/documents/rename/${file?._id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ newFilename })
             });
 
@@ -120,10 +127,9 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             console.log('File renamed successfully');
             setOriginalFilename(newFilename);
         } catch (error) {
-            console.log(newFilename);
             console.error('Error renaming file:', error);
         }
-    }
+    }, [file?._id, newFilename]);
 
     const handleRenameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setNewFilename(e.target.value);
@@ -134,7 +140,6 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             if (newFilename.trim() !== originalFilename.trim()) {
                 handleRename();
             }
-
         }, 150);
     };
 
@@ -148,7 +153,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         }
     }
 
-    const handleDownload = async () => {
+    const handleDownload = useCallback(async () => {
+        if (!file) return;
         try {
             const response = await fetch(`/api/documents/download/${file._id}`);
             if (!response.ok) {
@@ -165,41 +171,41 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         } catch (error) {
             console.error('Error downloading file', error);
         }
-    };
+    }, [file]);
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         try {
-            const response = await fetch(`/api/documents/delete/${file._id}`, {
+            const response = await fetch(`/api/documents/delete/${file?._id}`, {
                 method: 'DELETE'
             });
 
             if (!response.ok) {
-                throw new Error ('Failed to delete file');
+                throw new Error('Failed to delete file');
             }
-            
+
             console.log('File deleted successfully');
             onClose();
         } catch (error) {
             console.error('Error deleting file', error);
         }
-    }
+    }, [file?._id, onClose]);
     
-    const handleMoveFile = async () => {
+    const handleMoveFile = useCallback(async () => {
         if (!selectedOption) {
             alert("Please select a new location for the file.");
             return;
         }
-        
+
         const parts = selectedOption.split("/");
         if (parts.length !== 3) {
             alert("Invalid location selected.");
             return;
         }
-        
+
         const [semesterId, subjectId, topicId] = parts;
-        
+
         try {
-            const response = await fetch(`/api/documents/move/${file._id}`, {
+            const response = await fetch(`/api/documents/move/${file?._id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ semesterId, subjectId, topicId }),
@@ -215,7 +221,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         } catch (error) {
             console.error("Error moving file:", error);
         }
-    };
+    }, [file?._id, selectedOption, onClose]);
 
     const toggleMoveCard = () => {
         setShowMoveCard((prev) => !prev);
@@ -224,21 +230,21 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     const handleFileReplace = async (e: ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (!selectedFile) return;
-      
+
         const formData = new FormData();
         formData.append("file", selectedFile);
         formData.append("filename", selectedFile.name);
 
         try {
-            const response = await fetch(`/api/documents/replace/${file._id}`, {
+            const response = await fetch(`/api/documents/replace/${file?._id}`, {
                 method: "POST",
                 body: formData,
             });
-            
+
             if (!response.ok) {
                 throw new Error("Failed to replace file");
             }
-            
+
             const result = await response.json();
             console.log(result.message);
             // Optionally, update your UI or trigger a refetch of file data here
@@ -247,12 +253,12 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         }
     };
 
-    // Trigger file selection when upload button is clicked
-    const triggerFileSelect = () => {
+    
+    const triggerFileSelect = () => { // Trigger file selection when upload button is clicked
         fileInputRef.current?.click();
     };
 
-    // --- Tag Logic ---
+    // --- Tag Actions ---
     const fetchTags = useCallback(async (fileId: string) => {
         try {
             const response = await fetch(`/api/documents/tags/tags?fileId=${fileId}`, { credentials: "include" });
@@ -277,7 +283,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                 console.error('Failed to fetch all tags');
                 return;
             }
-            
+
             const data = await response.json();
             setAllTags(data.tags || []);
         } catch (error) {
@@ -286,42 +292,40 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
     }, []);
 
     useEffect(() => { // Updates on file change, renders tags and file name
-        setNewFilename(file?.filename || "");
         if (file) {
             fetchTags(file._id);
             fetchAllTags();
         }
-        // Clear any selected tag when file changes.
         setSelectedTag(null);
         setTagInput("");
     }, [file, fetchTags, fetchAllTags]);
 
     const handleAddTag = useCallback(async (tagName: string) => { // Add new tag logic – called when no existing tag matches the input.
-        if (!tagName.trim()) return;
+        if (!tagName.trim() || !file) return;
 
         try {
             const response = await fetch("/api/documents/tags/tags", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ fileId: file?._id, tag: tagName.trim() }),
+                body: JSON.stringify({ fileId: file._id, tag: tagName.trim() }),
             });
-        if (!response.ok) {
-            console.error("Failed to add tag");
-            return;
-        }
-            fetchTags(file!._id);
+            if (!response.ok) {
+                console.error("Failed to add tag");
+                return;
+            }
+            fetchTags(file._id);
         } catch (error) {
             console.error("Error adding tag:", error);
         }
         setTagInput("");
         setShowTagInput(false);
         setSelectedTag(null);
-    }, [file._id, tagInput, fetchTags]);
+    }, [file, fetchTags]);
 
     const handleNewTagInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
-    }
+    };
 
     const handleNewTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -331,31 +335,29 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             if (!exists) {
                 handleAddTag(tagInput);
             }
-            
+
             e.currentTarget.blur();
         }
     }
 
     const handleNewTagInputBlur = () => {
         setTimeout(() => {
-            if (tagInput.trim()) {
-                const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
-                if (!exists) {
-                    handleAddTag(tagInput);
-                }
+            const exists = allTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            if (tagInput.trim() && !exists) {
+                handleAddTag(tagInput);
             }
             setShowTagInput(false);
-        }, 150)
+        }, 150);
     };
 
     const handleRenameTag = useCallback(async () => {
-        if (!selectedTag) return;
+        if (!selectedTag || !file) return;
         const newName = tagInput.trim();
 
         if (newName === (selectedTag.name || "").trim()) {
-          setTagInput("");
-          setSelectedTag(null);
-          return;
+            setTagInput("");
+            setSelectedTag(null);
+            return;
         }
 
         try {
@@ -369,12 +371,12 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     newName,
                 }),
             });
-            
+
             if (!response.ok) {
                 console.error("Failed to rename tag");
                 return;
             }
-            
+
             fetchTags(file._id);
         } catch (error) {
             console.error("Error renaming tag:", error);
@@ -382,74 +384,69 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
 
         setTagInput("");
         setSelectedTag(null);
-    }, [file._id, selectedTag, tagInput, fetchTags]);
+    }, [file, selectedTag, tagInput, fetchTags]);
 
     const handleEditTagInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setTagInput(e.target.value);
-    }
+    };
 
     const handleEditTagInputEnterPressed = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
 
-            const exists = filteredTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
+            const exists = allTags.some(tag => tag.name.toLowerCase() === tagInput.toLowerCase());
             if (!exists) {
                 handleRenameTag();
             }
-            
         }
     };
 
     const handleEditTagInputBlur = () => {
         handleRenameTag();
-    }
-    
-    const handleRemoveTag = useCallback(
-        async (tagToRemove: Tag) => {
-            try {
-                const res = await fetch("/api/documents/tags/tags", {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ fileId: file._id, tag: tagToRemove.name }),
-                });
-                if (!res.ok) {
-                    console.error("Failed to remove tag");
-                    return;
-                }
-                fetchTags(file._id);
-            } catch (error) {
-                console.error("Error removing tag:", error);
-            }
-        }, [file._id, fetchTags]
-    );
+    };
 
-    const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
-        // When a suggestion is selected, update the input.
-        setTagInput(tag.name);
-        // For inline editing, you may want to immediately update:
-        if (selectedTag) {
-            handleRenameTag();
-        } else {
-        // For new tag addition, add the tag if it’s not already associated.
-        if (!tags.find(t => (t._id || t.id) === (tag._id || tag.id))) {
-            fetch("/api/documents/tags/tags", {
-                method: "POST",
+    const handleRemoveTag = useCallback(async (tagToRemove: Tag) => {
+        if (!file) return;
+        try {
+            const response = await fetch("/api/documents/tags/tags", {
+                method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ fileId: file?._id, tag: tag.name }),
-            })
-            .then((response) => {
-                if (!response.ok) console.error("Failed to add tag");
-                else {
-                    fetchTags(file!._id);
-                }
-            })
-            .catch((error) => console.error("Error adding tag:", error));
+                body: JSON.stringify({ fileId: file._id, tag: tagToRemove.name }),
+            });
+            if (!response.ok) {
+                console.error("Failed to remove tag");
+                return;
+            }
+            fetchTags(file._id);
+        } catch (error) {
+            console.error("Error removing tag:", error);
+        }
+    }, [file, fetchTags]);
+
+    const handleSelectTag = useCallback((tag: Tag) => { // When an existing tag is selected from the dropdown.
+        setTagInput(tag.name); // When a suggestion is selected, update the input.
+        if (selectedTag) { // For inline editing, you may want to immediately update:
+            handleRenameTag();
+        } else { // For new tag addition, add the tag if it is not already associated.
+            if (file && !tags.find(t => (t._id || t.id) === (tag._id || tag.id))) {
+                fetch("/api/documents/tags/tags", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ fileId: file._id, tag: tag.name }),
+                })
+                .then((response) => {
+                    if (!response.ok) console.error("Failed to add tag");
+                    else {
+                        fetchTags(file._id);
+                    }
+                })
+                .catch((error) => console.error("Error adding tag:", error));
+            }
         }
         setTagInput("");
         setShowTagInput(false);
-        }
     }, [file, selectedTag, tags, fetchTags, handleRenameTag]);
 
     const filteredTags = allTags.filter((tag) =>
@@ -461,8 +458,10 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
         setTagInput(tag.name);
     }, []);
 
+    if (!file) return null;
+
     return (
-        <div className="fixed inset-0 flex justify-end text-black-100 dark:text-white-900">
+        <div className="fixed top-0 right-0 h-screen flex justify-end text-black-100 dark:text-white-900">
             <div
                 className={`
                     h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto

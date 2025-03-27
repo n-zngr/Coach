@@ -29,9 +29,9 @@ const SearchLinkItem: React.FC<LinkItemProps> = ({ link }) => {
         return link.url || "No URL";
     };
     
-    const handleLinkClick = () => {
+    /*const handleLinkClick = () => {
         setSelectedLink(link); // Used in future implementation of LinkView.
-    }
+    }*/
 
     const handleCloseLinkView = () => { // Used in future implementation of LinkView.
         setSelectedLink(null);
@@ -77,7 +77,7 @@ const SearchLinkItem: React.FC<LinkItemProps> = ({ link }) => {
                         flex flex-wrap gap-2
                         font-light text-black-500 dark:text-white-500 border-black-100 dark:border-white-900
                     ">
-                        {link.metadata.tags.map((tag: any, index: number) => (
+                        {link.metadata.tags.map((tag: any) => (
                             <div
                                 key={tag._id || tag.id}
                                 className='

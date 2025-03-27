@@ -8,6 +8,7 @@ import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from "@/app/components/Navigation/Navigation";
 import FileView, { AppFile } from "@/app/components/FileView";
+import Topbar from "@/app/components/Documents/Topbar";
 
 type Topic = {
     id: string;
@@ -28,6 +29,8 @@ const SubjectPage = () => {
     const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
     const [editingTopicName, setEditingTopicName] = useState("");
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
+    const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
+    const [subjectName, setSubjectName] = useState<string | undefined>(undefined);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId as string;
@@ -69,10 +72,16 @@ const SubjectPage = () => {
             if (response.ok) {
                 const data = await response.json();
 
-                if (data.name) {
-                    console.log(data.name)
+                if (data.subjectName) {
+                    setSubjectName(data.subjectName);
                 } else {
                     console.warn('Could not find subject name')
+                }
+
+                if (data.semesterName) {
+                    setSemesterName(data.semesterName);
+                } else {
+                    console.warn('Could not find semester name');
                 }
 
                 if (Array.isArray(data.topics)) {
@@ -190,13 +199,13 @@ const SubjectPage = () => {
             {selectedFile && (
                 <FileView file={selectedFile} onClose={handleCloseFileView} />
             )}
-            <div className={`flex-1 p-16 transition-all duration-300
+            <div className={`flex-1 transition-all duration-300
                     ${isExpanded ? "ml-64" : "ml-12"} 
                     ${selectedFile ? "mr-96" : ""}
                 `}
             >
-                <div>
-
+                <Topbar path={`${semesterName} / ${subjectName}`} />
+                <div className='p-12 pt-[7.5rem]'>
                     <h1 className="text-2xl font-bold mb-4">Manage Topics</h1>
                     <div className="mb-4">
                         <input

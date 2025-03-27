@@ -30,10 +30,10 @@ export default function SemesterPage() {
     const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
     const [editingSubjectName, setEditingSubjectName] = useState('');
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
+    const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId;
-    const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         const authenticateUser = async () => {
@@ -71,15 +71,11 @@ export default function SemesterPage() {
             if (response.ok) {
                 const data = await response.json();
                 
-                console.log(data);
                 if (data.name) {
-                    console.log("Semester Name from API:", data.name);
                     setSemesterName(data.name);
                 } else {
                     console.warn("No semester name found in API response.");
                 }
-    
-                console.log("Semester Name before update:", semesterName);
                 
                 if (Array.isArray(data.subjects)) {
                     const formattedData: Subject[] = data.subjects.map((subject: any) => ({

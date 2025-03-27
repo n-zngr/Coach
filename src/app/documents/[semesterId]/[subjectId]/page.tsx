@@ -68,8 +68,15 @@ const SubjectPage = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                if (Array.isArray(data)) {
-                    const formattedData: Topic[] = data.map((topic: any) => ({
+
+                if (data.name) {
+                    console.log(data.name)
+                } else {
+                    console.warn('Could not find subject name')
+                }
+
+                if (Array.isArray(data.topics)) {
+                    const formattedData: Topic[] = data.topics.map((topic: any) => ({
                         id: topic.id,
                         name: topic.name
                     }))

@@ -20,6 +20,9 @@ const TopicPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
+    const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
+    const [subjectName, setSubjectName] = useState<string | undefined>(undefined);
+    const [topicName, setTopicName] = useState<string | undefined>(undefined);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId as string;
@@ -61,6 +64,25 @@ const TopicPage = () => {
 
             if (response.ok) {
                 const data = await response.json();
+
+                if (data.semesterName) {
+                    setSemesterName(data.semesterName);
+                } else {
+                    console.warn('Could not find a semester name')
+                }
+
+                if (data.subjectName) {
+                    setSubjectName(data.subjectName);
+                } else {
+                    console.warn('Could not find a semester name')
+                }
+
+                if (data.topic.name) {
+                    setTopicName(data.topic.name);
+                } else {
+                    console.warn('Could not find topic name')
+                }
+
                 setTopic({ id: data.id, name: data.name });
             } else if (response.status === 404) {
                 console.error(`Invalid topic page: ${topicId}`);
@@ -100,13 +122,13 @@ const TopicPage = () => {
             {selectedFile && (
                 <FileView file={selectedFile} onClose={handleCloseFileView} />
             )}
-            <div className={`flex-1 p-16 transition-all duration-300
-                    ${isExpanded ? "ml-64" : "ml-12"}
+            <div className={`flex-1 transition-all duration-300
+                    ${isExpanded ? "ml-64" : "ml-12"} 
                     ${selectedFile ? "mr-96" : ""}
                 `}
             >
-                <Topbar />
-                <div>
+                <Topbar path={`${semesterName} / ${subjectName} / ${topicName}`} />
+                <div className='p-12 pt-[7.5rem]'>
                     <h1 className="text-2xl font-bold mb-4">{topic ? topic.name : "Unknown Topic"}</h1>
                     
                     <UploadFile />

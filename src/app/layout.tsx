@@ -32,7 +32,7 @@ const metropolis = localFont({
 /* eslint-enable @typescript-eslint/no-unused-vars*/
 
 export const metadata: Metadata = {
-    title: "COACH",
+    title: "Coach",
     description: "Coaching you throughout your school career.",
 };
 

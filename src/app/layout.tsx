@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-/*
+
+/* eslint-disable @typescript-eslint/no-unused-vars*/
 const geistSans = localFont({
     src: "./lib/fonts/geist/GeistVF.woff",
     variable: "--font-geist-sans",
@@ -28,7 +29,8 @@ const metropolis = localFont({
     ],
     variable: "--font-metropolis",
 });
-*/
+/* eslint-enable @typescript-eslint/no-unused-vars*/
+
 export const metadata: Metadata = {
     title: "COACH",
     description: "Coaching you throughout your school career.",

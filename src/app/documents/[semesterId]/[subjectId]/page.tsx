@@ -38,52 +38,51 @@ const SubjectPage = () => {
     const semesterId = params?.semesterId as string;
     const subjectId = params?.subjectId as string;
 
-    const fetchTopics = async () => {
-        try {
-            const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-
-                if (data.subjectName) {
-                    setSubjectName(data.subjectName);
-                } else {
-                    console.warn('Could not find subject name')
-                }
-
-                if (data.semesterName) {
-                    setSemesterName(data.semesterName);
-                } else {
-                    console.warn('Could not find semester name');
-                }
-
-                if (Array.isArray(data.topics)) {
-                    const formattedData: Topic[] = data.topics.map((topic: any) => ({
-                        id: topic.id,
-                        name: topic.name
-                    }))
-                    setTopics(formattedData);
-                } else {
-                    console.error('Failed to fetch subjects');
-                    setTopics([]);
-                }
-            } else if (response.status === 404) {
-                console.error(`Invalid subject page: ${subjectId}`);
-                router.back();
-            }
-        } catch (error) {
-            console.error("Error fetching topics:", error);
-            setTopics([]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-
     useEffect(() => {
+        const fetchTopics = async () => {
+            try {
+                const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+    
+                    if (data.subjectName) {
+                        setSubjectName(data.subjectName);
+                    } else {
+                        console.warn('Could not find subject name')
+                    }
+    
+                    if (data.semesterName) {
+                        setSemesterName(data.semesterName);
+                    } else {
+                        console.warn('Could not find semester name');
+                    }
+    
+                    if (Array.isArray(data.topics)) {
+                        const formattedData: Topic[] = data.topics.map((topic: any) => ({
+                            id: topic.id,
+                            name: topic.name
+                        }))
+                        setTopics(formattedData);
+                    } else {
+                        console.error('Failed to fetch subjects');
+                        setTopics([]);
+                    }
+                } else if (response.status === 404) {
+                    console.error(`Invalid subject page: ${subjectId}`);
+                    router.back();
+                }
+            } catch (error) {
+                console.error("Error fetching topics:", error);
+                setTopics([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         const authenticateUser = async () => {
             try {
                 const response = await fetch('/api/auth', {
@@ -107,7 +106,7 @@ const SubjectPage = () => {
         }
 
         authenticateUser();
-    }, [semesterId, subjectId, fetchTopics, router]);
+    }, [semesterId, subjectId, router]);
 
     const handleSubmit = async () => {
         if (!name) return;

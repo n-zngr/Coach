@@ -65,11 +65,11 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
         <ul className="grid grid-cols-3 gap-4 mb-4">
             {items.map((item) => (
                 <li
-                key={item.id}
-                className="flex items-center justify-between
-                p-4 border rounded-lg bg-white 
-                bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
-                transition-colors duration-300"
+                    key={item.id}
+                    className="flex items-center justify-between
+                    p-4 border rounded-lg bg-white 
+                    bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
+                    transition-colors duration-300"
                 >
                     <Link href={`${basePath}/${item.id}`} className="flex gap-4 flex-1">
                         <div className='flex justify-center items-center'>
@@ -88,17 +88,17 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
 
                         {/* Folder Name & Rename Input */}
                         {editingFolderId === item.id ? (
-                        <input
-                            type="text"
-                            value={folderName}
-                            onChange={handleRenameInputChange}
-                            onBlur={handleRenameInputBlur}
-                            onKeyDown={handleRenameInputEnterPressed}
-                            className="w-full bg-transparent border-b border-transparent focus:border-gray-500 focus:outline-none font-medium text-lg text-black-500 dark:text-white-500"
-                            autoFocus
-                        />
+                            <input
+                                type="text"
+                                value={folderName}
+                                onChange={handleRenameInputChange}
+                                onBlur={handleRenameInputBlur}
+                                onKeyDown={handleRenameInputEnterPressed}
+                                className="w-full bg-transparent border-b border-transparent focus:border-gray-500 focus:outline-none font-medium text-lg text-black-500 dark:text-white-500"
+                                autoFocus
+                            />
                         ) : (
-                        <p className="font-bold capitalize">{item.name}</p>
+                            <p className="font-bold capitalize">{item.name}</p>
                         )}
                 </Link>
 

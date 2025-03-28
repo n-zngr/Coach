@@ -24,15 +24,15 @@
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.2",
     "next": "15.1.7",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/react": "19.0.0",
     "@types/react-beautiful-dnd": "^13.1.8",
-    "@types/react-dom": "^18",
+    "@types/react-dom": "19.0.0",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",

@@ -7,12 +7,17 @@ interface NavLinkProps {
 
 const NavLink: React.FC<NavLinkProps> = ({ href, icon, children }) => {
     return (
-        <a href={href} className="flex mx-2 p-2 rounded-full hover:bg-white-600 dark:hover:bg-black-400 transition-colors duartion-500">
+        <a href={href} className="
+            flex mx-2 p-2 rounded-full
+            hover:bg-black-100 dark:hover:bg-white-900
+            transition-colors duration-300
+            text-black-500 dark:text-white-500 hover:text-white-900 dark:hover:text-black-100
+        ">
             <div className="flex gap-2">
                 <div className="flex justify-center items-center pl-1">
                     {icon}
                 </div>
-                <div className="font-metropolis font-medium text-black-900 dark:text-white-100">
+                <div>
                     <p>{children}</p>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { MongoClient, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { getCollection } from '@/app/utils/mongodb';
 
 const DATABASE_NAME = 'documents';

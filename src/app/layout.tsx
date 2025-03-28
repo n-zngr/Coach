@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-
+/*
 const geistSans = localFont({
     src: "./lib/fonts/geist/GeistVF.woff",
     variable: "--font-geist-sans",
@@ -28,7 +28,7 @@ const metropolis = localFont({
     ],
     variable: "--font-metropolis",
 });
-
+*/
 export const metadata: Metadata = {
     title: "COACH",
     description: "Coaching you throughout your school career.",

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-import FileView from "@/app/components/FileView";
+// import FileView from "@/app/components/FileView";
 
 interface File {
     _id: string;
@@ -18,10 +18,14 @@ interface File {
     };
 }
 
-const DisplayFiles: React.FC = () => {
+interface DisplayFilesProps {
+    onFileClick: (file: File) => void;
+}
+
+const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    // const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [query, setQuery] = useState<string>("");
     const [searchActive, setSearchActive] = useState<boolean>(false);
     const [subjectTypes, setSubjectTypes] = useState<{ id: string; name: string }[]>([]);
@@ -79,13 +83,13 @@ const DisplayFiles: React.FC = () => {
         fetchFiles();
     }, [semesterId, subjectId, topicId]);
 
-    const handleFileClick = (file: File) => {
-        setSelectedFile(file);
-    };
+    /*const handleFileClick = (file: File) => {
+        setSelectedFile(file); // No longer required, as FileView is displayed in page.
+    };*/
 
-    const handleCloseFileView = () => {
-        setSelectedFile(null);
-    };
+    /*const handleCloseFileView = () => {
+        setSelectedFile(null); // No longer required, as FileView is displayed in page.
+    };*/
 
     const handleSearch = async () => {
         if (!query.trim() && !selectedSubjectType) {
@@ -221,7 +225,7 @@ const DisplayFiles: React.FC = () => {
                             border border-rounded rounded-lg border-neutral-200 dark:border-neutral-800
                             hover:bg-neutral-100 hover:dark:bg-neutral-900
                             cursor-pointer transition-colors duration-300"
-                        onClick={() => handleFileClick(file)}
+                        onClick={() => onFileClick(file)}
                     >
                         <div className="flex justify-center w-10 h-10 rounded-lg bg-neutral-200 dark:bg-neutral-800">
                             <svg className="self-center h-6 w-6" width="13" height="16" viewBox="0 0 13 16" xmlns="http://www.w3.org/2000/svg">
@@ -242,12 +246,12 @@ const DisplayFiles: React.FC = () => {
                     </button>
                 ))}
             </ul>
-            {selectedFile && (
+            {/* {selectedFile && ( // No longer required, as FileView is displayed in page.
                 <FileView
                     file={selectedFile}
                     onClose={handleCloseFileView}
                 />
-            )}
+            )} */}
         </div>
     );
 };

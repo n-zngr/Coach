@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCollection, closeMongoDB } from "@/app/utils/mongodb";
+import { getCollection } from "@/app/utils/mongodb"; // add closeMongoDB when used
 
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';

@@ -21,8 +21,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             { $set: { filename: newFilename } }
         );
 
-        if (result.modifiedCount === 0) {
-            throw new Error('File not found or update failed');
+        if (result.modifiedCount > 0) {
+            console.log("Filename updated successfully.");
+        } else {
+            console.log("Filename update failed or no matching document found.");
         }
 
         return NextResponse.json({ message: 'File renamed successfully' });

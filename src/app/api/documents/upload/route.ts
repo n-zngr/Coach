@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         const userId = cookies?.match(/userId=([^;]*)/)?.[1];
 
         if (!userId) {
-            return NextResponse.json({ message: 'UserId is required'}, { status: 400 });
+            return NextResponse.json({ message: 'UserId is required' }, { status: 400 });
         }
 
         const formData = await req.formData();
@@ -38,8 +38,8 @@ export async function POST(req: Request) {
                 userId: userId,
                 semesterId: semesterId,
                 subjectId: subjectId,
-                topicId: topicId
-            }
+                topicId: topicId,
+            },
         });
 
         fileStream.pipe(uploadStream);

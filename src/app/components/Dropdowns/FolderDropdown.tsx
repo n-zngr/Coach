@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 
 type DropdownProps = {
-    onRename: () => void;
-    onDelete: () => void;
+    onRename?: () => void;
+    onDelete?: () => void;
+    [key: string]: any;
 }
 
-const FolderDropdown: React.FC<DropdownProps> = ({ onRename, onDelete }) => {
+const FolderDropdown: React.FC<DropdownProps> = (props) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -22,9 +23,7 @@ const FolderDropdown: React.FC<DropdownProps> = ({ onRename, onDelete }) => {
         const handleEscapePressed = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 setIsOpen(false);
-                if (buttonRef.current) {
-                    buttonRef.current.blur();
-                }
+                buttonRef.current?.blur();
             }
         };
 
@@ -37,16 +36,31 @@ const FolderDropdown: React.FC<DropdownProps> = ({ onRename, onDelete }) => {
         }
     }, []);
 
-    
+    const actions: { label: string; action?: () => void; style?: string }[] = [];
+
+    Object.entries(props).forEach(([key, value]) => {
+        if (typeof value === "function") {
+            actions.push({
+                label: key.replace(/^on/, ""), // Remove "on" prefix (e.g., "onRename" -> "Rename")
+                action: value,
+                style:
+                key === "onDelete"
+                    ? "text-red-500 hover:bg-red-100 dark:hover:!bg-red-500"
+                    : "",
+            });
+        }
+      });
 
     return (
         <div className="relative" ref={dropdownRef}>
-            <button onClick={toggleDropdown} ref={buttonRef} className='h-8 w-8
+            <button onClick={toggleDropdown}
+                ref={buttonRef}
+                className='h-8 w-8
                 bg-transparent hover:bg-black-100 dark:hover:bg-white-900
                 rounded-full
                 text-black-500 hover:text-white-500 dark:text-white-900 dark:hover:text-black-100
                 p-2
-                transition-colors duration-300 -z-0 focus:outline-none
+                active:scale-95 transition-all duration-300 -z-0 focus:outline-none
             '>
                 <svg width="100%" height="100%" viewBox="0 0 14 4" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 3.5C12.8284 3.5 13.5 2.82843 13.5 2C13.5 1.17157 12.8284 0.5 12 0.5C11.1716 0.5 10.5 1.17157 10.5 2C10.5 2.82843 11.1716 3.5 12 3.5Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
@@ -55,14 +69,25 @@ const FolderDropdown: React.FC<DropdownProps> = ({ onRename, onDelete }) => {
                 </svg>
             </button>
 
-            {isOpen && (
-                <div className="absolute left-0 mt-2 w-32 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-10">
-                    <button onClick={onRename} className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-                        Rename
-                    </button>
-                    <button onClick={onDelete} className="block w-full px-4 py-2 text-left text-red-500 hover:bg-red-100 dark:hover:bg-red-700">
-                        Delete
-                    </button>
+            {isOpen && actions.length > 0 && (
+                <div className="
+                absolute left-0 mt-2 w-32 flex flex-col
+                bg-white-900 dark:bg-black-100
+                border border-black-500 dark:border-white-500 rounded-lg
+                p-1 gap-1
+                font-light
+                transition-colors duration-300 z-10">
+                    {actions.map(({ label, action, style }) => (
+                        <button
+                            key={label}
+                            onClick={action}
+                            className={`
+                                ${style} block w-full px-4 py-2 hover:bg-black-100 dark:hover:bg-white-900 text-left hover:text-white-900 dark:hover:text-black-100
+                                capitalize rounded-md transition-colors`}
+                        >
+                            {label}
+                        </button>
+                    ))}
                 </div>
             )}
         </div>

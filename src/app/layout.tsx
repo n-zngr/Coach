@@ -34,6 +34,9 @@ const metropolis = localFont({
 export const metadata: Metadata = {
     title: "Coach",
     description: "Coaching you throughout your school career.",
+    icons: {
+        icon: '/icon-coach.svg'
+    }
 };
 
 export default function RootLayout({

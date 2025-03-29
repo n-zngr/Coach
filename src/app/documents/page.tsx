@@ -214,10 +214,7 @@ export default function Documents() {
                 <Topbar />
                 <div className='p-12 pt-[7.5rem]'>
                     <div>
-                        <FolderList items={semesters} basePath='/documents' onRename={handleRenameSemester} onDelete={handleDeleteSemester} onAddSemester={handleSubmit}>All Semesters</FolderList>
-                        <button onClick={() => setTriggerUpload(true)} className='bg-none hover:bg-black-100 hover:dark:bg-white-900 border border-black-100 dark:border-white-900 rounded-lg font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100 transition-colors duration-200 cursor-pointer px-4 py-2'>
-                            Upload File
-                        </button>
+                        <FolderList items={semesters} basePath='/documents' onRename={handleRenameSemester} onDelete={handleDeleteSemester} onAddSemester={handleSubmit} onTriggerUpload={() => setTriggerUpload(true)}>All Semesters</FolderList>
                     </div>
                     {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>

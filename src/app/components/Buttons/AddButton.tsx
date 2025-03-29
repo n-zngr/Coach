@@ -3,12 +3,13 @@ import FolderDropdown from '../Dropdowns/FolderDropdown';
 
 interface AddButtonProps {
     onTriggerNewSemester: () => void;
+    onTriggerUpload: () => void;
 }
 
 /**
  * Add Button displaying dropdown to add or upload items in documents page.
 */
-const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewSemester }) => {
+const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewSemester, onTriggerUpload }) => {
     const [showDropdown, setShowDropdown] = useState(false);
 
     return (
@@ -36,6 +37,10 @@ const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewSemester }) => {
                     onAddSemester={() => {
                         setShowDropdown(false);
                         onTriggerNewSemester();  // ✅ Triggers input field in FolderList.tsx
+                    }}
+                    onTriggerUpload={() => {
+                        setShowDropdown(false);
+                        onTriggerUpload();
                     }}
                 />
             )}

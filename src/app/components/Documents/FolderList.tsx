@@ -16,10 +16,11 @@ type FolderListProps = {
     onRename: (id: string, newName: string) => void;
     onDelete: (id: string) => void;
     onAddSemester: (id: string) => void;
+    onTriggerUpload: () => void;
     children: React.ReactNode;
 }
 
-const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDelete, onAddSemester, children }) => {
+const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDelete, onAddSemester, onTriggerUpload, children }) => {
     const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
     const [folderName, setFolderName] = useState('');
     const [originalName, setOriginalName] = useState('');
@@ -76,7 +77,7 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
             <header className="border-b border-black-500 dark:border-white-500 mb-8">
                 <div className="flex justify-between">
                     <h1 className="font-base text-xl self-end pb-1">{children}</h1>
-                    <AddButton onTriggerNewSemester={() => setShowNewSemesterFolder(true)} />
+                    <AddButton onTriggerNewSemester={() => setShowNewSemesterFolder(true)} onTriggerUpload={onTriggerUpload} />
                 </div>
             </header>
             <ul className="grid grid-cols-3 gap-4 mb-4">

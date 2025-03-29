@@ -11,7 +11,6 @@ import FileView from '@/app/components/FileView';
 import { AppFile } from '@/app/components/FileView';
 import Topbar from '../components/Documents/Topbar';
 import FolderList from '../components/Documents/FolderList';
-import DocumentsHeader from '../components/Documents/Header';
 
 type Topic = {
     id: string;
@@ -32,11 +31,11 @@ type Semester = {
 
 export default function Documents() {
     const [semesters, setSemesters] = useState<Semester[]>([]);
-    const [name, setName] = useState('');
+    // const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
-    const [renamingSemesterId, setRenamingSemesterId] = useState<string | null>(null);
-    const [renamingSemesterName, setRenamingSemesterName] = useState('');
+    const [, setRenamingSemesterId] = useState<string | null>(null);
+    const [, setRenamingSemesterName] = useState('');
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
     const [triggerUpload, setTriggerUpload] = useState(false);
     const router = useRouter();
@@ -105,7 +104,7 @@ export default function Documents() {
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (name: string) => {
         if (!name) return;
     
         try {
@@ -121,7 +120,6 @@ export default function Documents() {
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
-                setName('');
             } else {
                 console.error('Failed to add semester');
             }
@@ -215,14 +213,13 @@ export default function Documents() {
             >
                 <Topbar />
                 <div className='p-12 pt-[7.5rem]'>
-                    <DocumentsHeader>All Semesters</DocumentsHeader>
-                    <main>
-                        <FolderList items={semesters} basePath='/documents' onRename={handleRenameSemester} onDelete={handleDeleteSemester}/>
+                    <div>
+                        <FolderList items={semesters} basePath='/documents' onRename={handleRenameSemester} onDelete={handleDeleteSemester} onAddSemester={handleSubmit}>All Semesters</FolderList>
                         <button onClick={() => setTriggerUpload(true)} className='bg-none hover:bg-black-100 hover:dark:bg-white-900 border border-black-100 dark:border-white-900 rounded-lg font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100 transition-colors duration-200 cursor-pointer px-4 py-2'>
                             Upload File
                         </button>
-                    </main>
-                    
+                    </div>
+                    {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                     <div className="mb-4">
                         <input
@@ -238,7 +235,7 @@ export default function Documents() {
                         >
                             Add Semester
                         </button>
-                    </div>
+                    </div>*/}
                     {/*}
                     <h2 className="text-xl font-semibold mb-2">Semesters</h2>
                     <ul className="flex flex-wrap gap-4 mb-4">

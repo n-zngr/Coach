@@ -11,6 +11,7 @@ import FileView from '@/app/components/FileView';
 import { AppFile } from '@/app/components/FileView';
 import Topbar from '../components/Documents/Topbar';
 import FolderList from '../components/Documents/FolderList';
+import DocumentsHeader from '../components/Documents/Header';
 
 type Topic = {
     id: string;
@@ -210,6 +211,7 @@ export default function Documents() {
             >
                 <Topbar />
                 <div className='p-12 pt-[7.5rem]'>
+                    <DocumentsHeader>All Semesters</DocumentsHeader>
                     <main>
                         <FolderList items={semesters} basePath='/documents' onRename={handleRenameSemester} onDelete={handleDeleteSemester}/>
                     </main>

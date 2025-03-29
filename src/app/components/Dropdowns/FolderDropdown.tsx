@@ -8,6 +8,7 @@ type DropdownProps = {
 
 const FolderDropdown: React.FC<DropdownProps> = (props) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isRightAligned, setIsRightAligned] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -35,6 +36,16 @@ const FolderDropdown: React.FC<DropdownProps> = (props) => {
             document.removeEventListener('keydown', handleEscapePressed);
         }
     }, []);
+
+    useEffect(() => {
+        if (isOpen && buttonRef.current) {
+            const buttonRect = buttonRef.current.getBoundingClientRect();
+            const dropdownWidth = 128;
+            const isClipping = buttonRect.left + dropdownWidth > window.innerWidth;
+
+            setIsRightAligned(isClipping);
+        }
+    }, [isOpen])
 
     const actions: { label: string; action?: () => void; style?: string }[] = [];
 
@@ -70,13 +81,13 @@ const FolderDropdown: React.FC<DropdownProps> = (props) => {
             </button>
 
             {isOpen && actions.length > 0 && (
-                <div className="
-                absolute left-0 mt-2 w-32 flex flex-col
+                <div className={`absolute ${isRightAligned ? 'right-0' : 'left-0'} w-32
+                flex flex-col
                 bg-white-900 dark:bg-black-100
                 border border-black-500 dark:border-white-500 rounded-lg
-                p-1 gap-1
+                gap-1 p-1 mt-2
                 font-light
-                transition-colors duration-300 z-10">
+                transition-colors duration-300 z-10`}>
                     {actions.map(({ label, action, style }) => (
                         <button
                             key={label}

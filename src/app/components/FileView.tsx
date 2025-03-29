@@ -472,7 +472,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
             >   {/* Additional height element to padding below, avoiding 0.8px distortion*/}
                 <header className='h-[4.5rem] flex flex-col justify-center border-b border-black-900 dark:border-white-100 px-6 mb-6'>
                     <div className="flex flex-row justify-between">
-                        <div className="flex">
+                        <div className="flex items-center">
                             <div className="size-[24px]">
                                 <svg width="16.12" height="20" viewBox="0 0 19 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M5.56764 7.15385H8.49766M5.56764 11.7692H12.8927M5.56764 16.3846H12.8927M17.2877 19.4615C17.2877 19.8696 17.1334 20.2609 16.8586 20.5494C16.5839 20.8379 16.2113 21 15.8227 21H2.63762C2.24907 21 1.87644 20.8379 1.6017 20.5494C1.32696 20.2609 1.17261 19.8696 1.17261 19.4615V2.53846C1.17261 2.13044 1.32696 1.73912 1.6017 1.4506C1.87644 1.16209 2.24907 1 2.63762 1H9.96267L17.2877 8.69231V19.4615Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -517,7 +517,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         px-3 py-1 gap-2
                         hover:text-white-900 hover:dark:text-black-100
                         transition-colors duration-300
-                        '>
+                    '>
                         <p>
                             {filePath || "Location not set"}
                         </p>

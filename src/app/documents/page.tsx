@@ -38,6 +38,7 @@ export default function Documents() {
     const [renamingSemesterId, setRenamingSemesterId] = useState<string | null>(null);
     const [renamingSemesterName, setRenamingSemesterName] = useState('');
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
+    const [triggerUpload, setTriggerUpload] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -204,9 +205,12 @@ export default function Documents() {
             {selectedFile && (
                 <FileView file={selectedFile} onClose={handleCloseFileView} />
             )}
+            {triggerUpload && (
+                <UploadFile triggerUpload={triggerUpload} setTriggerUpload={setTriggerUpload} />
+            )}
             <div className={`flex-1 transition-all duration-200
                     ${isExpanded ? "pl-64" : "pl-12"}
-                    ${selectedFile ? "pr-96" : ""}
+                    ${selectedFile || triggerUpload ? "pr-96" : ""}
                 `}
             >
                 <Topbar />
@@ -214,6 +218,9 @@ export default function Documents() {
                     <DocumentsHeader>All Semesters</DocumentsHeader>
                     <main>
                         <FolderList items={semesters} basePath='/documents' onRename={handleRenameSemester} onDelete={handleDeleteSemester}/>
+                        <button onClick={() => setTriggerUpload(true)} className='bg-none hover:bg-black-100 hover:dark:bg-white-900 border border-black-100 dark:border-white-900 rounded-lg font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100 transition-colors duration-200 cursor-pointer px-4 py-2'>
+                            Upload File
+                        </button>
                     </main>
                     
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
@@ -306,7 +313,6 @@ export default function Documents() {
                         ))}
                     </ul>
                     {*/}
-                    <UploadFile />
                     <RecentFiles />
                     <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                     <DisplayFiles onFileClick={handleFileClick} />

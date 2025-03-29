@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, ChangeEvent } from "react";
+import { useState, useEffect } from "react"; // useCallback, ChangeEvent, useRef
 
 interface Semester {
     id: string;
@@ -25,7 +25,12 @@ interface Tag {
     name: string;
 }
 
-const UploadFile: React.FC = () => {
+interface UploadFileProps {
+    triggerUpload: boolean;
+    setTriggerUpload: (value: boolean) => void;
+}
+
+const UploadFile: React.FC<UploadFileProps> = ({ triggerUpload, setTriggerUpload }) => {
     const [semesters, setSemesters] = useState<Semester[]>([]);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [file, setFile] = useState<File | null>(null);
@@ -34,14 +39,18 @@ const UploadFile: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [showUploadCard, setShowUploadCard] = useState(false);
+    //const [showUploadCard, setShowUploadCard] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [uploadType, setUploadType] = useState<"file" | "link">("file");
-    const [tagInput, setTagInput] = useState("");
+    // const [tagInput, setTagInput] = useState("");
     const [tags, setTags] = useState<Tag[]>([]);
-    const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+    // const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
 
-    const uploadButtonRef = useRef<HTMLButtonElement | null>(null);
+    // const uploadButtonRef = useRef<HTMLButtonElement | null>(null);
+
+    const closeUploadCard = () => {
+        setTriggerUpload(false);
+    };
 
     useEffect(() => {
         const fetchSemesters = async () => {
@@ -173,17 +182,13 @@ const UploadFile: React.FC = () => {
             }
 
             setSelectedOption(null);
-            setShowUploadCard(false);
+            setTriggerUpload(false);
         } catch (error) {
             console.error("Error during upload: ", error);
             setErrorMessage(uploadType === "file" ? "File upload failed." : "Link upload failed.");
         } finally {
             setLoading(false);
         }
-    };
-
-    const toggleUploadCard = () => {
-        setShowUploadCard((prev) => !prev);
     };
 
     /*const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -230,195 +235,181 @@ const UploadFile: React.FC = () => {
     }, []); only used in commented out section :^)*/
 
     return (
-        <div className="file-upload-container relative">
-            <button
-                onClick={toggleUploadCard}
-                ref={uploadButtonRef}
-                className="bg-none hover:bg-black-100 hover:dark:bg-white-900 border border-black-100 dark:border-white-900 rounded-lg font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100 transition-colors duration-200 cursor-pointer px-4 py-2"
+        <div className="fixed top-0 right-0 h-screen flex justify-end text-black-100 dark:text-white-900 z-10">
+            <div
+                className={`h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto
+                    border-l border-black-900 dark:border-white-100
+                    transition-transform duration-300
+                    ${triggerUpload ? "translate-x-0 w-96" : "translate-x-full w-0"}
+                `}
             >
-                Upload File
-            </button>
-
-            {showUploadCard && (
-                <div className="fixed top-0 right-0 h-screen flex justify-end text-black-100 dark:text-white-900 z-10">
-                    <div className="h-full flex flex-col bg-white-900 dark:bg-black-100 overflow-y-auto border-l border-black-900 dark:border-white-100 transition-transform duration-300 w-96">
-                        <header className='flex flex-col p-6 pb-4 border-b border-black-900 dark:border-white-100 mb-6'>
-                            <div className="flex flex-row justify-between">
-                                <div className="flex">
-                                    <div className="size-[24px]">
-                                        <svg width="16.12" height="20" viewBox="0 0 19 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M5.56764 7.15385H8.49766M5.56764 11.7692H12.8927M5.56764 16.3846H12.8927M17.2877 19.4615C17.2877 19.8696 17.1334 20.2609 16.8586 20.5494C16.5839 20.8379 16.2113 21 15.8227 21H2.63762C2.24907 21 1.87644 20.8379 1.6017 20.5494C1.32696 20.2609 1.17261 19.8696 1.17261 19.4615V2.53846C1.17261 2.13044 1.32696 1.73912 1.6017 1.4506C1.87644 1.16209 2.24907 1 2.63762 1H9.96267L17.2877 8.69231V19.4615Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    </div>
-                                    <div className="flex">
-                                        <h1 className="text-xl font-light">Upload {uploadType === "file" ? "File" : "Link"}</h1>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <button className="text-red-500" onClick={toggleUploadCard}>
-                                        Close [X]
-                                    </button>
-                                </div>
-                            </div>
-                        </header>
-
-                        <div className="flex flex-col gap-4 px-6 pb-6">
-                            <div className="flex space-x-2">
-                                <button
-                                    onClick={() => setUploadType("file")}
-                                    className={`px-4 py-2 rounded ${uploadType === "file" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}
-                                >
-                                    Upload File
-                                </button>
-                                <button
-                                    onClick={() => setUploadType("link")}
-                                    className={`px-4 py-2 rounded ${uploadType === "link" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}
-                                >
-                                    Upload Link
-                                </button>
-                            </div>
-
-                            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-                            {successMessage && <p className="text-green-500">{successMessage}</p>}
-
-                            {uploadType === "file" && (
-                                <>
-                                    <div
-                                        className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragging ? 'border-blue-500' : 'border-gray-400'}`}
-                                        onDragOver={handleDragOver}
-                                        onDragLeave={handleDragLeave}
-                                        onDrop={handleDrop}
-                                    >
-                                        {file ? (
-                                            <div>
-                                                <p>Selected file: {file.name}</p>
-                                                <button onClick={handleClearFile} className="mt-2 text-sm text-red-500">
-                                                    Clear File
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <p>Drag and drop a file here or click to select a file.</p>
-                                                <input type="file" onChange={handleFileChange} className="hidden" id="file-input" />
-                                                <label htmlFor="file-input" className="mt-2 bg-blue-500 text-white px-4 py-2 rounded inline-block cursor-pointer">
-                                                    Select File
-                                                </label>
-                                            </>
-                                        )}
-                                    </div>
-                                </>
-                            )}
-
-                            {uploadType === "link" && (
-                                <>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700">Link Name</label>
-                                        <input
-                                            type="text"
-                                            value={linkName}
-                                            onChange={(e) => setLinkName(e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700">Link URL</label>
-                                        <input
-                                            type="text"
-                                            value={linkUrl}
-                                            onChange={(e) => setLinkUrl(e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                    </div>
-
-                                    {/* Tag Section */}
-                                    {/*}
-                                    <div className="mb-4">
-                                        <div className="tag-input-container">
-                                            <input
-                                                type="text"
-                                                placeholder="Type tag name"
-                                                value={tagInput}
-                                                onChange={handleInputChange}
-                                                className="w-full p-2 border rounded-md text-black"
-                                            />
-                                        </div>
-                                        <div className="add-button-container mt-2 flex space-x-2">
-                                            <button
-                                                onClick={handleAddTag}
-                                                className="bg-green-500 text-white px-4 py-2 rounded-md"
-                                            >
-                                                Add
-                                            </button>
-                                            <button
-                                                onClick={handleRenameTag}
-                                                disabled={!selectedTag}
-                                                className="bg-yellow-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
-                                            >
-                                                Rename Tag
-                                            </button>
-                                        </div>
-                                        <div className="tags-container mt-4 flex flex-wrap">
-                                            {tags.map((tag) => (
-                                                <div
-                                                    key={tag._id || tag.id}
-                                                    onClick={() => selectTag(tag)}
-                                                    className=={`tag-box inline-block border rounded-md p-2 mr-2 mb-2 relative bg-gray-200 text-black cursor-pointer ${selectedTag && (selectedTag._id || selectedTag.id) === (tag._id || tag.id) ? "border-blue-500" : ""}`}
-                                                >
-                                                    {tag.name}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleRemoveTag(tag);
-                                                        }}
-                                                        className="absolute top-0 right-0 p-1 text-red-500"
-                                                        aria-label={`Remove tag ${tag.name}`}
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>*/}
-                                </>
-                            )}
-
-                            {/* Topic Selection */}
-                            {(uploadType === "file" || uploadType === "link") && (
-                                <>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700">Select Topic</label>
-                                        <select
-                                            value={selectedOption || ""}
-                                            onChange={(e) => setSelectedOption(e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        >
-                                            <option value="" disabled>Select a topic</option>
-                                            {semesters.map((semester) => (
-                                                semester.subjects.map((subject) => (
-                                                    subject.topics.map((topic) => (
-                                                        <option key={`${semester.id}/${subject.id}/${topic.id}`} value={`${semester.id}/${subject.id}/${topic.id}`}>
-                                                            {semester.name} - {subject.name} - {topic.name}
-                                                        </option>
-                                                    ))
-                                                ))
-                                            ))}
-                                        </select>
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Upload Button */}
-                            <button
-                                onClick={handleUpload}
-                                disabled={loading || !selectedOption || (uploadType === "file" && !file) || (uploadType === "link" && (!linkName || !linkUrl))}
-                                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
-                            >
-                                {loading ? "Uploading..." : `Upload ${uploadType === "file" ? "File" : "Link"}`}
+                <header className="h-[4.5rem] flex flex-col justify-center border-b border-black-900 dark:border-white-100 px-6 mb-6">
+                    <div className="flex flex-row justify-between">
+                        <div className="flex">
+                            <h1 className="text-xl font-light">Upload {uploadType === "file" ? "File" : "Link"}</h1>
+                        </div>
+                        <div className="flex items-center">
+                            <button className="text-red-500" onClick={closeUploadCard}>
+                                Close [X]
                             </button>
                         </div>
                     </div>
+                </header>
+                <div className="flex flex-col gap-4 px-6 pb-6">
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={() => setUploadType("file")}
+                            className={`px-4 py-2 rounded ${uploadType === "file" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}
+                        >
+                            Upload File
+                        </button>
+                        <button
+                            onClick={() => setUploadType("link")}
+                            className={`px-4 py-2 rounded ${uploadType === "link" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}
+                        >
+                            Upload Link
+                        </button>
+                    </div>
+
+                    {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+                    {successMessage && <p className="text-green-500">{successMessage}</p>}
+
+                    {uploadType === "file" && (
+                        <>
+                            <div
+                                className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragging ? 'border-blue-500' : 'border-gray-400'}`}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                            >
+                                {file ? (
+                                    <div>
+                                        <p>Selected file: {file.name}</p>
+                                        <button onClick={handleClearFile} className="mt-2 text-sm text-red-500">
+                                            Clear File
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p>Drag and drop a file here or click to select a file.</p>
+                                        <input type="file" onChange={handleFileChange} className="hidden" id="file-input" />
+                                        <label htmlFor="file-input" className="mt-2 bg-blue-500 text-white px-4 py-2 rounded inline-block cursor-pointer">
+                                            Select File
+                                        </label>
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {uploadType === "link" && (
+                        <>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Link Name</label>
+                                <input
+                                    type="text"
+                                    value={linkName}
+                                    onChange={(e) => setLinkName(e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Link URL</label>
+                                <input
+                                    type="text"
+                                    value={linkUrl}
+                                    onChange={(e) => setLinkUrl(e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                            </div>
+
+                            {/* Tag Section */}
+                            {/*}
+                            <div className="mb-4">
+                                <div className="tag-input-container">
+                                    <input
+                                        type="text"
+                                        placeholder="Type tag name"
+                                        value={tagInput}
+                                        onChange={handleInputChange}
+                                        className="w-full p-2 border rounded-md text-black"
+                                    />
+                                </div>
+                                <div className="add-button-container mt-2 flex space-x-2">
+                                    <button
+                                        onClick={handleAddTag}
+                                        className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                    >
+                                        Add
+                                    </button>
+                                    <button
+                                        onClick={handleRenameTag}
+                                        disabled={!selectedTag}
+                                        className="bg-yellow-500 text-white px-4 py-2 rounded-md disabled:opacity-50"
+                                    >
+                                        Rename Tag
+                                    </button>
+                                </div>
+                                <div className="tags-container mt-4 flex flex-wrap">
+                                    {tags.map((tag) => (
+                                        <div
+                                            key={tag._id || tag.id}
+                                            onClick={() => selectTag(tag)}
+                                            className=={`tag-box inline-block border rounded-md p-2 mr-2 mb-2 relative bg-gray-200 text-black cursor-pointer ${selectedTag && (selectedTag._id || selectedTag.id) === (tag._id || tag.id) ? "border-blue-500" : ""}`}
+                                        >
+                                            {tag.name}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveTag(tag);
+                                                }}
+                                                className="absolute top-0 right-0 p-1 text-red-500"
+                                                aria-label={`Remove tag ${tag.name}`}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>*/}
+                        </>
+                    )}
+
+                    {/* Topic Selection */}
+                    {(uploadType === "file" || uploadType === "link") && (
+                        <>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Select Topic</label>
+                                <select
+                                    value={selectedOption || ""}
+                                    onChange={(e) => setSelectedOption(e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                >
+                                    <option value="" disabled>Select a topic</option>
+                                    {semesters.map((semester) => (
+                                        semester.subjects.map((subject) => (
+                                            subject.topics.map((topic) => (
+                                                <option key={`${semester.id}/${subject.id}/${topic.id}`} value={`${semester.id}/${subject.id}/${topic.id}`}>
+                                                    {semester.name} - {subject.name} - {topic.name}
+                                                </option>
+                                            ))
+                                        ))
+                                    ))}
+                                </select>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Upload Button */}
+                    <button
+                        onClick={handleUpload}
+                        disabled={loading || !selectedOption || (uploadType === "file" && !file) || (uploadType === "link" && (!linkName || !linkUrl))}
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
+                    >
+                        {loading ? "Uploading..." : `Upload ${uploadType === "file" ? "File" : "Link"}`}
+                    </button>
                 </div>
-            )}
+            </div>
         </div>
     );
 };

@@ -469,8 +469,8 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                     transition-transform duration-300 
                     ${file ? "translate-x-0 w-96" : "translate-x-full w-0"}
                 `}
-            >
-                <header className='flex flex-col p-6 pb-4 border-b border-black-900 dark:border-white-100 mb-6'>
+            >   {/* Additional height element to padding below, avoiding 0.8px distortion*/}
+                <header className='h-[4.5rem] flex flex-col justify-center border-b border-black-900 dark:border-white-100 px-6 mb-6'>
                     <div className="flex flex-row justify-between">
                         <div className="flex">
                             <div className="size-[24px]">

@@ -3,7 +3,43 @@ import { MongoClient } from 'mongodb';
 
 const MONGODB_URI = process.env.MONGODB_URI! as string;
 
-// POST-Route (vorhanden)
+export async function GET(req: Request) {
+    const client = new MongoClient(MONGODB_URI);
+
+    try {
+        const cookies = req.headers.get('cookie');
+        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
+
+        if (!userId) {
+            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+        }
+
+        const semesterId = req.headers.get('semesterId');
+        const subjectId = req.headers.get('subjectId');
+        const topicId = req.headers.get('topicId');
+
+        await client.connect();
+        const db = client.db('documents');
+        const linksCollection = db.collection('links');
+
+        const query: any = { 'metadata.userId': userId };
+
+        if (semesterId) query['metadata.semesterId'] = semesterId;
+        if (subjectId) query['metadata.subjectId'] = subjectId;
+        if (topicId) query['metadata.topicId'] = topicId;
+
+        const links = await linksCollection.find(query).toArray();
+
+        console.log(links);
+        return NextResponse.json(links);
+    } catch (error) {
+        console.error('Error fetching links:', error);
+        return NextResponse.json({ message: 'Failed to fetch links', error }, { status: 500 });
+    } finally {
+        await client.close();
+    }
+}
+
 export async function POST(req: Request) {
     const client = new MongoClient(MONGODB_URI);
 
@@ -48,40 +84,3 @@ export async function POST(req: Request) {
     }
 }
 
-
-export async function GET(req: Request) {
-    const client = new MongoClient(MONGODB_URI);
-
-    try {
-        const cookies = req.headers.get('cookie');
-        const userId = cookies?.match(/userId=([^;]*)/)?.[1];
-
-        if (!userId) {
-            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
-        }
-
-        const semesterId = req.headers.get('semesterId');
-        const subjectId = req.headers.get('subjectId');
-        const topicId = req.headers.get('topicId');
-
-        await client.connect();
-        const db = client.db('documents');
-        const linksCollection = db.collection('links');
-
-        const query: any = { 'metadata.userId': userId };
-
-        if (semesterId) query['metadata.semesterId'] = semesterId;
-        if (subjectId) query['metadata.subjectId'] = subjectId;
-        if (topicId) query['metadata.topicId'] = topicId;
-
-        const links = await linksCollection.find(query).toArray();
-
-        console.log(links);
-        return NextResponse.json(links);
-    } catch (error) {
-        console.error('Error fetching links:', error);
-        return NextResponse.json({ message: 'Failed to fetch links', error }, { status: 500 });
-    } finally {
-        await client.close();
-    }
-}

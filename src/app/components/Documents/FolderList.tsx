@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import FolderDropdown from '../Dropdowns/FolderDropdown';
 import AddButton from '../Buttons/AddButton';
+import IcsUploader from '@/app/components/Documents/IcsUploader';
 
 type FolderItem = {
     id: string;
@@ -15,18 +16,21 @@ type FolderListProps = {
     basePath: string;
     onRename: (id: string, newName: string) => void;
     onDelete: (id: string) => void;
-    onAddSemester: (id: string) => void;
+    onAddItem: (id: string) => void;
     onTriggerUpload: () => void;
+    onUploadSuccess?: () => void;
     children: React.ReactNode;
+    itemType: 'semester' | 'subject' | 'topics';
 }
 
-const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDelete, onAddSemester, onTriggerUpload, children }) => {
+const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDelete, onAddItem, onTriggerUpload, children, itemType, onUploadSuccess }) => {
     const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
     const [folderName, setFolderName] = useState('');
     const [originalName, setOriginalName] = useState('');
     const [showDropdown, setShowDropdown] = useState<string | null>(null);
-    const [showNewSemesterFolder, setShowNewSemesterFolder] = useState(false);
-    const [newSemesterName, setNewSemesterName] = useState('');
+    const [showNewItemFolder, setShowNewItemFolder] = useState(false);
+    const [newItemName, setNewItemName] = useState('');
+    const [showIcsUploader, setShowIcsUploader] = useState(false);
 
     const toggleDropdown = (id: string) => {
         setShowDropdown(showDropdown === id ? null : id);
@@ -77,18 +81,18 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
             <header className="border-b border-black-500 dark:border-white-500 mb-8">
                 <div className="flex justify-between">
                     <h1 className="font-base text-xl self-end pb-1">{children}</h1>
-                    <AddButton onTriggerNewSemester={() => setShowNewSemesterFolder(true)} onTriggerUpload={onTriggerUpload} />
+                    <AddButton onTriggerNewItem={() => setShowNewItemFolder(true)} onTriggerUpload={onTriggerUpload} onTriggerImport={() => setShowIcsUploader(true)} itemType={itemType} />
                 </div>
             </header>
             <ul className="grid grid-cols-3 gap-4 mb-4">
                 {items.map((item) => (
                     <li
-                    key={item.id}
-                    className="flex items-center justify-between
-                    bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
-                    border hover:border-black-100 hover:dark:border-white-900 rounded-xl
-                    p-4
-                    transition-colors duration-300"
+                        key={item.id}
+                        className="flex items-center justify-between
+                        bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
+                        border hover:border-black-100 hover:dark:border-white-900 rounded-xl
+                        p-4
+                        transition-colors duration-300"
                     >
                         <Link href={`${basePath}/${item.id}`} className="flex gap-4 flex-1">
                             <div className='flex justify-center items-center'>
@@ -142,7 +146,7 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                         />
                     </li>
                 ))}
-                {showNewSemesterFolder && (
+                {showNewItemFolder && (
                     <li className="flex items-center justify-between
                         border rounded-xl
                         bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
@@ -150,9 +154,9 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                         transition-colors duration-300">
                         <input 
                             type="text" 
-                            value={newSemesterName} 
-                            onChange={(e) => setNewSemesterName(e.target.value)} 
-                            placeholder="New Semester Name"
+                            value={newItemName} 
+                            onChange={(e) => setNewItemName(e.target.value)} 
+                            placeholder="New Name"
                             className="w-full
                             bg-transparent
                             border-b border-black-500 dark:border-white-500 focus:outline-none
@@ -161,18 +165,35 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                             />
                         <button 
                             onClick={() => {
-                                if (newSemesterName.trim()) {
-                                    onAddSemester(newSemesterName.trim());
-                                    setShowNewSemesterFolder(false);
+                                if (newItemName.trim()) {
+                                    onAddItem(newItemName.trim());
+                                    setShowNewItemFolder(false);
                                 }
                             }}
                             className="bg-none hover:bg-black-100 hover:dark:bg-white-900
                             border border-black-100 dark:border-white-900 rounded-full
                             font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
                             py-1 px-3
-                            transition-colors duration-200 cursor-pointer text-nowrap">
-                            Add Semester
+                            transition-colors duration-200 cursor-pointer text-nowrap"
+                        >
+                            Add {itemType.charAt(0).toUpperCase() + itemType.slice(1)}
                         </button>
+                    </li>
+                )}
+                {showIcsUploader && (
+                    <li className="flex flex-row items-center justify-between
+                        border rounded-xl
+                        bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
+                        gap-4 p-4
+                        transition-colors duration-300"
+                    >
+                        <IcsUploader 
+                            onUploadSuccess={() => {
+                                setShowIcsUploader(false);
+                                onUploadSuccess?.();
+                            }} 
+                            /*onCancel={() => setShowIcsUploader(false)}*/
+                        />
                     </li>
                 )}
             </ul>

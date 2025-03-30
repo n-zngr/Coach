@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import FolderDropdown from '../Dropdowns/FolderDropdown';
 
+export type AddButtonItemType = 'semesters' | 'subjects' | 'topics' | 'none';
+
 interface AddButtonProps {
-    onTriggerNewItem: () => void;
+    onTriggerNewItem?: () => void;
     onTriggerUpload: () => void;
-    onTriggerImport: () => void;
-    itemType?: 'semester' | 'subject' | 'topics';
+    onTriggerImport?: () => void;
+    itemType?: AddButtonItemType;
 }
 
 /**
  * Add Button displaying dropdown to add or upload items in documents page.
 */
-const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewItem, onTriggerUpload, onTriggerImport, itemType = 'semester' }) => {
+const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewItem, onTriggerUpload, onTriggerImport, itemType = 'semesters' }) => {
     const [showDropdown, setShowDropdown] = useState(false);
 
     return (
@@ -39,7 +41,7 @@ const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewItem, onTriggerUpload
                     itemType={itemType}
                     onAddItem={() => {
                         setShowDropdown(false);
-                        onTriggerNewItem();
+                        onTriggerNewItem?.();
                     }}
                     onTriggerUpload={() => {
                         setShowDropdown(false);
@@ -47,7 +49,7 @@ const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewItem, onTriggerUpload
                     }}
                     onTriggerImport={() => {
                         setShowDropdown(false);
-                        onTriggerImport();
+                        onTriggerImport?.();
                     }}
                 />
             )}

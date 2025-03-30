@@ -5,12 +5,15 @@ type DropdownProps = {
     onClose: () => void;
     onRename?: () => void;
     onDelete?: () => void;
-    onAddSemester?: () => void;
-    showNewSemesterOnly?: boolean;
+    onAddItem?: () => void;
+    showNewItemOnly?: boolean;
+    itemType?: 'semester' | 'subject' | 'topics';
+    onTriggerUpload?: () => void;
+    onTriggerImport?: () => void;
     [key: string]: any;
 }
 
-const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, onDelete, onAddSemester, showNewSemesterOnly, onTriggerUpload }) => {
+const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, onDelete, onAddItem, showNewItemOnly, onTriggerUpload, onTriggerImport, itemType = 'semester' }) => {
     const [isRightAligned, setIsRightAligned] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -86,15 +89,15 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
                 font-light
                 transition-colors duration-300 z-10`}
             >
-                {showNewSemesterOnly ? (
+                {showNewItemOnly ? (
                     <>
                         <button
                             onClick={() => {
-                                onAddSemester?.();
+                                onAddItem?.();
                                 onClose();
                             }}
                             className="flex w-full items-center
-                                    hover:bg-black-100 dark:hover:bg-white-900 text-left 
+                                    hover:bg-black-100 dark:hover:bg-white-900 text-left
                                     hover:text-white-900 dark:hover:text-black-100
                                     gap-2 px-2 py-2
                                     capitalize rounded-md transition-colors text-nowrap"
@@ -104,7 +107,7 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
                                     <path d="M5 1V9M1 4.97538H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
-                            <p>New Semester</p>
+                            <p>New {itemType}</p>
                         </button>
                         <button
                             onClick={() => {
@@ -112,10 +115,10 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
                                 onClose();
                             }}
                             className="flex w-full items-center
-                                    hover:bg-black-100 dark:hover:bg-white-900 text-left 
-                                    hover:text-white-900 dark:hover:text-black-100
-                                    gap-2 px-2 py-2
-                                    capitalize rounded-md transition-colors text-nowrap"
+                                hover:bg-black-100 dark:hover:bg-white-900 text-left 
+                                hover:text-white-900 dark:hover:text-black-100
+                                gap-2 px-2 py-2
+                                capitalize rounded-md transition-colors text-nowrap"
                         >
                             <div className="h-4 w-4 flex justify-center">
                             <svg width="100%" height="100%" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -124,6 +127,27 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
                             </div>
                             <p>Upload File</p>
                         </button>
+                        {itemType === 'subject' && (
+                            <button
+                                onClick={() => {
+                                    onTriggerImport?.();
+                                    onClose();
+                                }}
+                                className="flex w-full items-center
+                                    hover:bg-black-100 dark:hover:bg-white-900 text-left 
+                                    hover:text-white-900 dark:hover:text-black-100
+                                    gap-2 px-2 py-2
+                                    capitalize rounded-md transition-colors text-nowrap"
+                            >
+                                <div className="h-4 w-4 flex justify-center">
+                                    {/* Add an appropriate icon for import */}
+                                    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4 12V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V12M12 2V16M12 16L8 12M12 16L16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                                <p>Import</p>
+                            </button>
+                        )}
                     </>
                 ) : (
                     <>

@@ -2,14 +2,16 @@ import { useState } from 'react';
 import FolderDropdown from '../Dropdowns/FolderDropdown';
 
 interface AddButtonProps {
-    onTriggerNewSemester: () => void;
+    onTriggerNewItem: () => void;
     onTriggerUpload: () => void;
+    onTriggerImport: () => void;
+    itemType?: 'semester' | 'subject' | 'topics';
 }
 
 /**
  * Add Button displaying dropdown to add or upload items in documents page.
 */
-const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewSemester, onTriggerUpload }) => {
+const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewItem, onTriggerUpload, onTriggerImport, itemType = 'semester' }) => {
     const [showDropdown, setShowDropdown] = useState(false);
 
     return (
@@ -33,14 +35,19 @@ const AddButton: React.FC<AddButtonProps> = ({ onTriggerNewSemester, onTriggerUp
                 <FolderDropdown
                     isOpen={showDropdown}
                     onClose={() => setShowDropdown(false)}
-                    showNewSemesterOnly={true}  // ✅ This will control the dropdown content
-                    onAddSemester={() => {
+                    showNewItemOnly={true}
+                    itemType={itemType}
+                    onAddItem={() => {
                         setShowDropdown(false);
-                        onTriggerNewSemester();  // ✅ Triggers input field in FolderList.tsx
+                        onTriggerNewItem();
                     }}
                     onTriggerUpload={() => {
                         setShowDropdown(false);
                         onTriggerUpload();
+                    }}
+                    onTriggerImport={() => {
+                        setShowDropdown(false);
+                        onTriggerImport();
                     }}
                 />
             )}

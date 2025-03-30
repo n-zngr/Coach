@@ -8,6 +8,7 @@ import RecentFiles from '@/app/components/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from "@/app/components/Navigation/Navigation";
 import FileView, { AppFile } from "@/app/components/FileView";
+import LinkView, {AppLink} from "@/app/components/LinkView";
 import Topbar from "@/app/components/Documents/Topbar";
 
 type Topic = {
@@ -20,6 +21,7 @@ const TopicPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
+    const [selectedLink, setSelectedLink] = useState<AppLink | null>(null);
     const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
     const [subjectName, setSubjectName] = useState<string | undefined>(undefined);
     const [topicName, setTopicName] = useState<string | undefined>(undefined);
@@ -29,31 +31,6 @@ const TopicPage = () => {
     const subjectId = params?.subjectId as string;
     const topicId = params?.topicId as string;
 
-    useEffect(() => {
-        const authenticateUser = async () => {
-            try {
-                const response = await fetch('/api/auth', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    console.warn('User not authenticated, redirecting to /login');
-                    router.push('/login');
-                    return;
-                }
-
-                if (semesterId && subjectId && topicId) {
-                    fetchTopic();
-                }
-            } catch (error) {
-                console.error('Error authenticating user:', error);
-                router.push('/login');
-            }
-        }
-
-        authenticateUser();
-    }, [semesterId, subjectId, topicId]);
 
     const fetchTopic = async () => {
         try {
@@ -96,6 +73,30 @@ const TopicPage = () => {
         }
     };
 
+    useEffect(() => {
+    const authenticateUser = async () => {
+        try {
+        const response = await fetch('/api/auth', {
+        method: 'GET',
+        credentials: 'include'
+        });
+
+        if (!response.ok) {
+        router.push('/login');
+        return;
+        }
+
+        if (semesterId && subjectId && topicId) {
+        await fetchTopic(); // ✅ Jetzt wird es verwendet
+        }
+    }   catch {
+        router.push('/login');
+    }
+  };
+
+    authenticateUser();
+    }, [semesterId, subjectId, topicId, router]);
+
     const toggleNavigation = () => {
         setIsExpanded(!isExpanded);
     }
@@ -108,6 +109,14 @@ const TopicPage = () => {
         setSelectedFile(null);
     };
 
+    const handleLinkClick = (link: AppLink) => {
+        setSelectedLink(link);
+      };
+      
+      const handleCloseLinkView = () => {
+        setSelectedLink(null);
+      };
+
     if (isLoading) {
         return (
             <div className="container mx-auto p-4">
@@ -119,15 +128,18 @@ const TopicPage = () => {
     return (
         <div>
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-            {selectedFile && (
-                <FileView file={selectedFile} onClose={handleCloseFileView} />
-            )}
+
+            {/* Right Sidebar: FileView or LinkView */}
+            {selectedFile && <FileView file={selectedFile} onClose={handleCloseFileView} />}
+            {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
+            
             <div className={`flex-1 transition-all duration-300
                     ${isExpanded ? "ml-64" : "ml-12"} 
-                    ${selectedFile ? "mr-96" : ""}
+                    ${selectedFile || selectedLink ? "mr-96" : ""}
                 `}
             >
                 <Topbar path={`${semesterName} / ${subjectName} / ${topicName}`} />
+
                 <div className='p-12 pt-[7.5rem]'>
                     <h1 className="text-2xl font-bold mb-4">{topic ? topic.name : "Unknown Topic"}</h1>
                     
@@ -135,7 +147,7 @@ const TopicPage = () => {
                     
                     <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                     <RecentFiles />
-                    <DisplayFiles onFileClick={handleFileClick} />
+                    <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
                 </div>
             </div>
         </div>

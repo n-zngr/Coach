@@ -34,8 +34,8 @@ export default function Documents() {
     // const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
-    const [editingSemesterId, setEditingSemesterId] = useState<string | null>(null);
-    const [editingSemesterName, setEditingSemesterName] = useState('');
+    const [, setRenamingSemesterId] = useState<string | null>(null);
+    const [, setRenamingSemesterName] = useState('');
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
     const [selectedLink, setSelectedLink] = useState<AppLink | null>(null);
     const router = useRouter();
@@ -149,7 +149,7 @@ export default function Documents() {
         }
     };
 
-    const handleEditSemester = async (semesterId: string, newName: string) => {
+    const handleRenameSemester = async (semesterId: string, newName: string) => {
         try {
             const response = await fetch('/api/documents/semesters', {
                 method: 'PUT',
@@ -166,8 +166,8 @@ export default function Documents() {
                         semester.id === semesterId ? { ...semester, name: newName } : semester
                     )
                 );
-                setEditingSemesterId(null);
-                setEditingSemesterName('');
+                setRenamingSemesterId(null);
+                setRenamingSemesterName('');
             } else {
                 console.error('Failed to update semester');
             }

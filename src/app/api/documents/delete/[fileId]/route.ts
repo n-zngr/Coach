@@ -8,7 +8,7 @@ import { getCollection } from '@/app/utils/mongodb';
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 
-/* @ts-ignore */
+// @ts-expect-error - Suppressing Next.js API route export error
 export async function DELETE(request: Request, params: { fileId: string }) {
     try {
         const fileId = await params.fileId;

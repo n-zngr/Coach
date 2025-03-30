@@ -10,6 +10,7 @@ import UploadFile from '@/app/components/UploadFile';
 import FileView from '@/app/components/FileView';
 import { AppFile } from '@/app/components/FileView';
 import Topbar from '../components/Documents/Topbar';
+import LinkView, { AppLink } from '@/app/components/LinkView';
 
 type Topic = {
     id: string;
@@ -36,6 +37,7 @@ export default function Documents() {
     const [editingSemesterId, setEditingSemesterId] = useState<string | null>(null);
     const [editingSemesterName, setEditingSemesterName] = useState('');
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
+    const [selectedLink, setSelectedLink] = useState<AppLink | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -187,6 +189,14 @@ export default function Documents() {
         setSelectedFile(null);
     };
 
+    const handleLinkClick = (link: AppLink) => {
+        setSelectedLink(link);
+    };
+    
+    const handleCloseLinkView = () => {
+        setSelectedLink(null);
+    };
+
 
     if (isLoading) {
         return (
@@ -199,9 +209,9 @@ export default function Documents() {
     return (
         <div className="flex h-screen">
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-            {selectedFile && (
-                <FileView file={selectedFile} onClose={handleCloseFileView} />
-            )}
+            {/* Right Sidebar: FileView or LinkView */}
+            {selectedFile && <FileView file={selectedFile} onClose={handleCloseFileView} />}
+            {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
             <div className={`flex-1 transition-all duration-200
                     ${isExpanded ? "pl-64" : "pl-12"}
                     ${selectedFile ? "pr-96" : ""}
@@ -297,7 +307,8 @@ export default function Documents() {
                     <UploadFile />
                     <RecentFiles />
                     <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-                    <DisplayFiles onFileClick={handleFileClick} />
+                    <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
+
                 </div>
             </div>
         </div>

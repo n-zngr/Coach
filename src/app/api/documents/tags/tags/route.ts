@@ -6,63 +6,72 @@ import { getCollection } from "@/app/utils/mongodb";
 const USER_DB = "users";
 const USER_COL = "users";
 
-// Files are stored in the "documents" database, collection "fs.files".
+// Files and Links are in "documents" database.
 const FILE_DB = "documents";
 const FILE_COL = "fs.files";
+const LINK_COL = "links";
 
-/**
- * Cleanup unused tags from the global tag store in the user's document.
- * It finds all files for the user, collects the tag IDs used in file metadata,
- * then removes any tag from the user's document whose id is not in that set.
- */
 async function cleanupUnusedTags(userId: string) {
     try {
         const filesCollection = await getCollection(FILE_DB, FILE_COL);
-        const files = await filesCollection.find({ "metadata.userId": userId }).toArray();
+        const linksCollection = await getCollection(FILE_DB, LINK_COL);
+
+        const [files, links] = await Promise.all([
+            filesCollection.find({ "metadata.userId": userId }).toArray(),
+            linksCollection.find({ "metadata.userId": userId }).toArray()
+        ]);
+
         const usedTagIds = new Set<string>();
-        files.forEach((file) => {
-            const fileTags = file.metadata?.tags || [];
-            fileTags.forEach((tag: any) => {
+        for (const doc of [...files, ...links]) {
+            const tags = doc.metadata?.tags || [];
+            for (const tag of tags) {
                 if (tag.id) {
                     usedTagIds.add(tag.id);
                 }
-            });
-        });
+            }
+        }
+
         const usersCollection = await getCollection(USER_DB, USER_COL);
         await usersCollection.updateOne(
             { _id: new ObjectId(userId) },
-            { $pull: { tags: { id: { $nin: Array.from(usedTagIds) } } } } as any // Reduces type-safety in TypeScript
+            { $pull: { tags: { id: { $nin: Array.from(usedTagIds) } } } } as any
         );
-    } catch (error) {
-        console.error("Error cleaning up unused tags:", error);
+    } catch (err) {
+        console.error("Error cleaning unused tags:", err);
     }
+}
+
+async function getDocumentById(docId: string) {
+    const filesCollection = await getCollection(FILE_DB, FILE_COL);
+    const linksCollection = await getCollection(FILE_DB, LINK_COL);
+    const objectId = new ObjectId(docId);
+
+    const file = await filesCollection.findOne({ _id: objectId });
+    if (file) return { doc: file, collection: filesCollection };
+
+    const link = await linksCollection.findOne({ _id: objectId });
+    if (link) return { doc: link, collection: linksCollection };
+
+    return { doc: null, collection: null };
 }
 
 export async function GET(req: Request) {
     try {
-        // Expect a fileId as a query parameter.
         const { searchParams } = new URL(req.url);
         const fileId = searchParams.get("fileId");
-        if (!fileId) {
-            return NextResponse.json({ error: "fileId query parameter is required" }, { status: 400 });
-        }
+        if (!fileId) return NextResponse.json({ error: "fileId is required" }, { status: 400 });
+
         const cookies = req.headers.get("cookie");
         const userId = cookies?.match(/userId=([^;]*)/)?.[1];
-        if (!userId) {
-            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
-        }
-        const filesCollection = await getCollection(FILE_DB, FILE_COL);
-        const fileDoc = await filesCollection.findOne({ _id: new ObjectId(fileId) });
-        if (!fileDoc) {
-            return NextResponse.json({ error: "File not found" }, { status: 404 });
-        }
-        // Assume file-specific tags are stored in metadata.tags.
-        const tags = fileDoc.metadata?.tags || [];
-        // Clean up unused global tags before returning.
+        if (!userId) return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+
+        const { doc } = await getDocumentById(fileId);
+        if (!doc) return NextResponse.json({ error: "Document not found" }, { status: 404 });
+
         await cleanupUnusedTags(userId);
-        return NextResponse.json({ tags });
+        return NextResponse.json({ tags: doc.metadata?.tags || [] });
     } catch (error) {
-        console.error("Error in GET /api/documents/tags:", error);
+        console.error("GET error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -70,28 +79,23 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const { fileId, tag } = await req.json();
-        if (!fileId || !tag || typeof tag !== "string" || tag.trim() === "") {
-            return NextResponse.json({ error: "fileId and a valid tag are required" }, { status: 400 });
+        if (!fileId || !tag || typeof tag !== "string" || !tag.trim()) {
+            return NextResponse.json({ error: "fileId and valid tag required" }, { status: 400 });
         }
-        const trimmedTag = tag.trim();
 
-        // Extract userId from the cookie.
+        const trimmedTag = tag.trim();
         const cookies = req.headers.get("cookie");
         const userId = cookies?.match(/userId=([^;]*)/)?.[1];
-        if (!userId) {
-            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
-        }
+        if (!userId) return NextResponse.json({ error: "UserId required" }, { status: 400 });
 
-        // STEP 1: Update the global tag store in the user's document.
         const usersCollection = await getCollection(USER_DB, USER_COL);
         const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
-        // Check for an existing global tag (case-insensitive)
+        if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
         let globalTag = user.tags?.find((t: any) =>
             t.name.toLowerCase() === trimmedTag.toLowerCase()
         );
+
         if (!globalTag) {
             globalTag = { id: new ObjectId().toString(), name: trimmedTag };
             await usersCollection.updateOne(
@@ -100,97 +104,95 @@ export async function POST(req: Request) {
             );
         }
 
-        // STEP 2: Update the file document to link to the global tag.
-        const filesCollection = await getCollection(FILE_DB, FILE_COL);
-        const updateResult = await filesCollection.updateOne(
+        const { doc, collection } = await getDocumentById(fileId);
+        if (!doc || !collection) return NextResponse.json({ error: "Document not found" }, { status: 404 });
+
+        await collection.updateOne(
             { _id: new ObjectId(fileId) },
             { $addToSet: { "metadata.tags": globalTag } }
         );
-        if (updateResult.modifiedCount === 0) {
-            const fileDoc = await filesCollection.findOne({ _id: new ObjectId(fileId) });
-            await cleanupUnusedTags(userId);
-            return NextResponse.json({ tags: fileDoc?.metadata?.tags || [] });
-        }
-        const updatedFile = await filesCollection.findOne({ _id: new ObjectId(fileId) });
+
+        const updatedDoc = await collection.findOne({ _id: new ObjectId(fileId) });
         await cleanupUnusedTags(userId);
-        return NextResponse.json({ tags: updatedFile?.metadata?.tags || [] }, { status: 201 });
-    } catch (error: any) {
-        console.error("Error in POST /api/documents/tags:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ tags: updatedDoc?.metadata?.tags || [] }, { status: 201 });
+    } catch (error) {
+        console.error("POST error:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
 
 export async function PUT(req: Request) {
     try {
-        // Extract userId from cookie.
         const cookies = req.headers.get("cookie");
         const userId = cookies?.match(/userId=([^;]*)/)?.[1];
-        if (!userId) {
-            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
-        }
-        // Extract tagId and newName from the request body.
+        if (!userId) return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+
         const { tagId, newName } = await req.json();
-        if (!tagId || !newName || typeof newName !== "string" || newName.trim() === "") {
-            return NextResponse.json({ error: "Tag id and a valid newName are required" }, { status: 400 });
+        if (!tagId || !newName || typeof newName !== "string" || !newName.trim()) {
+            return NextResponse.json({ error: "Valid tagId and newName required" }, { status: 400 });
         }
         const trimmedName = newName.trim();
 
-        // Update the global tag in the user's document.
         const usersCollection = await getCollection(USER_DB, USER_COL);
-        const userUpdateResult = await usersCollection.updateOne(
+        const userUpdate = await usersCollection.updateOne(
             { _id: new ObjectId(userId), "tags.id": tagId },
             { $set: { "tags.$.name": trimmedName } }
         );
-        if (userUpdateResult.modifiedCount === 0) {
-            return NextResponse.json({ error: "Global tag not found or not updated" }, { status: 404 });
+        if (userUpdate.modifiedCount === 0) {
+            return NextResponse.json({ error: "Tag not found" }, { status: 404 });
         }
 
-        // Update all file documents that reference this tag.
         const filesCollection = await getCollection(FILE_DB, FILE_COL);
-        const filesUpdateResult = await filesCollection.updateMany(
+        const linksCollection = await getCollection(FILE_DB, LINK_COL);
+
+        const updateFiles = filesCollection.updateMany(
             { "metadata.tags.id": tagId },
             { $set: { "metadata.tags.$[elem].name": trimmedName } },
             { arrayFilters: [{ "elem.id": tagId }] }
         );
 
+        const updateLinks = linksCollection.updateMany(
+            { "metadata.tags.id": tagId },
+            { $set: { "metadata.tags.$[elem].name": trimmedName } },
+            { arrayFilters: [{ "elem.id": tagId }] }
+        );
+
+        const [filesUpdate, linksUpdate] = await Promise.all([updateFiles, updateLinks]);
         await cleanupUnusedTags(userId);
+
         return NextResponse.json({
             message: "Tag renamed",
-            userUpdateResult,
-            filesUpdateResult,
-        }, { status: 200 });
-    } catch (error: any) {
-        console.error("Error in PUT /api/documents/tags:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+            filesUpdate,
+            linksUpdate,
+        });
+    } catch (error) {
+        console.error("PUT error:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
 
 export async function DELETE(req: Request) {
     try {
         const { fileId, tag } = await req.json();
-        if (!fileId || !tag) {
-            return NextResponse.json({ error: "fileId and tag are required" }, { status: 400 });
-        }
-        // Extract userId from cookie (if needed for permissions)
+        if (!fileId || !tag) return NextResponse.json({ error: "fileId and tag are required" }, { status: 400 });
+
         const cookies = req.headers.get("cookie");
         const userId = cookies?.match(/userId=([^;]*)/)?.[1];
-        if (!userId) {
-            return NextResponse.json({ error: "UserId is required" }, { status: 400 });
-        }
-        // Update the file's tags in the files collection.
-        const filesCollection = await getCollection(FILE_DB, FILE_COL);
-        const updateResult = await filesCollection.updateOne(
+        if (!userId) return NextResponse.json({ error: "UserId required" }, { status: 400 });
+
+        const { doc, collection } = await getDocumentById(fileId);
+        if (!doc || !collection) return NextResponse.json({ error: "Document not found" }, { status: 404 });
+
+        await collection.updateOne(
             { _id: new ObjectId(fileId) },
-            { $pull: { "metadata.tags": { name: tag } } } as any // Reduces type-safety in TypeScript
+            { $pull: { "metadata.tags": { name: tag } } } as any
         );
-        if (updateResult.modifiedCount === 0) {
-            return NextResponse.json({ error: "Tag not found or file not found" }, { status: 404 });
-        }
-        const updatedFile = await filesCollection.findOne({ _id: new ObjectId(fileId) });
+
+        const updatedDoc = await collection.findOne({ _id: new ObjectId(fileId) });
         await cleanupUnusedTags(userId);
-        return NextResponse.json({ tags: updatedFile?.metadata?.tags || [] });
+        return NextResponse.json({ tags: updatedDoc?.metadata?.tags || [] });
     } catch (error) {
-        console.error("Error in DELETE /api/documents/tags:", error);
+        console.error("DELETE error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

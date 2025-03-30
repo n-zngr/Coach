@@ -214,7 +214,18 @@ export default function Documents() {
                 <Topbar />
                 <div className='p-12 pt-[7.5rem]'>
                     <div>
-                        <FolderList items={semesters} basePath='/documents' onRename={handleRenameSemester} onDelete={handleDeleteSemester} onAddSemester={handleSubmit} onTriggerUpload={() => setTriggerUpload(true)}>All Semesters</FolderList>
+                        <FolderList
+                            items={semesters}
+                            basePath='/documents'
+                            onRename={handleRenameSemester}
+                            onDelete={handleDeleteSemester}
+                            onAddItem={handleSubmit}
+                            onUploadSuccess={fetchSemesters}
+                            onTriggerUpload={() => setTriggerUpload(true)}
+                            itemType="semester"
+                        >
+                            All Semesters
+                        </FolderList>
                     </div>
                     {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>

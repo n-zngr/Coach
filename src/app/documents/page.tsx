@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import Navigation from '@/app/components/Navigation/Navigation';
 import DisplayFiles from '@/app/components/DisplayFiles';
-import RecentFiles from '@/app/components/RecentFiles';
+import RecentFiles from '@/app/components/Documents/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import FileView from '@/app/components/FileView';
 import { AppFile } from '@/app/components/FileView';
@@ -219,6 +219,21 @@ export default function Documents() {
             >
                 <Topbar />
                 <div className='p-12 pt-[7.5rem]'>
+                    <div>
+                        <FolderList
+                            items={semesters}
+                            basePath='/documents'
+                            onRename={handleRenameSemester}
+                            onDelete={handleDeleteSemester}
+                            onAddItem={handleSubmit}
+                            onUploadSuccess={fetchSemesters}
+                            onTriggerUpload={() => setTriggerUpload(true)}
+                            itemType='semesters'
+                        >
+                            All Semesters
+                        </FolderList>
+                    </div>
+                    {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                     <div className="mb-4">
                         <input

@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from 'next/navigation';
+import { toTitleCase } from "@/app/utils/stringUtils";
 
 import DisplayFiles from "@/app/components/DisplayFiles";
-import RecentFiles from "@/app/components/RecentFiles";
+import RecentFiles from "@/app/components/Documents/RecentFiles";
 import UploadFile from '@/app/components/UploadFile';
-import IcsUploader from '@/app/components/IcsUploader';
+// import IcsUploader from '@/app/components/IcsUploader';
 import Navigation from '@/app/components/Navigation/Navigation';
 import FileView, { AppFile } from "@/app/components/FileView";
 import Topbar from "@/app/components/Documents/Topbar";
 import LinkView, { AppLink } from '@/app/components/LinkView';
+import FolderList from "@/app/components/Documents/FolderList";
+
 
 type Topic = {
     id: string;
@@ -25,18 +28,19 @@ type Subject = {
 
 export default function SemesterPage() {
     const [subjects, setSubjects] = useState<Subject[]>([]);
-    const [name, setName] = useState('');
+    // const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
-    const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
-    const [editingSubjectName, setEditingSubjectName] = useState('');
+    const [, setRenamingSubjectId] = useState<string | null>(null);
+    const [, setRenamingSubjectName] = useState('');
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
     const [selectedLink, setSelectedLink] = useState<AppLink | null>(null);
     const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
+    const [triggerUpload, setTriggerUpload] = useState(false);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId;
-
+    
     useEffect(() => {
         const authenticateUser = async () => {
             try {
@@ -61,7 +65,7 @@ export default function SemesterPage() {
         }
 
         authenticateUser();
-    }, [semesterId]);
+    }, [semesterId, router]);
 
     const fetchSubjects = async () => {
         try {
@@ -105,7 +109,7 @@ export default function SemesterPage() {
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (name: string) => {
         if (!name) return;
 
         try {
@@ -119,7 +123,6 @@ export default function SemesterPage() {
             if (response.ok) {
                 const newSubject = await response.json();
                 setSubjects((prev) => [...prev, newSubject]);
-                setName('');
             } else {
                 console.error('Failed to add subject');
             }
@@ -147,7 +150,7 @@ export default function SemesterPage() {
         }
     };
 
-    const handleEditSubject = async (subjectId: string, newName: string) => {
+    const handleRenameSubject = async (subjectId: string, newName: string) => {
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}`, {
                 method: "PUT",
@@ -162,8 +165,8 @@ export default function SemesterPage() {
                         subject.id === subjectId ? { ...subject, name: newName } : subject
                     )
                 );
-                setEditingSubjectId(null);
-                setEditingSubjectName('');
+                setRenamingSubjectId(null);
+                setRenamingSubjectName('');
             } else {
                 console.error('Failed to update subject');
             }
@@ -203,19 +206,37 @@ export default function SemesterPage() {
     return (
         <div>
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-            {/* Right Sidebar: FileView or LinkView */}
-            {selectedFile && <FileView file={selectedFile} onClose={handleCloseFileView} />}
+
+            {selectedFile && (
+                <FileView file={selectedFile} onClose={handleCloseFileView} />
+            )}
+            {triggerUpload && (
+                <UploadFile triggerUpload={triggerUpload} setTriggerUpload={setTriggerUpload} />
+            )}
             {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
+
             <div className={`flex-1 transition-all duration-200
                     ${isExpanded ? "pl-64" : "pl-12"}
-                    ${selectedFile ? "pr-96" : ""}
+                    ${selectedFile || triggerUpload ? "pr-96" : ""}
                 `}
             >
-                <Topbar path={semesterName} />
+                <Topbar path={toTitleCase(semesterName)} />
                 <div className='p-12 pt-[7.5rem]'>
-
-                    <h1 className="text-2xl font-bold mb-4">Manage Subjects</h1>
-
+                    <div>
+                        <FolderList
+                            items={subjects}
+                            basePath={`/documents/${semesterId}`}
+                            onRename={handleRenameSubject}
+                            onDelete={handleDeleteSubject}
+                            onAddItem={handleSubmit}
+                            onUploadSuccess={fetchSubjects}
+                            onTriggerUpload={() => setTriggerUpload(true)}
+                            itemType="subjects"
+                        >
+                            {toTitleCase(semesterName) || 'Semester'} Subjects
+                        </FolderList>
+                    </div>
+                    {/*}
                     <div className="mb-4">
                         <input
                             type="text"
@@ -230,10 +251,12 @@ export default function SemesterPage() {
                         >
                             Add Subject
                         </button>
+                    */}
                         {/* Pass fetchSubjects as a prop to IcsUploader */}
-                        <IcsUploader onUploadSuccess={fetchSubjects} />
-                    </div>
+                    {/*</div>*/}
 
+                    {/*<IcsUploader onUploadSuccess={fetchSubjects} />*/}
+                    {/*}
                     <h2 className="text-xl font-semibold mb-2">Subjects</h2>
                     {subjects.length === 0 ? (
                         <p>No subjects found. Add a new subject to get started.</p>
@@ -269,6 +292,8 @@ export default function SemesterPage() {
                                             />
                                         </div>
                                     )}
+                                    */}
+                                    {/*}
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleDeleteSubject(subject.id)}
@@ -294,13 +319,11 @@ export default function SemesterPage() {
                                                 Edit
                                             </button>
                                         )}
-                                    </div>
+                                    </div>}
                                 </div>
                             ))}
                         </ul>
-                    )}
-
-                    <UploadFile />
+                    )}*/}
                     <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                     <RecentFiles />
                     <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />

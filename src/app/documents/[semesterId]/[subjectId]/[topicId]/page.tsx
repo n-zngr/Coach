@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toTitleCase } from "@/app/utils/stringUtils";
 
 import DisplayFiles from '@/app/components/DisplayFiles';
-import RecentFiles from '@/app/components/RecentFiles';
+import RecentFiles from '@/app/components/Documents/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from "@/app/components/Navigation/Navigation";
 import FileView, { AppFile } from "@/app/components/FileView";
 import LinkView, {AppLink} from "@/app/components/LinkView";
 import Topbar from "@/app/components/Documents/Topbar";
+import AddButton from "@/app/components/Buttons/AddButton";
 
 type Topic = {
     id: string;
@@ -25,6 +27,7 @@ const TopicPage = () => {
     const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
     const [subjectName, setSubjectName] = useState<string | undefined>(undefined);
     const [topicName, setTopicName] = useState<string | undefined>(undefined);
+    const [triggerUpload, setTriggerUpload] = useState(false);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId as string;
@@ -129,21 +132,29 @@ const TopicPage = () => {
         <div>
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
 
-            {/* Right Sidebar: FileView or LinkView */}
-            {selectedFile && <FileView file={selectedFile} onClose={handleCloseFileView} />}
+            {selectedFile && (
+                <FileView file={selectedFile} onClose={handleCloseFileView} />
+            )}
             {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
-            
-            <div className={`flex-1 transition-all duration-300
-                    ${isExpanded ? "ml-64" : "ml-12"} 
-                    ${selectedFile || selectedLink ? "mr-96" : ""}
+            {triggerUpload && (
+                <UploadFile triggerUpload={triggerUpload} setTriggerUpload={setTriggerUpload} />
+            )}
+            <div className={`flex-1 transition-all duration-200
+                    ${isExpanded ? "pl-64" : "pl-12"}
+                    ${selectedFile || triggerUpload || selectedLink ? "pr-96" : ""}
                 `}
             >
-                <Topbar path={`${semesterName} / ${subjectName} / ${topicName}`} />
+                <Topbar path={`${toTitleCase(semesterName)} / ${toTitleCase(subjectName)} / ${toTitleCase(topicName)}`} />
 
                 <div className='p-12 pt-[7.5rem]'>
+                    <header className="border-b border-black-500 dark:border-white-500 mb-8">
+                        <div className="flex justify-between">
+                            <h1 className="font-base text-xl self-end pb-1">{topic ? topic.name : "Topic"}</h1>
+                            <AddButton onTriggerUpload={() => setTriggerUpload(true)} itemType='none' />
+                        </div>
+                    </header>
                     <h1 className="text-2xl font-bold mb-4">{topic ? topic.name : "Unknown Topic"}</h1>
                     
-                    <UploadFile />
                     
                     <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                     <RecentFiles />

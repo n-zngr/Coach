@@ -5,9 +5,9 @@ import { getCollection } from '@/app/utils/mongodb';
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 
-export async function DELETE(request: Request, { params }: { params: { id: string } } ) { // removed req: Request since unused
+export async function DELETE(request: Request, { params }: { params: { id: string } } ) {
     try {
-        const { id } = await params;
+        const { id } = params;
 
         const bucket = await getCollection(DATABASE_NAME, COLLECTION_NAME);
         const deleteFile = await bucket.deleteOne({ _id: new ObjectId(id) });

@@ -1,4 +1,5 @@
 /* eslint-disable */
+/* @ts-ignore */
 
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
@@ -7,7 +8,7 @@ import { getCollection } from '@/app/utils/mongodb';
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 
-async function DELETE(request: Request, params: { fileId: string }) {
+export async function DELETE(request: Request, params: { fileId: string }) {
     try {
         const fileId = await params.fileId;
 

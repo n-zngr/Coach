@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { toTitleCase } from "@/app/utils/stringUtils";
 
 import DisplayFiles from "@/app/components/DisplayFiles";
-import RecentFiles from "@/app/components/RecentFiles";
+import RecentFiles from "@/app/components/Documents/RecentFiles";
 import UploadFile from '@/app/components/UploadFile';
 // import IcsUploader from '@/app/components/IcsUploader';
 import Navigation from '@/app/components/Navigation/Navigation';

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import Navigation from '@/app/components/Navigation/Navigation';
 import DisplayFiles from '@/app/components/DisplayFiles';
-import RecentFiles from '@/app/components/RecentFiles';
+import RecentFiles from '@/app/components/Documents/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import FileView from '@/app/components/FileView';
 import { AppFile } from '@/app/components/FileView';

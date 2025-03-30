@@ -31,7 +31,7 @@ type Semester = {
 
 export default function Documents() {
     const [semesters, setSemesters] = useState<Semester[]>([]);
-    const [name, setName] = useState('');
+    // const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
     const [editingSemesterId, setEditingSemesterId] = useState<string | null>(null);
@@ -104,7 +104,7 @@ export default function Documents() {
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (name: string) => {
         if (!name) return;
     
         try {
@@ -120,7 +120,6 @@ export default function Documents() {
             if (response.ok) {
                 const newSemester = await response.json();
                 setSemesters((prev) => [...prev, newSemester]);
-                setName('');
             } else {
                 console.error('Failed to add semester');
             }

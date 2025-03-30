@@ -210,8 +210,12 @@ export default function Documents() {
     return (
         <div className="flex h-screen">
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-            {/* Right Sidebar: FileView or LinkView */}
-            {selectedFile && <FileView file={selectedFile} onClose={handleCloseFileView} />}
+            {selectedFile && (
+                <FileView file={selectedFile} onClose={handleCloseFileView} />
+            )}
+            {triggerUpload && (
+                <UploadFile triggerUpload={triggerUpload} setTriggerUpload={setTriggerUpload} />
+            )}
             {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
             <div className={`flex-1 transition-all duration-200
                     ${isExpanded ? "pl-64" : "pl-12"}

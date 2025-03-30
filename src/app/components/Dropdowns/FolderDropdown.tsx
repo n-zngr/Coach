@@ -118,9 +118,9 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
                                     capitalize rounded-md transition-colors text-nowrap"
                         >
                             <div className="h-4 w-4 flex justify-center">
-                                <svg width="100%" height="100%" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M7 10V4M4 7H10M1 4.2V9.8C1 10.9201 1 11.4802 1.21799 11.908C1.40973 12.2843 1.71569 12.5903 2.09202 12.782C2.51984 13 3.07989 13 4.2 13H9.8C10.9201 13 11.4802 13 11.908 12.782C12.2843 12.5903 12.5903 12.2843 12.782 11.908C13 11.4802 13 10.9201 13 9.8V4.2C13 3.0799 13 2.51984 12.782 2.09202C12.5903 1.71569 12.2843 1.40973 11.908 1.21799C11.4802 1 10.9201 1 9.8 1H4.2C3.0799 1 2.51984 1 2.09202 1.21799C1.71569 1.40973 1.40973 1.71569 1.21799 2.09202C1 2.51984 1 3.07989 1 4.2Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
+                            <svg width="100%" height="100%" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
                             </div>
                             <p>Upload File</p>
                         </button>

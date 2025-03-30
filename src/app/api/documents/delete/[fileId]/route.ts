@@ -8,7 +8,7 @@ import { getCollection } from '@/app/utils/mongodb';
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 
-// @ts-expect-error - Suppressing Next.js API route export error
+// eslint-disable-next-line @next/next/no-unsupported-http-method
 export async function DELETE(request: Request, params: { fileId: string }) {
     try {
         const fileId = await params.fileId;

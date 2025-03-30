@@ -5,8 +5,7 @@ import { getCollection } from '@/app/utils/mongodb';
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 
-// @ts-nocheck
-export async function DELETE(request: Request, { params }: { params: { fileId: string } } ) {
+export async function DELETE(_request: Request, { params }: { params: { fileId: string } } ) {
     try {
         const { fileId } = await params;
 

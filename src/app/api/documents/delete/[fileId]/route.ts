@@ -7,9 +7,9 @@ import { getCollection } from '@/app/utils/mongodb';
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 
-export async function DELETE(request: Request, context: { params?: { fileId?: string } } = {}) {
+export async function DELETE(request: Request, params: { fileId?: string }) {
     try {
-        const fileId = context.params?.fileId;
+        const fileId = await params.fileId;
 
         if (!fileId) {
             return NextResponse.json({ message: 'File ID is required' }, { status: 400 });

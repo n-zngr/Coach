@@ -25,7 +25,7 @@ export async function GET(req: Request) {
         if (subjectId) query['metadata.subjectId'] = subjectId;
         if (topicId) query['metadata.topicId'] = topicId;
 
-        const files = await filesCollection.find(query).toArray();
+        const files = await filesCollection.find({ ...query, url: { $exists: false } }).toArray();
 
         return NextResponse.json(files, { status: 200 });
     } catch (error) {

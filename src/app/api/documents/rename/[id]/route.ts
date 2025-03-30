@@ -23,8 +23,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
         if (result.modifiedCount > 0) {
             console.log("Filename updated successfully.");
-        } else {
-            console.log("Filename update failed or no matching document found.");
         }
 
         return NextResponse.json({ message: 'File renamed successfully' });

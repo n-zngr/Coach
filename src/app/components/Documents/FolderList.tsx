@@ -85,8 +85,9 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                     <li
                     key={item.id}
                     className="flex items-center justify-between
-                    p-4 border rounded-lg bg-white 
                     bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
+                    border hover:border-black-100 hover:dark:border-white-900 rounded-xl
+                    p-4
                     transition-colors duration-300"
                     >
                         <Link href={`${basePath}/${item.id}`} className="flex gap-4 flex-1">
@@ -95,7 +96,7 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                                     min-w-12 min-h-12
                                     flex justify-center items-center
                                     bg-white-800 dark:bg-black-200
-                                    border border-black-900 dark:border-white-900 rounded-md
+                                    border border-black-500 dark:border-white-500 rounded-md
                                     text-black-500 dark:text-white-500
                                     p-2">
                                     <svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -142,13 +143,21 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                     </li>
                 ))}
                 {showNewSemesterFolder && (
-                    <li className="flex items-center justify-between p-4 border rounded-lg bg-white-900 dark:bg-black-100">
+                    <li className="flex items-center justify-between
+                        border rounded-xl
+                        bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
+                        gap-4 p-4
+                        transition-colors duration-300">
                         <input 
                             type="text" 
                             value={newSemesterName} 
                             onChange={(e) => setNewSemesterName(e.target.value)} 
                             placeholder="New Semester Name"
-                            className="w-full bg-transparent border-b border-gray-500 focus:outline-none font-medium text-lg"
+                            className="w-full
+                            bg-transparent
+                            border-b border-black-500 dark:border-white-500 focus:outline-none
+                            focus:border-black-900 focus:dark:border-white-900
+                            font-medium text-lg placeholder:text-black-500 placeholder:dark:text-white-500"
                             />
                         <button 
                             onClick={() => {
@@ -157,7 +166,11 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                                     setShowNewSemesterFolder(false);
                                 }
                             }}
-                            className="bg-blue-500 text-white px-4 py-2 rounded ml-2">
+                            className="bg-none hover:bg-black-100 hover:dark:bg-white-900
+                            border border-black-100 dark:border-white-900 rounded-full
+                            font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
+                            py-1 px-3
+                            transition-colors duration-200 cursor-pointer text-nowrap">
                             Add Semester
                         </button>
                     </li>

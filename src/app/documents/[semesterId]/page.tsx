@@ -217,7 +217,7 @@ export default function SemesterPage() {
                             onAddItem={handleSubmit}
                             onUploadSuccess={fetchSubjects}
                             onTriggerUpload={() => setTriggerUpload(true)}
-                            itemType="subject"
+                            itemType="subjects"
                         >
                             {toTitleCase(semesterName) || 'Semester'} Subjects
                         </FolderList>

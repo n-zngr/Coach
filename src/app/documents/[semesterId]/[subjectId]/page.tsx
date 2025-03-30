@@ -211,7 +211,7 @@ const SubjectPage = () => {
                             onDelete={handleDeleteTopic}
                             onAddItem={handleSubmit}
                             onTriggerUpload={() => setTriggerUpload(true)}
-                            itemType="topics"
+                            itemType='topics'
                         >
                             {toTitleCase(subjectName) || 'Subject'} Topics
                         </FolderList>

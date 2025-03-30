@@ -222,7 +222,7 @@ export default function Documents() {
                             onAddItem={handleSubmit}
                             onUploadSuccess={fetchSemesters}
                             onTriggerUpload={() => setTriggerUpload(true)}
-                            itemType="semester"
+                            itemType='semesters'
                         >
                             All Semesters
                         </FolderList>

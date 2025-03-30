@@ -38,6 +38,7 @@ export default function Documents() {
     const [, setRenamingSemesterName] = useState('');
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
     const [selectedLink, setSelectedLink] = useState<AppLink | null>(null);
+    const [triggerUpload, setTriggerUpload] = useState(false);
     const router = useRouter();
 
     useEffect(() => {

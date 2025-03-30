@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import FolderDropdown from '../Dropdowns/FolderDropdown';
-import AddButton from '../Buttons/AddButton';
+import AddButton, { AddButtonItemType } from '../Buttons/AddButton';
 import IcsUploader from '@/app/components/Documents/IcsUploader';
 
 type FolderItem = {
@@ -20,7 +20,7 @@ type FolderListProps = {
     onTriggerUpload: () => void;
     onUploadSuccess?: () => void;
     children: React.ReactNode;
-    itemType: 'semester' | 'subject' | 'topics';
+    itemType: AddButtonItemType;
 }
 
 const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDelete, onAddItem, onTriggerUpload, children, itemType, onUploadSuccess }) => {

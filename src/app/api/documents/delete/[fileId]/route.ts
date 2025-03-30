@@ -5,12 +5,12 @@ import { getCollection } from '@/app/utils/mongodb';
 const DATABASE_NAME = 'documents';
 const COLLECTION_NAME = 'fs.files';
 
-export async function DELETE(request: Request, { params }: { params: { id: string } } ) {
+export async function DELETE(request: Request, { params }: { params: { fileId: string } } ) {
     try {
-        const { id } = params;
+        const { fileId } = await params;
 
         const bucket = await getCollection(DATABASE_NAME, COLLECTION_NAME);
-        const deleteFile = await bucket.deleteOne({ _id: new ObjectId(id) });
+        const deleteFile = await bucket.deleteOne({ _id: new ObjectId(fileId) });
 
         if (!deleteFile.deletedCount) {
             throw new Error('File not found or already deleted');

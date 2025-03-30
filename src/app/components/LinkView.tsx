@@ -296,7 +296,7 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
     }, []);
 
     useEffect(() => {
-        if (link && !link.url) {
+        if (link) {
           fetchTags(link._id);
           fetchAllTags();
         }

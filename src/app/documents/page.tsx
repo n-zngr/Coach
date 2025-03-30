@@ -219,7 +219,7 @@ export default function Documents() {
             {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
             <div className={`flex-1 transition-all duration-200
                     ${isExpanded ? "pl-64" : "pl-12"}
-                    ${selectedFile ? "pr-96" : ""}
+                    ${selectedFile || triggerUpload || selectedLink ? "pr-96" : ""}
                 `}
             >
                 <Topbar />

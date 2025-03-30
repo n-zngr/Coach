@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { AddButtonItemType } from '../Buttons/AddButton';
 
 type DropdownProps = {
     isOpen: boolean;
@@ -7,7 +8,7 @@ type DropdownProps = {
     onDelete?: () => void;
     onAddItem?: () => void;
     showNewItemOnly?: boolean;
-    itemType?: 'semester' | 'subject' | 'topics';
+    itemType?: AddButtonItemType;
     onTriggerUpload?: () => void;
     onTriggerImport?: () => void;
     [key: string]: any;
@@ -91,43 +92,45 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
             >
                 {showNewItemOnly ? (
                     <>
-                        <button
-                            onClick={() => {
-                                onAddItem?.();
-                                onClose();
-                            }}
-                            className="flex w-full items-center
+                        {(itemType === 'semesters' || itemType === 'subjects' || itemType === 'topics')}
+                            <button
+                                onClick={() => {
+                                    onAddItem?.();
+                                    onClose();
+                                }}
+                                className="flex w-full items-center
                                     hover:bg-black-100 dark:hover:bg-white-900 text-left
                                     hover:text-white-900 dark:hover:text-black-100
                                     gap-2 px-2 py-2
                                     capitalize rounded-md transition-colors text-nowrap"
-                        >
-                            <div className="h-4 w-4 flex justify-center">
-                                <svg width="100%" height="100%" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M5 1V9M1 4.97538H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                            >
+                                <div className="h-4 w-4 flex justify-center">
+                                    <svg width="100%" height="100%" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5 1V9M1 4.97538H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                                <p>New {itemType}</p>
+                            </button>
+                        
+                            <button
+                                onClick={() => {
+                                    onTriggerUpload?.();
+                                    onClose();
+                                }}
+                                className="flex w-full items-center
+                                    hover:bg-black-100 dark:hover:bg-white-900 text-left 
+                                    hover:text-white-900 dark:hover:text-black-100
+                                    gap-2 px-2 py-2
+                                    capitalize rounded-md transition-colors text-nowrap"
+                            >
+                                <div className="h-4 w-4 flex justify-center">
+                                <svg width="100%" height="100%" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
-                            </div>
-                            <p>New {itemType}</p>
-                        </button>
-                        <button
-                            onClick={() => {
-                                onTriggerUpload?.();
-                                onClose();
-                            }}
-                            className="flex w-full items-center
-                                hover:bg-black-100 dark:hover:bg-white-900 text-left 
-                                hover:text-white-900 dark:hover:text-black-100
-                                gap-2 px-2 py-2
-                                capitalize rounded-md transition-colors text-nowrap"
-                        >
-                            <div className="h-4 w-4 flex justify-center">
-                            <svg width="100%" height="100%" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            </div>
-                            <p>Upload File</p>
-                        </button>
-                        {itemType === 'subject' && (
+                                </div>
+                                <p>Upload File</p>
+                            </button>
+                        {itemType === 'subjects' && (
                             <button
                                 onClick={() => {
                                     onTriggerImport?.();
@@ -181,4 +184,3 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
 }
 
 export default FolderDropdown;
-

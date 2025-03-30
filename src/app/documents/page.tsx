@@ -11,6 +11,7 @@ import FileView from '@/app/components/FileView';
 import { AppFile } from '@/app/components/FileView';
 import Topbar from '../components/Documents/Topbar';
 import LinkView, { AppLink } from '@/app/components/LinkView';
+import FolderList from '../components/Documents/FolderList';
 
 type Topic = {
     id: string;

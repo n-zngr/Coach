@@ -337,8 +337,9 @@ const UploadFile: React.FC<UploadFileProps> = ({ triggerUpload, setTriggerUpload
                                     className="w-full flex items-center
                                     bg-transparent hover:bg-black-100 hover:dark:bg-white-900
                                     border border-black-100 dark:border-white-900 rounded-full
-                                    px-3 py-1
                                     hover:text-white-900 hover:dark:text-black-100
+                                    placeholder:text-black-500 placeholder:dark:text-white-500 placeholder:hover:text-white-900 placeholder:dark:hover:text-black-100
+                                    px-3 py-1
                                     transition-colors duration-300 outline-none"
                                 />
                             </div>
@@ -351,8 +352,9 @@ const UploadFile: React.FC<UploadFileProps> = ({ triggerUpload, setTriggerUpload
                                     className="w-full flex items-center
                                     bg-transparent hover:bg-black-100 hover:dark:bg-white-900
                                     border border-black-100 dark:border-white-900 rounded-full
-                                    px-3 py-1
+                                    placeholder:text-black-500 placeholder:dark:text-white-500 placeholder:hover:text-white-900 placeholder:dark:hover:text-black-100
                                     hover:text-white-900 hover:dark:text-black-100
+                                    px-3 py-1
                                     transition-colors duration-300 outline-none"
                                 />
                             </div>

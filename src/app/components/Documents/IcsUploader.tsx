@@ -85,19 +85,31 @@ export default function IcsUploader({ onUploadSuccess }: IcsUploaderProps) {
     };
 
     return (
-        <div className="p-4 border rounded-lg shadow-md w-80">
+        <div className="flex bg-transparent
+            focus:outline-none
+            focus:border-black-900 focus:dark:border-white-900
+            gap-4
+            font-light text-lg placeholder:text-black-500 placeholder:dark:text-white-500">
             <input
                 type="file"
                 accept=".ics"
                 onChange={handleFileChange}
-                className="mb-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                className="w-full
+                bg-transparent
+                border-b border-black-500 dark:border-white-500 focus:outline-none
+                focus:border-black-900 focus:dark:border-white-900
+                placeholder:text-black-500 placeholder:dark:text-white-500"
             />
             <button
                 onClick={handleUpload}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full disabled:bg-gray-400"
+                className="bg-none hover:bg-black-100 hover:dark:bg-white-900
+                    border border-black-100 dark:border-white-900 rounded-full
+                    font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
+                    py-1 px-3
+                    transition-colors duration-200 cursor-pointer text-nowrap"
                 disabled={loading}
             >
-                {loading ? "Processing..." : "Upload & Add Subjects"}
+                {loading ? "Processing..." : "Import Subjects"}
             </button>
             {message && <p className="mt-2 text-center text-sm">{message}</p>}
         </div>

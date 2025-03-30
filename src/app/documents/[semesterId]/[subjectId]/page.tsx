@@ -2,37 +2,32 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toTitleCase } from "@/app/utils/stringUtils";
 
 import DisplayFiles from '@/app/components/DisplayFiles';
-import RecentFiles from '@/app/components/RecentFiles';
+import RecentFiles from '@/app/components/Documents/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from "@/app/components/Navigation/Navigation";
 import FileView, { AppFile } from "@/app/components/FileView";
 import Topbar from "@/app/components/Documents/Topbar";
+import FolderList from "@/app/components/Documents/FolderList";
 
 type Topic = {
     id: string;
     name: string;
 };
 
-/*
-type Subject = {
-    id: string;
-    name: string;
-    topics: Topic[];
-};
-*/
-
 const SubjectPage = () => {
     const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
-    const [name, setName] = useState("");
+    // const [name, setName] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(true);
-    const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
-    const [editingTopicName, setEditingTopicName] = useState("");
+    // const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+    // const [editingTopicName, setEditingTopicName] = useState("");
     const [selectedFile, setSelectedFile] = useState<AppFile | null>(null);
     const [semesterName, setSemesterName] = useState<string | undefined>(undefined);
     const [subjectName, setSubjectName] = useState<string | undefined>(undefined);
+    const [triggerUpload, setTriggerUpload] = useState(false);
     const params = useParams();
     const router = useRouter();
     const semesterId = params?.semesterId as string;
@@ -106,9 +101,9 @@ const SubjectPage = () => {
         }
 
         authenticateUser();
-    }, [semesterId, subjectId, router]);
+    }, [semesterId, subjectId, router])
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (name: string) => {
         if (!name) return;
     
         try {
@@ -122,7 +117,6 @@ const SubjectPage = () => {
             if (response.ok) {
                 const newTopic = await response.json();
                 setTopics((prev) => [...prev, newTopic]);
-                setName('');
             } else {
                 console.error("Failed to add topic");
             }
@@ -150,7 +144,7 @@ const SubjectPage = () => {
         }
     };
 
-    const handleEditTopic = async (topicId: string, newName: string) => {
+    const handleRenameTopic = async (topicId: string, newName: string) => {
         try {
             const response = await fetch(`/api/documents/semesters/${semesterId}/${subjectId}`, {
                 method: "PUT",
@@ -165,8 +159,6 @@ const SubjectPage = () => {
                         topic.id === topicId ? { ...topic, name: newName } : topic
                     )
                 );
-                setEditingTopicId(null);
-                setEditingTopicName('');
             } else {
                 console.error("Failed to update topic");
             }
@@ -201,13 +193,30 @@ const SubjectPage = () => {
             {selectedFile && (
                 <FileView file={selectedFile} onClose={handleCloseFileView} />
             )}
-            <div className={`flex-1 transition-all duration-300
-                    ${isExpanded ? "ml-64" : "ml-12"} 
-                    ${selectedFile ? "mr-96" : ""}
+            {triggerUpload && (
+                <UploadFile triggerUpload={triggerUpload} setTriggerUpload={setTriggerUpload} />
+            )}
+            <div className={`flex-1 transition-all duration-200
+                    ${isExpanded ? "pl-64" : "pl-12"}
+                    ${selectedFile || triggerUpload ? "pr-96" : ""}
                 `}
             >
-                <Topbar path={`${semesterName} / ${subjectName}`} />
+                <Topbar path={`${toTitleCase(semesterName)} / ${toTitleCase(subjectName)}`} />
                 <div className='p-12 pt-[7.5rem]'>
+                    <div>
+                        <FolderList
+                            items={topics}
+                            basePath={`/documents/${semesterId}/${subjectId}`}
+                            onRename={handleRenameTopic}
+                            onDelete={handleDeleteTopic}
+                            onAddItem={handleSubmit}
+                            onTriggerUpload={() => setTriggerUpload(true)}
+                            itemType='topics'
+                        >
+                            {toTitleCase(subjectName) || 'Subject'} Topics
+                        </FolderList>
+                    </div>
+                    {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Topics</h1>
                     <div className="mb-4">
                         <input
@@ -234,7 +243,7 @@ const SubjectPage = () => {
                                 hover:bg-neutral-100 hover:dark:bg-neutral-900
                                 transition-colors duration-300
                             ">
-                                {/* Conditionally render the link or the input field */}
+                                {/* Conditionally render the link or the input field */}{/*}
                                 {editingTopicId !== topic.id ? (
                                     <a href={`/documents/${semesterId}/${subjectId}/${topic.id}`} className="flex flex-1 gap-4">
                                         <div className='flex justify-center'>
@@ -264,7 +273,7 @@ const SubjectPage = () => {
                                     </div>
                                 )}
 
-                                {/* Buttons (Outside the <a> tag) */}
+                                {/* Buttons (Outside the <a> tag) */}{/*}
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => handleDeleteTopic(topic.id)}
@@ -293,8 +302,7 @@ const SubjectPage = () => {
                                 </div>
                             </div>
                         ))}
-                    </ul>
-                    <UploadFile />
+                    </ul>*/}
                     <h1 className='text-2xl font-semibold my-4'>Documents</h1>
                     <RecentFiles />
                     <DisplayFiles onFileClick={handleFileClick} />

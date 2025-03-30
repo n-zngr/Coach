@@ -1,16 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
+import { AddButtonItemType } from '../Buttons/AddButton';
 
 type DropdownProps = {
     isOpen: boolean;
     onClose: () => void;
     onRename?: () => void;
     onDelete?: () => void;
-    onAddSemester?: () => void;
-    showNewSemesterOnly?: boolean;
+    onAddItem?: () => void;
+    showNewItemOnly?: boolean;
+    itemType?: AddButtonItemType;
+    onTriggerUpload?: () => void;
+    onTriggerImport?: () => void;
     [key: string]: any;
 }
 
-const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, onDelete, onAddSemester, showNewSemesterOnly, onTriggerUpload }) => {
+const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, onDelete, onAddItem, showNewItemOnly, onTriggerUpload, onTriggerImport, itemType = 'semester' }) => {
     const [isRightAligned, setIsRightAligned] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -86,44 +90,67 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
                 font-light
                 transition-colors duration-300 z-10`}
             >
-                {showNewSemesterOnly ? (
+                {showNewItemOnly ? (
                     <>
-                        <button
-                            onClick={() => {
-                                onAddSemester?.();
-                                onClose();
-                            }}
-                            className="flex w-full items-center
+                        {(itemType === 'semesters' || itemType === 'subjects' || itemType === 'topics')}
+                            <button
+                                onClick={() => {
+                                    onAddItem?.();
+                                    onClose();
+                                }}
+                                className="flex w-full items-center
+                                    hover:bg-black-100 dark:hover:bg-white-900 text-left
+                                    hover:text-white-900 dark:hover:text-black-100
+                                    gap-2 px-2 py-2
+                                    capitalize rounded-md transition-colors text-nowrap"
+                            >
+                                <div className="h-4 w-4 flex justify-center">
+                                    <svg width="100%" height="100%" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5 1V9M1 4.97538H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                                <p>New {itemType}</p>
+                            </button>
+                        
+                            <button
+                                onClick={() => {
+                                    onTriggerUpload?.();
+                                    onClose();
+                                }}
+                                className="flex w-full items-center
                                     hover:bg-black-100 dark:hover:bg-white-900 text-left 
                                     hover:text-white-900 dark:hover:text-black-100
                                     gap-2 px-2 py-2
                                     capitalize rounded-md transition-colors text-nowrap"
-                        >
-                            <div className="h-4 w-4 flex justify-center">
-                                <svg width="100%" height="100%" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M5 1V9M1 4.97538H9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                            >
+                                <div className="h-4 w-4 flex justify-center">
+                                <svg width="100%" height="100%" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
-                            </div>
-                            <p>New Semester</p>
-                        </button>
-                        <button
-                            onClick={() => {
-                                onTriggerUpload?.();
-                                onClose();
-                            }}
-                            className="flex w-full items-center
+                                </div>
+                                <p>Upload File</p>
+                            </button>
+                        {itemType === 'subjects' && (
+                            <button
+                                onClick={() => {
+                                    onTriggerImport?.();
+                                    onClose();
+                                }}
+                                className="flex w-full items-center
                                     hover:bg-black-100 dark:hover:bg-white-900 text-left 
                                     hover:text-white-900 dark:hover:text-black-100
                                     gap-2 px-2 py-2
                                     capitalize rounded-md transition-colors text-nowrap"
-                        >
-                            <div className="h-4 w-4 flex justify-center">
-                                <svg width="100%" height="100%" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M7 10V4M4 7H10M1 4.2V9.8C1 10.9201 1 11.4802 1.21799 11.908C1.40973 12.2843 1.71569 12.5903 2.09202 12.782C2.51984 13 3.07989 13 4.2 13H9.8C10.9201 13 11.4802 13 11.908 12.782C12.2843 12.5903 12.5903 12.2843 12.782 11.908C13 11.4802 13 10.9201 13 9.8V4.2C13 3.0799 13 2.51984 12.782 2.09202C12.5903 1.71569 12.2843 1.40973 11.908 1.21799C11.4802 1 10.9201 1 9.8 1H4.2C3.0799 1 2.51984 1 2.09202 1.21799C1.71569 1.40973 1.40973 1.71569 1.21799 2.09202C1 2.51984 1 3.07989 1 4.2Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </div>
-                            <p>Upload File</p>
-                        </button>
+                            >
+                                <div className="h-4 w-4 flex justify-center">
+                                    {/* Add an appropriate icon for import */}
+                                    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4 12V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V12M12 2V16M12 16L8 12M12 16L16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                                <p>Import</p>
+                            </button>
+                        )}
                     </>
                 ) : (
                     <>
@@ -157,4 +184,3 @@ const FolderDropdown: React.FC<DropdownProps> = ({ isOpen, onClose, onRename, on
 }
 
 export default FolderDropdown;
-

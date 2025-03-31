@@ -4,7 +4,7 @@ Organize, structure, and study with Coach. Organized Tasks, Documents and time t
 
 
 ## Project Details
-<img src="https://skillicons.dev/icons?i=nextjs,ts,tailwind,mongodb,vercel"/>
+<img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,mongodb,vercel"/>
 
 - [NextJs](https://nextjs.org/), Main Framework
 - [React](https://react.dev/), Framework with NextJs

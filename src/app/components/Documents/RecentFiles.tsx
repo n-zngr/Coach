@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-interface File {
+interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;
@@ -22,7 +22,7 @@ interface ShowRecentProps {
 }
 
 const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId }) => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [files, setFiles] = useState<AppFile[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -41,7 +41,7 @@ const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId
                 if (response.ok) {
                     const data = await response.json();
                     const sortedFiles = data
-                        .sort((a: File, b: File) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
+                        .sort((a: AppFile, b: AppFile) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
                         .slice(0, 3);
                     setFiles(sortedFiles);
                 } else {
@@ -67,7 +67,11 @@ const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId
 
     return (
         <div>
-            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white">Recent Files</h2>
+            <header className="border-b border-black-500 dark:border-white-500 mb-8">
+                <div className="flex justify-between">
+                    <h1 className="font-base text-xl self-end pb-1">Recently Uploaded</h1>
+                </div>
+            </header>
             <div className="flex flex-1 flex-wrap gap-4 mb-8">
                 {files.map((file) => (
                     <button key={file._id} className="

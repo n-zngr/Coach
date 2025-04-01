@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AppLink } from "../LinkView";
 
-export interface File {
+export interface AppFile {
     _id: string;
     filename: string;
     uploadDate: string;
@@ -18,12 +18,12 @@ export interface File {
 }
 
 interface DisplayFilesProps {
-    onFileClick: (file: File) => void;
+    onFileClick: (file: AppFile) => void;
     onLinkClick: (link: AppLink) => void;
 }
 
 const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick }) => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [files, setFiles] = useState<AppFile[]>([]);
     const [links, setLinks] = useState<AppLink[]>([]);
     const [loading, setLoading] = useState(true);
     /*const [query, setQuery] = useState("");*/

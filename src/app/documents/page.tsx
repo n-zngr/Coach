@@ -225,7 +225,7 @@ export default function Documents() {
                 `}
             >
                 <Topbar />
-                <div className='flex flex-col gap-8 p-12 pt-[7.5rem]'>
+                <div className='flex flex-col gap-12 p-12 pt-[7.5rem]'>
                         <FolderList
                             items={semesters}
                             basePath='/documents'

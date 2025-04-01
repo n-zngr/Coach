@@ -3,19 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AppLink } from "../LinkView";
-
-export interface AppFile {
-    _id: string;
-    filename: string;
-    uploadDate: string;
-    length: number;
-    metadata: {
-        userId: string;
-        semesterId?: string;
-        subjectId?: string;
-        topicId?: string;
-    };
-}
+import { AppFile } from "../FileView";
 
 interface DisplayFilesProps {
     onFileClick: (file: AppFile) => void;
@@ -65,7 +53,9 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
     
                 if (!fileRes.ok) {
                     throw new Error("Failed to fetch files");
-                } else if (!linkRes.ok) {
+                } 
+                
+                if (!linkRes.ok) {
                     throw new Error("Failed to fetch links");
                 }
     
@@ -74,8 +64,8 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
     
                 setFiles(fileData);
                 setLinks(linkData);
-            } catch (err) {
-                console.error("Error fetching data:", err);
+            } catch (error) {
+                console.error("Error fetching data:", error);
             } finally {
                 setLoading(false);
             }
@@ -95,7 +85,7 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
         /*fetchSubjectTypes();*/
         
         fetchData();
-    }, [semesterId, subjectId, topicId]);
+    }, [semesterId, subjectId, topicId, onFileClick, onLinkClick]);
 
     /*const handleSearch = async () => {
         if (!query.trim() && !selectedSubjectType) {

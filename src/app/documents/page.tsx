@@ -225,8 +225,7 @@ export default function Documents() {
                 `}
             >
                 <Topbar />
-                <div className='p-12 pt-[7.5rem]'>
-                    <div>
+                <div className='flex flex-col gap-8 p-12 pt-[7.5rem]'>
                         <FolderList
                             items={semesters}
                             basePath='/documents'
@@ -239,7 +238,8 @@ export default function Documents() {
                         >
                             All Semesters
                         </FolderList>
-                    </div>
+                        <RecentFiles />
+                        <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
                     {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                     <div className="mb-4">
@@ -327,8 +327,6 @@ export default function Documents() {
                         ))}
                     </ul>
                     */}
-                    <RecentFiles />
-                    <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
                 </div>
             </div>
         </div>

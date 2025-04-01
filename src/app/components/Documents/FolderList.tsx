@@ -84,13 +84,13 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                     <AddButton onTriggerNewItem={() => setShowNewItemFolder(true)} onTriggerUpload={onTriggerUpload} onTriggerImport={() => setShowIcsUploader(true)} itemType={itemType} />
                 </div>
             </header>
-            <ul className="grid grid-cols-3 gap-4 mb-4">
+            <ul className="grid grid-cols-3 gap-4">
                 {items.map((item) => (
                     <li
                         key={item.id}
                         className="flex items-center justify-between
                         bg-transparent hover:bg-white-800 dark:hover:bg-black-200
-                        border hover:border-black-100 hover:dark:border-white-900 rounded-xl
+                        border border-black-900 hover:border-black-100 dark:border-white-100 hover:dark:border-white-900 rounded-xl
                         p-4
                         transition-colors duration-300"
                     >

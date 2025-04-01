@@ -37,49 +37,50 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
     const subjectId = pathSegments[2] || null;
     const topicId = pathSegments[3] || null;
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const [fileRes, linkRes] = await Promise.all([
-                fetch(`/api/documents/files`, {
-                    method: "GET",
-                    credentials: "include",
-                    headers: {
-                        semesterId: semesterId ?? "",
-                        subjectId: subjectId ?? "",
-                        topicId: topicId ?? "",
-                    },
-                }),
-                fetch(`/api/documents/links`, {
-                    method: "GET",
-                    credentials: "include",
-                    headers: {
-                        semesterId: semesterId ?? "",
-                        subjectId: subjectId ?? "",
-                        topicId: topicId ?? "",
-                    },
-                }),
-            ]);
-
-            if (!fileRes.ok) {
-                throw new Error("Failed to fetch files");
-            } else if (!linkRes.ok) {
-                throw new Error("Failed to fetch links");
-            }
-
-            const fileData = await fileRes.json();
-            const linkData = await linkRes.json();
-
-            setFiles(fileData);
-            setLinks(linkData);
-        } catch (err) {
-            console.error("Error fetching data:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    
     useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [fileRes, linkRes] = await Promise.all([
+                    fetch(`/api/documents/files`, {
+                        method: "GET",
+                        credentials: "include",
+                        headers: {
+                            semesterId: semesterId ?? "",
+                            subjectId: subjectId ?? "",
+                            topicId: topicId ?? "",
+                        },
+                    }),
+                    fetch(`/api/documents/links`, {
+                        method: "GET",
+                        credentials: "include",
+                        headers: {
+                            semesterId: semesterId ?? "",
+                            subjectId: subjectId ?? "",
+                            topicId: topicId ?? "",
+                        },
+                    }),
+                ]);
+    
+                if (!fileRes.ok) {
+                    throw new Error("Failed to fetch files");
+                } else if (!linkRes.ok) {
+                    throw new Error("Failed to fetch links");
+                }
+    
+                const fileData = await fileRes.json();
+                const linkData = await linkRes.json();
+    
+                setFiles(fileData);
+                setLinks(linkData);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         /*const fetchSubjectTypes = async () => {
         try {
             const res = await fetch("/api/documents/subjectTypes", { credentials: "include" });
@@ -92,6 +93,7 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
         };*/
 
         /*fetchSubjectTypes();*/
+        
         fetchData();
     }, [semesterId, subjectId, topicId]);
 

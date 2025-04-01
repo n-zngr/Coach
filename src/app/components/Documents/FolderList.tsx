@@ -84,11 +84,11 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                     <AddButton onTriggerNewItem={() => setShowNewItemFolder(true)} onTriggerUpload={onTriggerUpload} onTriggerImport={() => setShowIcsUploader(true)} itemType={itemType} />
                 </div>
             </header>
-            <ul className="grid grid-cols-3 gap-4">
+            <ul className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {items.map((item) => (
                     <li
                         key={item.id}
-                        className="flex items-center justify-between
+                        className="flex items-center justify-between group
                         bg-transparent hover:bg-white-800 dark:hover:bg-black-200
                         border border-black-900 hover:border-black-100 dark:border-white-100 hover:dark:border-white-900 rounded-xl
                         p-4
@@ -130,6 +130,7 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                             rounded-full
                             text-black-500 hover:text-white-500 dark:text-white-900 dark:hover:text-black-100
                             p-2
+                            opacity-0 group-hover:opacity-100
                             active:scale-95 transition-all duration-300 -z-0 focus:outline-none
                             '>
                             <svg width="100%" height="100%" viewBox="0 0 14 4" fill="none" xmlns="http://www.w3.org/2000/svg">

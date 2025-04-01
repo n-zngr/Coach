@@ -89,7 +89,7 @@ const FolderList: React.FC<FolderListProps> = ({ items, basePath, onRename, onDe
                     <li
                         key={item.id}
                         className="flex items-center justify-between
-                        bg-white-900 hover:bg-white-800 dark:bg-black-100 dark:hover:bg-black-200
+                        bg-transparent hover:bg-white-800 dark:hover:bg-black-200
                         border hover:border-black-100 hover:dark:border-white-900 rounded-xl
                         p-4
                         transition-colors duration-300"

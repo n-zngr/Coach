@@ -238,7 +238,7 @@ export default function Documents() {
                         >
                             All Semesters
                         </FolderList>
-                        <RecentFiles />
+                        <RecentFiles onFileClick={handleFileClick} />
                         <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
                     {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>

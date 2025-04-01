@@ -1,27 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-interface AppFile {
-    _id: string;
-    filename: string;
-    uploadDate: string;
-    length: number;
-    metadata: {
-        userId: string;
-        semesterId: string;
-        subjectId: string;
-        topicId: string;
-    };
-}
+import { AppFile } from "../FileView";
 
 interface ShowRecentProps {
     semesterId?: string;
     subjectId?: string;
     topicId?: string;
+    onFileClick: (file: AppFile) => void;
 }
 
-const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId }) => {
+const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId, onFileClick }) => {
     const [files, setFiles] = useState<AppFile[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -55,7 +44,7 @@ const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId
         };
 
         fetchFiles();
-    }, [semesterId, subjectId, topicId]);
+    }, [semesterId, subjectId, topicId, onFileClick]);
 
     if (loading) {
         return <p>Loading files...</p>;
@@ -75,6 +64,7 @@ const RecentFiles: React.FC<ShowRecentProps> = ({ semesterId, subjectId, topicId
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {files.map((file) => (
                     <button key={file._id}
+                        onClick={() => onFileClick(file)}
                         className="flex justify-between group
                             bg-transparent hover:bg-white-800 dark:hover:bg-black-200
                             border border-black-900 dark:border-white-100 rounded-xl

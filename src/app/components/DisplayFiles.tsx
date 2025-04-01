@@ -61,8 +61,10 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
                 }),
             ]);
 
-            if (!fileRes.ok || !linkRes.ok) {
-                throw new Error("Failed to fetch files or links");
+            if (!fileRes.ok) {
+                throw new Error("Failed to fetch files");
+            } else if (!linkRes.ok) {
+                throw new Error("Failed to fetch links");
             }
 
             const fileData = await fileRes.json();

@@ -14,11 +14,7 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
     const [files, setFiles] = useState<AppFile[]>([]);
     const [links, setLinks] = useState<AppLink[]>([]);
     const [loading, setLoading] = useState(true);
-    /*const [query, setQuery] = useState("");*/
-    /*const [searchActive, setSearchActive] = useState(false);*/
-    /*const [subjectTypes, setSubjectTypes] = useState<{ id: string; name: string }[]>([]);*/
-    /*const [selectedSubjectType, setSelectedSubjectType] = useState<string | null>(null);*/
-
+    
     const pathname = usePathname();
     const pathSegments = pathname.split("/").filter(Boolean);
     const semesterId = pathSegments[1] || null;
@@ -70,57 +66,9 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
                 setLoading(false);
             }
         };
-
-        /*const fetchSubjectTypes = async () => {
-        try {
-            const res = await fetch("/api/documents/subjectTypes", { credentials: "include" });
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-            setSubjectTypes(data);
-        } catch {
-            console.error("Failed to fetch subject types");
-        }
-        };*/
-
-        /*fetchSubjectTypes();*/
         
         fetchData();
     }, [semesterId, subjectId, topicId, onFileClick, onLinkClick]);
-
-    /*const handleSearch = async () => {
-        if (!query.trim() && !selectedSubjectType) {
-        resetSearch();
-        return;
-        }
-
-        setLoading(true);
-        setSearchActive(true);
-
-        try {
-        const res = await fetch("/api/documents/search", {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query, subjectTypeId: selectedSubjectType }),
-        });
-
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        setFiles(data.filter((item: any) => item.filename));
-        setLinks(data.filter((item: any) => item.url));
-        } catch (err) {
-        console.error("Search failed:", err);
-        } finally {
-        setLoading(false);
-        }
-    };*/
-
-    /*const resetSearch = () => {
-        setQuery("");
-        setSelectedSubjectType(null);
-        setSearchActive(false);
-        fetchData();
-    };*/
 
     return (
         <>
@@ -133,39 +81,7 @@ const DisplayFiles: React.FC<DisplayFilesProps> = ({ onFileClick, onLinkClick })
                 </div>
             )}
             { !loading && (
-                <div>{/*}
-                    <h2 className="text-xl font-semibold mb-4">Documents & Links</h2>
-                    {/*
-                    <div className="flex space-x-2 mb-4">
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            placeholder="Search..."
-                            className="w-full p-2 border text-black border-neutral-200 dark:border-neutral-800 rounded-lg"
-                        />
-                        <button onClick={handleSearch} className="py-2 px-4 bg-neutral-200 dark:bg-neutral-800 rounded-lg font-bold">
-                            Search
-                        </button>
-                        <select
-                            value={selectedSubjectType || ""}
-                            onChange={(e) => setSelectedSubjectType(e.target.value || null)}
-                            className="p-2 border rounded-lg text-black"
-                        >
-                            <option value="">All Types</option>
-                                {subjectTypes.map((type) => (
-                                    <option key={type.id} value={type.id}>
-                                    {type.name}
-                                    </option>
-                                ))}
-                        </select>
-                        {searchActive && (
-                            <button onClick={resetSearch} className="bg-neutral-500 text-white font-bold py-2 px-4 rounded-lg">
-                                Reset
-                            </button>
-                        )}
-                    </div>*/}
+                <div>
                     <header className="border-b border-black-500 dark:border-white-500 mb-8">
                         <div className="flex justify-between">
                             <h1 className="font-base text-xl self-end pb-1">Documents & Links</h1>

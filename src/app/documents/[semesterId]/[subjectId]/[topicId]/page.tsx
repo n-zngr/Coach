@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { toTitleCase } from "@/app/utils/stringUtils";
 
 import DisplayFiles from '@/app/components/Documents/DisplayFiles';
-import RecentFiles from '@/app/components/Documents/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import Navigation from "@/app/components/Navigation/Navigation";
 import FileView, { AppFile } from "@/app/components/FileView";
@@ -77,25 +76,25 @@ const TopicPage = () => {
     };
 
     useEffect(() => {
-    const authenticateUser = async () => {
-        try {
-        const response = await fetch('/api/auth', {
-        method: 'GET',
-        credentials: 'include'
-        });
+        const authenticateUser = async () => {
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
 
-        if (!response.ok) {
-        router.push('/login');
-        return;
-        }
+                if (!response.ok) {
+                    router.push('/login');
+                    return;
+                }
 
-        if (semesterId && subjectId && topicId) {
-        await fetchTopic();
-        }
-    }   catch {
-        router.push('/login');
-    }
-  };
+                if (semesterId && subjectId && topicId) {
+                await fetchTopic();
+            }
+            } catch {
+                router.push('/login');
+            }
+        };
 
     authenticateUser();
     }, [semesterId, subjectId, topicId, router]);
@@ -114,11 +113,11 @@ const TopicPage = () => {
 
     const handleLinkClick = (link: AppLink) => {
         setSelectedLink(link);
-      };
+    };
       
-      const handleCloseLinkView = () => {
+    const handleCloseLinkView = () => {
         setSelectedLink(null);
-      };
+    };
 
     if (isLoading) {
         return (
@@ -131,11 +130,12 @@ const TopicPage = () => {
     return (
         <div>
             <Navigation isExpanded={isExpanded} toggleNavigation={toggleNavigation} />
-
             {selectedFile && (
                 <FileView file={selectedFile} onClose={handleCloseFileView} />
             )}
-            {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
+            {selectedLink && (
+                <LinkView link={selectedLink} onClose={handleCloseLinkView} />
+            )}
             {triggerUpload && (
                 <UploadFile triggerUpload={triggerUpload} setTriggerUpload={setTriggerUpload} />
             )}
@@ -145,19 +145,13 @@ const TopicPage = () => {
                 `}
             >
                 <Topbar path={`${toTitleCase(semesterName)} / ${toTitleCase(subjectName)} / ${toTitleCase(topicName)}`} />
-
-                <div className='p-12 pt-[7.5rem]'>
+                <div className='flex flex-col gap-12 p-12 pt-[7.5rem]'>
                     <header className="border-b border-black-500 dark:border-white-500 mb-8">
                         <div className="flex justify-between">
                             <h1 className="font-base text-xl self-end pb-1">{topic ? topic.name : "Topic"}</h1>
                             <AddButton onTriggerUpload={() => setTriggerUpload(true)} itemType='none' />
                         </div>
                     </header>
-                    <h1 className="text-2xl font-bold mb-4">{topic ? topic.name : "Unknown Topic"}</h1>
-                    
-                    
-                    <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-                    <RecentFiles />
                     <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
                 </div>
             </div>

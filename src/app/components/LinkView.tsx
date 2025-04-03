@@ -26,12 +26,12 @@ export interface AppLink {
     name: string;
     url: string;
     metadata: {
-      userId: string;
-      semesterId?: string;
-      subjectId?: string;
-      topicId?: string;
-      tags?: { id: string; name: string }[];
-      createdAt?: string;
+        userId: string;
+        semesterId?: string;
+        subjectId?: string;
+        topicId?: string;
+        tags?: { id: string; name: string }[];
+        createdAt?: string;
     };
 }
 
@@ -45,7 +45,6 @@ interface LinkViewProps {
     link: AppLink | null;
     onClose: () => void;
 }
-
 
 const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
     // Rename file state
@@ -65,9 +64,6 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
     const [showMoveCard, setShowMoveCard] = useState(false);
     const [filePath, setFilePath] = useState<string | null>(null);
     const moveButtonRef = useRef<HTMLButtonElement | null>(null);
-
-    // Replace file ref used in upload button press
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Notification - Currently Unused
     // const [notification, setNotification] = useState<{ title: string; description: string; isVisible: boolean; }>({ title: '', description: '', isVisible: false })
@@ -153,26 +149,6 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
         }
     }
 
-    const handleDownload = useCallback(async () => {
-        if (!link) return;
-        try {
-            const response = await fetch(`/api/documents/download/${link._id}`);
-            if (!response.ok) {
-                throw new Error('Failed to download file');
-            }
-
-            const blob = await response.blob();
-            const downloadUrl = URL.createObjectURL(blob);
-            const tempLink = document.createElement('a');
-            tempLink.href = downloadUrl;
-            tempLink.download = link.name;
-            tempLink.click();
-            URL.revokeObjectURL(downloadUrl);
-        } catch (error) {
-            console.error('Error downloading file', error);
-        }
-    }, [link]);
-
     const handleDelete = useCallback(async () => {
         try {
             const response = await fetch(`/api/documents/delete/${link?._id}`, {
@@ -227,37 +203,6 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
 
     const toggleMoveCard = () => {
         setShowMoveCard((prev) => !prev);
-    };
-
-    const handleFileReplace = async (e: ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (!selectedFile) return;
-
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("filename", selectedFile.name);
-
-        try {
-            const response = await fetch(`/api/documents/replace/${link?._id}`, {
-                method: "POST",
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to replace file");
-            }
-
-            const result = await response.json();
-            console.log(result.message);
-            // Optionally, update your UI or trigger a refetch of file data here
-        } catch (error) {
-            console.error("Error replacing file: ", error);
-        }
-    };
-
-    
-    const triggerFileSelect = () => { // Trigger file selection when upload button is clicked
-        fileInputRef.current?.click();
     };
 
     // --- Tag Actions ---
@@ -514,11 +459,6 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
                             {link.url}
                         </a>
                     )}
-                    <div className="flex">
-                        <p className="text-gray-500">
-                            {link.metadata?.createdAt ? new Date(link.metadata.createdAt).toLocaleString() : "No Date"}
-                        </p>
-                    </div>
                     <button ref={moveButtonRef}
                         onClick={toggleMoveCard}
                         className='w-fit
@@ -611,7 +551,6 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
                             hover:text-black-100 hover:dark:text-white-900
                             transition-colors duration-300 cursor-pointer"
                             onClick={() => {
-                            // When clicking the "New Tag" element, show the inline input.
                                 setSelectedTag(null);
                                 setTagInput("");
                                 setShowTagInput(true);
@@ -648,21 +587,6 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
                 {/* Action Buttons */}
                 <div className="grid grid-cols-3 justify-center gap-2 px-6">
                     <button
-                        onClick={handleDownload}
-                        className="
-                            bg-none hover:bg-black-100 hover:dark:bg-white-900
-                            border border-black-100 dark:border-white-900 rounded-lg
-                            font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
-                            transition-colors duration-200 cursor-pointer"
-                    >
-                        <div className='flex flex-col justify-center items-center gap-4 p-4'>
-                            <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14.25 7.4H15.75C15.9489 7.4 16.1397 7.48429 16.2803 7.63431C16.421 7.78434 16.5 7.98783 16.5 8.2V20.2C16.5 20.4122 16.421 20.6157 16.2803 20.7657C16.1397 20.9157 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.9157 1.71967 20.7657C1.57902 20.6157 1.5 20.4122 1.5 20.2V8.2C1.5 7.98783 1.57902 7.78434 1.71967 7.63431C1.86032 7.48429 2.05109 7.4 2.25 7.4H3.75M9 1V13.8M9 13.8L6 10.6M9 13.8L12 10.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            <p>Download</p>
-                        </div>
-                    </button>
-                    <button
                         onClick={handleDelete}
                         className="
                             bg-none hover:bg-black-100 hover:dark:bg-white-900
@@ -677,27 +601,6 @@ const LinkView: React.FC<LinkViewProps> = ({ link, onClose }) => {
                             <p>Delete</p>
                         </div>
                     </button>
-                    <button
-                        onClick={triggerFileSelect}
-                        className="
-                            bg-none hover:bg-black-100 hover:dark:bg-white-900
-                            border border-black-100 dark:border-white-900 rounded-lg
-                            font-light text-black-100 dark:text-white-900 hover:text-white-900 hover:dark:text-black-100
-                            transition-colors duration-200 cursor-pointer"
-                    >
-                        <div className="flex flex-col justify-center items-center gap-4 p-4">
-                            <svg width="26" height="32" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14.25 7.92308H15.75C15.9489 7.92308 16.1397 8.00412 16.2803 8.14838C16.421 8.29264 16.5 8.4883 16.5 8.69231V20.2308C16.5 20.4348 16.421 20.6304 16.2803 20.7747C16.1397 20.919 15.9489 21 15.75 21H2.25C2.05109 21 1.86032 20.919 1.71967 20.7747C1.57902 20.6304 1.5 20.4348 1.5 20.2308V8.69231C1.5 8.4883 1.57902 8.29264 1.71967 8.14838C1.86032 8.00412 2.05109 7.92308 2.25 7.92308H3.75M9 11.7692V1M9 1L6 4.07692M9 1L12 4.07692" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            <p>Replace</p>
-                        </div>
-                    </button>
-                    <input
-                        type='file'
-                        ref={fileInputRef}
-                        onChange={handleFileReplace}
-                        style={{ display: 'none' }}
-                    />
 
                     {/* Move Card */}
                     {showMoveCard && (

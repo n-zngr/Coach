@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from 'next/navigation';
 import { toTitleCase } from "@/app/utils/stringUtils";
 
-import DisplayFiles from "@/app/components/DisplayFiles";
+import DisplayFiles from "@/app/components/Documents/DisplayFiles";
 import RecentFiles from "@/app/components/Documents/RecentFiles";
 import UploadFile from '@/app/components/UploadFile';
 // import IcsUploader from '@/app/components/IcsUploader';

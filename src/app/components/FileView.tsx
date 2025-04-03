@@ -542,13 +542,17 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         {tags.map((tag) => (
                             <div
                                 key={tag._id || tag.id}
-                                className="relative
-                                flex items-center
-                                bg-none hover:bg-black-100 hover:dark:bg-white-900
-                                border border-black-100 dark:border-white-900 rounded-full
-                                px-3 py-1
-                                hover:text-white-900 hover:dark:text-black-100
-                                transition-colors duration-300 cursor-pointer"
+                                className={`relative
+                                    flex items-center
+                                    bg-none
+                                    border border-black-100 dark:border-white-900 rounded-full
+                                    px-3 py-1
+                                    transition-colors duration-300 cursor-pointer
+                                    ${selectedTag && (selectedTag._id || selectedTag.id) === (tag._id || tag.id)
+                                        ? ''
+                                        : 'hover:bg-black-100 hover:dark:bg-white-900 hover:text-white-900 hover:dark:text-black-100'
+                                    }
+                                `}
                                 onClick={() => {
                                     setShowTagInput(false);
                                     selectTag(tag);
@@ -559,21 +563,19 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                                         <path d="M1.6172 7.04857L4.95149 10.3829C5.07203 10.5032 5.23542 10.5709 5.40578 10.5709C5.57613 10.5709 5.73953 10.5032 5.86006 10.3829L10.6623 5.86717C10.8609 5.67839 10.9733 5.41639 10.9733 5.1424V2.02673C10.9733 1.47445 10.5256 1.02673 9.97333 1.02673L6.85777 1.02673C6.58377 1.02673 6.32177 1.13916 6.13299 1.33774L1.6172 6.14C1.49682 6.26053 1.4292 6.42393 1.4292 6.59428C1.4292 6.76464 1.49682 6.92803 1.6172 7.04857Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
                                         <path d="M7.75 3.625C7.75 3.97018 8.02982 4.25 8.375 4.25C8.72018 4.25 9 3.97018 9 3.625C9 3.27982 8.72018 3 8.375 3C8.02982 3 7.75 3.27982 7.75 3.625Z" fill="currentColor"/>
                                     </svg>
-
-                                    {selectedTag &&
-                                    (selectedTag._id || selectedTag.id) === (tag._id || tag.id) ? (
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            value={tagInput}
-                                            onChange={handleEditTagInputChange}
-                                            onBlur={handleEditTagInputBlur}
-                                            onKeyDown={handleEditTagInputEnterPressed}
-                                            className="bg-transparent border-b focus:outline-none"
-                                            autoFocus
-                                        />
-                                        <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
-                                    </div>
+                                    {selectedTag && (selectedTag._id || selectedTag.id) === (tag._id || tag.id) ? (
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={tagInput}
+                                                onChange={handleEditTagInputChange}
+                                                onBlur={handleEditTagInputBlur}
+                                                onKeyDown={handleEditTagInputEnterPressed}
+                                                className="bg-transparent border-b focus:outline-none"
+                                                autoFocus
+                                            />
+                                            <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
+                                        </div>
                                     ) : (
                                         <span>{tag.name}</span>
                                     )}
@@ -591,14 +593,17 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                         ))}
 
                         {/* New Tag element */}
-                        <div className="relative
+                        <div className={`relative
                             flex items-center
-                            bg-black-100 dark:bg-white-900 hover:bg-transparent hover:dark:bg-transparent
                             border border-black-100 dark:border-white-900 rounded-full
                             px-3 py-1
-                            font-normal text-white-900 dark:text-black-100 text-nowrap
-                            hover:text-black-100 hover:dark:text-white-900
-                            transition-colors duration-300 cursor-pointer"
+                            font-normal text-nowrap
+                            transition-colors duration-300 cursor-pointer
+                            ${showTagInput
+                                ? ''
+                                : 'bg-black-100 dark:bg-white-900 hover:bg-transparent hover:dark:bg-transparent text-white-900 dark:text-black-100 hover:text-black-100 hover:dark:text-white-900'
+                            }
+                            `}
                             onClick={() => {
                             // When clicking the "New Tag" element, show the inline input.
                                 setSelectedTag(null);
@@ -617,7 +622,7 @@ const FileView: React.FC<FileViewProps> = ({ file, onClose }) => {
                                     className="bg-transparent border-b focus:outline-none"
                                     autoFocus
                                 />
-                                <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
+                                    <TagDropdown filteredTags={filteredTags} onSelect={handleSelectTag} />
                                 </div>
                             ) : (
                                 <div className='flex justify-center items-center gap-2'>

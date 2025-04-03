@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import Navigation from '@/app/components/Navigation/Navigation';
-import DisplayFiles from '@/app/components/DisplayFiles';
+import DisplayFiles from '@/app/components/Documents/DisplayFiles';
 import RecentFiles from '@/app/components/Documents/RecentFiles';
 import UploadFile from '@/app/components/UploadFile';
 import FileView from '@/app/components/FileView';
@@ -216,15 +216,16 @@ export default function Documents() {
             {triggerUpload && (
                 <UploadFile triggerUpload={triggerUpload} setTriggerUpload={setTriggerUpload} />
             )}
-            {selectedLink && <LinkView link={selectedLink} onClose={handleCloseLinkView} />}
+            {selectedLink && (
+                <LinkView link={selectedLink} onClose={handleCloseLinkView} />
+            )}
             <div className={`flex-1 transition-all duration-200
                     ${isExpanded ? "pl-64" : "pl-12"}
                     ${selectedFile || triggerUpload || selectedLink ? "pr-96" : ""}
                 `}
             >
                 <Topbar />
-                <div className='p-12 pt-[7.5rem]'>
-                    <div>
+                <div className='flex flex-col gap-12 p-12 pt-[7.5rem]'>
                         <FolderList
                             items={semesters}
                             basePath='/documents'
@@ -237,7 +238,8 @@ export default function Documents() {
                         >
                             All Semesters
                         </FolderList>
-                    </div>
+                        <RecentFiles onFileClick={handleFileClick} />
+                        <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
                     {/*}
                     <h1 className="text-2xl font-bold mb-4">Manage Semesters</h1>
                     <div className="mb-4">
@@ -325,9 +327,6 @@ export default function Documents() {
                         ))}
                     </ul>
                     */}
-                    <RecentFiles />
-                    <h1 className='text-2xl font-semibold my-4'>Documents</h1>
-                    <DisplayFiles onFileClick={handleFileClick} onLinkClick={handleLinkClick} />
                 </div>
             </div>
         </div>
